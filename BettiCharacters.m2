@@ -78,13 +78,13 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     --check C is a homogeneous min free res over a poly ring
     R := ring C;
     if not isPolynomialRing R then (
-	error "expected a complex over a polynomial ring";
+	error "action: expected a complex over a polynomial ring";
 	);
     if not all(length C,i -> isFreeModule C_(i+min(C))) then (
-	error "expected a complex of free modules";
+	error "action: expected a complex of free modules";
 	);
     if not isHomogeneous C then (
-	error "complex is not homogeneous";
+	error "action: complex is not homogeneous";
 	);
     --if user passes handcrafted complex give warning message
     if not C.?Resolution then (
@@ -95,18 +95,18 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     --check the matrix of the action on the variables has right size
     n := dim R;
     if not all(l,g->numColumns(g)==n) then (
-	error "ring actor matrix has wrong number of columns";
+	error "action: ring actor matrix has wrong number of columns";
 	);
     if op.Sub then (
     	if not all(l,g->numRows(g)==1) then (
-	    error "expected ring actor matrix to be a one-row substitution matrix";
+	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
     	--convert variable substitutions to matrices
 	l=apply(l,g->(vars R)\\lift(g,R));
 	) else (
 	--if ring actors are matrices they must be square
     	if not all(l,g->numRows(g)==n) then (
-	    error "ring actor matrix has wrong number of rows";
+	    error "action: ring actor matrix has wrong number of rows";
 	    );
 	--lift action matrices to R for uniformity with
 	--input as substitutions
@@ -114,12 +114,12 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	);
     --check list of group elements has same length
     if #l != #l0 then (
-	error "lists of actors must have equal length";
+	error "action: lists of actors must have equal length";
 	);
     --check size of module actors matches rank of starting module
     r := rank C_i;
     if not all(l0,g->numColumns(g)==r and numRows(g)==r) then (
-	error "module actor matrix has wrong number of rows or columns";
+	error "action: module actor matrix has wrong number of rows or columns";
 	);
     --store everything into a hash table
     new ActionOnComplex from {
@@ -250,26 +250,26 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	R = ring M;
 	);
     if not isPolynomialRing R then (
-	error "expected a module/ideal/quotient over a polynomial ring";
+	error "action: expected a module/ideal/quotient over a polynomial ring";
 	);
     if not isHomogeneous M then (
-	error "module/ideal/quotient is not graded";
+	error "action: module/ideal/quotient is not graded";
 	);
     --check matrix of action on variables has right size
     n := dim R;
     if not all(l,g->numColumns(g)==n) then (
-	error "ring actor matrix has wrong number of columns";
+	error "action: ring actor matrix has wrong number of columns";
 	);
     if op.Sub then (
     	if not all(l,g->numRows(g)==1) then (
-	    error "expected ring actor matrix to be a one-row substitution matrix";
+	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
     	--convert variable substitutions to matrices
 	l=apply(l,g->(vars R)\\lift(g,R));
 	) else (
 	--if ring actors are matrices they must be square
     	if not all(l,g->numRows(g)==n) then (
-	    error "ring actor matrix has wrong number of rows";
+	    error "action: ring actor matrix has wrong number of rows";
 	    );
 	--lift action matrices to R for uniformity with
 	--input as substitutions
@@ -277,7 +277,7 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	);
     --check list of group elements has same length
     if #l != #l0 then (
-	error "lists of actors must have equal length";
+	error "action: lists of actors must have equal length";
 	);
     --check size of module actors matches rank of ambient module
     if instance(M,Module) then (
@@ -285,7 +285,7 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	) else ( F = R^1; );
     r := rank F;
     if not all(l0,g->numColumns(g)==r and numRows(g)==r) then (
-	error "module actor matrix has wrong number of rows or columns";
+	error "action: module actor matrix has wrong number of rows or columns";
 	);
     --turn input object into a module M'
     if instance(M,QuotientRing) then (
@@ -361,7 +361,7 @@ character(ActionOnGradedModule,ZZ) := GradedCharacter => (A,d) -> (
 -- return character of components in a range of degrees
 character(ActionOnGradedModule,ZZ,ZZ) := GradedCharacter => (A,lo,hi) -> (
     if not all(gens ring A, v->(degree v)=={1}) then (
-	error "expected a ZZ-graded polynomial ring";
+	error "character: expected a ZZ-graded polynomial ring";
     	);
     new GradedCharacter from for d from lo to hi list (
 	({d}, (character(A,d))#{d})
