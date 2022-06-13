@@ -75,10 +75,13 @@ action = method(Options=>{Sub=>true})
 -- 3) a list of actors on the i-th module of the resolution
 -- 4) homological index i
 action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
-    --check C is a homogeneous min free res over a poly ring
+    --check C is a homogeneous min free res over a poly ring over a field
     R := ring C;
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
+	);
+    if not isField coefficientRing R then (
+	error "action: expected coefficients in a field";
 	);
     if not all(length C,i -> isFreeModule C_(i+min(C))) then (
 	error "action: expected a complex of free modules";
@@ -242,7 +245,7 @@ action(PolynomialRing,List,List) :=
 action(QuotientRing,List,List) :=
 action(Ideal,List,List) :=
 action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
-    -- check M is a graded over a poly ring
+    -- check M is graded over a poly ring over a field
     -- the way to get the ring depends on the class of M
     if instance(M,Ring) then (
 	R := ambient M;
@@ -251,6 +254,9 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	);
     if not isPolynomialRing R then (
 	error "action: expected a module/ideal/quotient over a polynomial ring";
+	);
+    if not isField coefficientRing R then (
+	error "action: expected coefficients in a field";
 	);
     if not isHomogeneous M then (
 	error "action: module/ideal/quotient is not graded";
