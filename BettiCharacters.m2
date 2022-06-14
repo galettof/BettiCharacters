@@ -430,10 +430,17 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
 character(ActionOnGradedModule,List) := Character => (A,d) -> (
+    -- grab action info to construct character
+    K := coefficientRing ring A;
+    D := degreesRing ring A;        
     -- function for character of A in degree d
     f := A -> (
+	H := ((0,d), apply(actors(A,d), u -> promote(trace u,ring A)));
 	new Character from {
-	    ((0,d), apply(actors(A,d), u -> promote(trace u,ring A)))
+	    cache => new CacheTable,
+	    (symbol coefficientRing) => K,
+	    (symbol degreesRing) => D,
+	    (symbol characters) => H,
 	    }
 	);
     -- make cache function from f and run it on A
@@ -450,9 +457,7 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
     if not all(gens ring A, v->(degree v)=={1}) then (
 	error "character: expected a ZZ-graded polynomial ring";
     	);
-    new Character from for d from lo to hi list (
-	((0,{d}), (character(A,d))#(0,{d}))
-	)
+    directSum for d from lo to hi list character(A,d)
     )
 
 ----------------------------------------------------------------------
