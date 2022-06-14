@@ -212,6 +212,7 @@ character(Ring,PolynomialRing,HashTable) := Character => (K,D,H) -> (
 	cache => new CacheTable,
 	(symbol coefficientRing) => K,
 	(symbol degreesRing) => D,
+	-- raw character
 	(symbol characters) => H,
 	}
     )
@@ -219,17 +220,28 @@ character(Ring,PolynomialRing,HashTable) := Character => (K,D,H) -> (
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
-    	-- function for character of A in hom degree i
-	f := A -> (
-    	    degs := hashTable apply(unique degrees (target A)_i, d ->
-	    	(d,positions(degrees (target A)_i,i->i==d))
-	    	);
-    	    new Character from applyPairs(degs, (deg,indx) ->
-	    	((i,deg), apply(actors(A,i), g -> trace g_indx^indx))
-	    	)
+    -- grab action info to construct character
+    K := coefficientRing ring A;
+    D := degreesRing ring A;        
+    -- function for character of A in hom degree i
+    f := A -> (
+	-- separate degrees of i-th free module
+	degs := hashTable apply(unique degrees (target A)_i, d ->
+	    (d,positions(degrees (target A)_i,i->i==d))
 	    );
-	-- make cache function from f and run it on A
-	((cacheValue (symbol character,i)) f) A
+	-- create raw character from actors
+	H := applyPairs(degs,
+	    (d,indx) -> ((i,d),apply(actors(A,i), g -> trace g_indx^indx))
+	    );
+	new Character from {
+	    cache => new CacheTable,
+	    (symbol coefficientRing) => K,
+	    (symbol degreesRing) => D,
+	    (symbol characters) => H,
+	    }
+	);
+    -- make cache function from f and run it on A
+    ((cacheValue (symbol character,i)) f) A
     )
 
 -- return characters of all free modules in a resolution
