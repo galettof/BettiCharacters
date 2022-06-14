@@ -407,24 +407,6 @@ traceByDegrees = (M,l) -> (
 	)
 )
 
--- given an R-module M pass:
--- b: a 1xN matrix with a basis of M in a given degree
--- r: the relations defining M
--- l: the actors on the ring
--- l0: the actors on the generators of the ambient module of M
--- this returns a list of actors on M in degree d
--- matrices over the ambient ring of M
--*actionOnComponent = (b,r,l,l0) -> (
-    apply(l,l0, (g,g0) -> (
-    	    --g0*b acts on the basis of the ambient module
-	    --sub(-,g) acts on the polynomial coefficients
-	    --result must be reduced against module relations
-	    --then factored by original basis to get action matrix
-	    (sub(g0*b,g) % r) // b
-	    )
-	)
-    )*-
-
 ----------------------------------------------------------------------
 -- Documentation
 ----------------------------------------------------------------------
