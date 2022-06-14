@@ -213,11 +213,16 @@ character = method()
 
 -- return the character of one free module of a resolution
 -- in a given homological degree
--- actual computation is handled by unexported function
--- traceByDegrees, which further splits module by degrees
 character(ActionOnComplex,ZZ) := GradedCharacter => (A,i) -> (
     	-- function for character of A in hom degree i
-	f := A -> traceByDegrees((stage A)_i,actors(A,i));
+	f := A -> (
+    	    degs := hashTable apply(unique degrees (stage A)_i, d ->
+	    	(d,positions(degrees (stage A)_i,i->i==d))
+	    	);
+    	    new GradedCharacter from applyValues(degs, indx ->
+	    	new Character from apply(actors(A,i), g -> trace g_indx^indx)
+	    	)
+	    );
 	-- make cache function from f and run it on A
 	((cacheValue (symbol character,i)) f) A
     )
@@ -389,22 +394,6 @@ character(ActionOnGradedModule,ZZ,ZZ) := GradedCharacter => (A,lo,hi) -> (
 	({d}, (character(A,d))#{d})
 	)
     )
-
-----------------------------------------------------------------------
--- Unexported functions
-----------------------------------------------------------------------
-
--- given a graded module M,
--- and a list l of invertible matrices acting on M
--- return the graded character of the list of matrices
-traceByDegrees = (M,l) -> (
-    degs := hashTable apply(unique degrees M, d ->
-	(d,positions(degrees M,i->i==d))
-	);
-    new GradedCharacter from applyValues(degs, indx ->
-	new Character from apply(l, g -> trace g_indx^indx)
-	)
-)
 
 ----------------------------------------------------------------------
 -- Documentation
