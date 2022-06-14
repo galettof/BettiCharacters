@@ -129,7 +129,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	    (symbol actors,i) => apply(l0,g->map(C_i,C_i,g))
 	    },
 	(symbol ring) => R,
-	(symbol stage) => C,
+	(symbol target) => C,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
@@ -178,7 +178,7 @@ actors(Action) := List => A -> A.actors
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     -- homological degrees where action is already cached
     places := apply(keys A.cache, k -> k#1);
-    C := stage A;
+    C := target A;
     if zero(C_i) then return toList(numActors(A):map(C_i));
     if i > max places then (
     	-- function for actors of A in hom degree i
@@ -217,8 +217,8 @@ character = method()
 character(ActionOnComplex,ZZ) := GradedCharacter => (A,i) -> (
     	-- function for character of A in hom degree i
 	f := A -> (
-    	    degs := hashTable apply(unique degrees (stage A)_i, d ->
-	    	(d,positions(degrees (stage A)_i,i->i==d))
+    	    degs := hashTable apply(unique degrees (target A)_i, d ->
+	    	(d,positions(degrees (target A)_i,i->i==d))
 	    	);
     	    new GradedCharacter from applyValues(degs, indx ->
 	    	new Character from apply(actors(A,i), g -> trace g_indx^indx)
@@ -231,7 +231,7 @@ character(ActionOnComplex,ZZ) := GradedCharacter => (A,i) -> (
 -- return characters of all free modules in a resolution
 -- by repeatedly using previous function
 character ActionOnComplex := HashTable => A -> (
-    C := stage A;
+    C := target A;
     new HashTable from for i from min(C) to min(C)+length(C) list
 	(i, character(A,i))
     )
@@ -240,9 +240,12 @@ character ActionOnComplex := HashTable => A -> (
 -- Overloaded Methods
 ----------------------------------------------------------------------
 
+-- get object acted upon
+target(Action) := A -> A.target
+
 -- printing for Action type
 net Action := A -> (
-    (net class stage A)|" with "|(net numActors A)|" actors"
+    (net class target A)|" with "|(net numActors A)|" actors"
     )
 
 -- get polynomial ring acted upon
@@ -321,7 +324,7 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
     new ActionOnGradedModule from {
 	cache => new CacheTable,
 	(symbol ring) => R,
-	(symbol stage) => M,
+	(symbol target) => M,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
@@ -721,7 +724,7 @@ Node
 	(net,Action)
 	(ring,Action)
 	ringActors
-	stage
+	(target,Action)
 	    
 Node
     Key
@@ -1540,12 +1543,11 @@ Node
 
 Node
     Key
-    	stage
-    	(stage,Action)
+    	(target,Action)
     Headline
     	get object acted upon
     Usage
-    	stage(A)
+    	target(A)
     Inputs
     	A:Action
     Description
