@@ -435,7 +435,9 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     D := degreesRing ring A;        
     -- function for character of A in degree d
     f := A -> (
-	H := ((0,d), apply(actors(A,d), u -> promote(trace u,ring A)));
+	H := new HashTable from {
+	    (0,d) => apply(actors(A,d), u -> lift(trace u,coefficientRing ring A))
+	    };
 	new Character from {
 	    cache => new CacheTable,
 	    (symbol coefficientRing) => K,
