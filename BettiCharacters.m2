@@ -349,7 +349,14 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
     -- how to get this depends on the class of M
     b := ambient basis(d,M);
     -- function for actors of A in degree d
-    f:=A->actionOnComponent(b,A.relations,ringActors A,actors A);
+    f := A -> apply(ringActors A,actors A, (g,g0) -> (
+    	    --g0*b acts on the basis of the ambient module
+	    --sub(-,g) acts on the polynomial coefficients
+	    --result must be reduced against module relations
+	    --then factored by original basis to get action matrix
+	    (sub(g0*b,g) % A.relations) // b
+	    )
+	);
     -- make cache function from f and run it on A
     ((cacheValue (symbol actors,d)) f) A
     )
@@ -407,7 +414,7 @@ traceByDegrees = (M,l) -> (
 -- l0: the actors on the generators of the ambient module of M
 -- this returns a list of actors on M in degree d
 -- matrices over the ambient ring of M
-actionOnComponent = (b,r,l,l0) -> (
+-*actionOnComponent = (b,r,l,l0) -> (
     apply(l,l0, (g,g0) -> (
     	    --g0*b acts on the basis of the ambient module
 	    --sub(-,g) acts on the polynomial coefficients
@@ -416,7 +423,7 @@ actionOnComponent = (b,r,l,l0) -> (
 	    (sub(g0*b,g) % r) // b
 	    )
 	)
-    )
+    )*-
 
 ----------------------------------------------------------------------
 -- Documentation
