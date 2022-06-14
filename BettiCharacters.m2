@@ -268,18 +268,34 @@ net Action := A -> (
 -- get polynomial ring acted upon
 ring Action := PolynomialRing => A -> A.ring
 
+-- get coefficient ring of character
+coefficientRing Character := Character => c -> c.coefficientRing
+
+-- get degrees ring of character
+degreesRing Character := Character => c -> c.degreesRing
+
 -- direct sum of characters
 -- modeled after code in Macaulay2/Core/matrix.m2
 Character ++ Character := Character => directSum
-directSum Character := M -> Character.directSum (1 : M)
+directSum Character := c -> Character.directSum (1 : c)
 Character.directSum = args -> (
-    --R := ring args#0;
-    --if not all(args, f -> ring f === R) 
-    --then error "expected modules all over the same ring";
+    K := coefficientRing args#0;
+    if not all(args, c -> coefficientRing c === K) 
+    then error "directSum: expected characters all over the same coefficient ring";
+    D := degreesRing args#0;
+    if not all(args, c -> degreesRing c === D) 
+    then error "directSum: expected characters all over the same degrees ring";
     c := fold( (c1,c2) -> merge(c1,c2,plus) , args);
-    --c.cache.components = toList args;
-    --c.cache.formation = FunctionApplication (directSum, args);
-    c
+    C := new Character from {
+	cache => new CacheTable,
+	(symbol coefficientRing) => K,
+	(symbol degreesRing) => D,
+	-- add raw characters
+	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus) , args),
+	};
+    C.cache.components = toList args;
+    C.cache.formation = FunctionApplication (directSum, args);
+    C
     )
 
 
