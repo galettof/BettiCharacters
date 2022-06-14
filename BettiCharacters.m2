@@ -38,7 +38,6 @@ export {
     "actors",
     "character",
     "Character",
-    "GradedCharacter",
     "inverseRingActors",
     "numActors",
     "ringActors",
@@ -53,8 +52,7 @@ export {
 Action = new Type of HashTable
 ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
-Character = new Type of VisibleList
-GradedCharacter = new Type of HashTable
+Character = new Type of HashTable
 
 ----------------------------------------------------------------------
 -- New Methods-
@@ -209,14 +207,14 @@ character = method()
 
 -- return the character of one free module of a resolution
 -- in a given homological degree
-character(ActionOnComplex,ZZ) := GradedCharacter => (A,i) -> (
+character(ActionOnComplex,ZZ) := Character => (A,i) -> (
     	-- function for character of A in hom degree i
 	f := A -> (
     	    degs := hashTable apply(unique degrees (target A)_i, d ->
 	    	(d,positions(degrees (target A)_i,i->i==d))
 	    	);
-    	    new GradedCharacter from applyValues(degs, indx ->
-	    	new Character from apply(actors(A,i), g -> trace g_indx^indx)
+    	    new Character from applyPairs(degs, (deg,indx) ->
+	    	((i,deg), apply(actors(A,i), g -> trace g_indx^indx))
 	    	)
 	    );
 	-- make cache function from f and run it on A
@@ -227,8 +225,7 @@ character(ActionOnComplex,ZZ) := GradedCharacter => (A,i) -> (
 -- by repeatedly using previous function
 character ActionOnComplex := HashTable => A -> (
     C := target A;
-    new HashTable from for i from min(C) to min(C)+length(C) list
-	(i, character(A,i))
+    directSum for i from min(C) to min(C)+length(C) list character(A,i)
     )
 
 ----------------------------------------------------------------------
@@ -245,6 +242,21 @@ net Action := A -> (
 
 -- get polynomial ring acted upon
 ring Action := PolynomialRing => A -> A.ring
+
+-- direct sum of characters
+-- modeled after code in Macaulay2/Core/matrix.m2
+Character ++ Character := Character => directSum
+directSum Character := M -> Character.directSum (1 : M)
+Character.directSum = args -> (
+    --R := ring args#0;
+    --if not all(args, f -> ring f === R) 
+    --then error "expected modules all over the same ring";
+    c := fold( (c1,c2) -> merge(c1,c2,plus) , args);
+    --c.cache.components = toList args;
+    --c.cache.formation = FunctionApplication (directSum, args);
+    c
+    )
+
 
 ----------------------------------------------------------------------
 -- New methods for ActionOnGradedModule
@@ -368,11 +380,11 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
-character(ActionOnGradedModule,List) := GradedCharacter => (A,d) -> (
+character(ActionOnGradedModule,List) := Character => (A,d) -> (
     -- function for character of A in degree d
     f := A -> (
-	new GradedCharacter from {
-	    (d,	new Character from apply(actors(A,d), u -> promote(trace u,ring A)))
+	new Character from {
+	    ((0,d), apply(actors(A,d), u -> promote(trace u,ring A)))
 	    }
 	);
     -- make cache function from f and run it on A
@@ -380,17 +392,17 @@ character(ActionOnGradedModule,List) := GradedCharacter => (A,d) -> (
     )
 
 -- return character of component of given degree
-character(ActionOnGradedModule,ZZ) := GradedCharacter => (A,d) -> (
+character(ActionOnGradedModule,ZZ) := Character => (A,d) -> (
     character(A,{d})
     )
 
 -- return character of components in a range of degrees
-character(ActionOnGradedModule,ZZ,ZZ) := GradedCharacter => (A,lo,hi) -> (
+character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
     if not all(gens ring A, v->(degree v)=={1}) then (
 	error "character: expected a ZZ-graded polynomial ring";
     	);
-    new GradedCharacter from for d from lo to hi list (
-	({d}, (character(A,d))#{d})
+    new Character from for d from lo to hi list (
+	((0,{d}), (character(A,d))#(0,{d}))
 	)
     )
 
