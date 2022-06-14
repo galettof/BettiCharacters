@@ -175,8 +175,6 @@ actors(Action) := List => A -> A.actors
 -- returns actors on resolution in a given homological degree
 -- if homological degree is not the one passed by user,
 -- the actors are computed and stored
--- actors computation is handled by two unexported functions
--- see actionOnDomain and actionOnCodomain
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     if i == A.places then return A.actors;
     C := stage A;
@@ -389,23 +387,6 @@ character(ActionOnGradedModule,ZZ,ZZ) := GradedCharacter => (A,lo,hi) -> (
 ----------------------------------------------------------------------
 -- Unexported functions
 ----------------------------------------------------------------------
-
--- given a map of free modules F <-- F',
--- the inverse group action on the ring (as substitution)
--- and the group action on F, computes the group action on F'
--*actionOnDomain = (M,lInv,l0) -> (
-    apply(lInv,l0, (gInv,g0) -> sub(M,gInv)\\(g0*M) )
-    )*-
-
--- given a map of free modules F <-- F',
--- the inverse group action on the ring (as substitution)
--- and the group action on F', computes the group action on F
--- WHY do I have to transpose?
--*actionOnCodomain = (M,lInv,l0) -> (
-    apply(lInv,l0, (gInv,g0) ->
-	transpose(transpose(M)\\transpose(sub(M,gInv)*g0))
-	)
-    )*-
 
 -- given a graded module M,
 -- and a list l of invertible matrices acting on M
