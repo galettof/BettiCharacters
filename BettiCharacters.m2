@@ -36,7 +36,6 @@ export {
     "ActionOnComplex",
     "ActionOnGradedModule",
     "actors",
-    "places",
     "character",
     "Character",
     "GradedCharacter",
@@ -135,7 +134,6 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
 	(symbol actors) => apply(l0,g->map(C_i,C_i,g)),
-	--(symbol places) => i,
 	}
     )
 
@@ -179,12 +177,10 @@ actors(Action) := List => A -> A.actors
 -- the actors are computed and stored
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     -- homological degrees where action is already cached
-    place := apply(keys A.cache, k -> k#1);
-    --if i == A.places then return A.actors;
+    places := apply(keys A.cache, k -> k#1);
     C := stage A;
     if zero(C_i) then return toList(numActors(A):map(C_i));
-    --if i > A.places then (
-    if i > max place then (
+    if i > max places then (
     	-- function for actors of A in hom degree i
     	f := A -> apply(inverseRingActors A,actors(A,i-1),
 	    -- given a map of free modules C.dd_i : F <-- F',
@@ -736,8 +732,6 @@ Node
     	Text
 	    This class is provided by the package
 	    @TO BettiCharacters@.
-    Subnodes
-    	places
 	    
 Node
     Key
@@ -1487,22 +1481,6 @@ Node
 	    Format objects of type @TO Action@ for printing.
 	    See @TO net@ for more information.
 
-
-Node
-    Key
-    	places
-    Headline
-    	starting homological degree
-    Description
-    	Text
-	    This symbol is provided by the package
-	    @TO BettiCharacters@.
-	    
-	    This symbol stores the homological degree where the
-	    user initially defined the action of a finite group
-	    on a free resolution.
-    SeeAlso
-    	(action,ChainComplex,List)
 
 Node
     Key
