@@ -277,7 +277,7 @@ degreesRing Character := Character => c -> c.degreesRing
 -- printing for Character type
 net Character := c -> (
     stack(
-    	"Character over "|(net coefficientRing c)|" graded by "|(net degreesRing c)|"\n",
+    	"Character over "|(net coefficientRing c)|" graded by "|(net degreesRing c)," ",
     	stack (horizontalJoin \ apply(sort pairs c.characters,(k,v) -> (net k, " => ", net v)))
     	)
     )
