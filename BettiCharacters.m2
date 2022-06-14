@@ -42,7 +42,6 @@ export {
     "inverseRingActors",
     "numActors",
     "ringActors",
-    "stage",
     "Sub"
     }
 
@@ -204,10 +203,6 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     	((cacheValue (symbol actors,i)) f) A
 	)
     )
-
--- returns object acted upon
-stage = method()
-stage(Action) := A -> A.stage
 
 -- method for returning characters of various action types
 character = method()
@@ -453,14 +448,14 @@ Node
 	actors
         character
     	:Examples from the literature
-      	"Example 1"
-      	"Example 2"
-      	"Example 3"
+      	"BettiCharacters Example 1"
+      	"BettiCharacters Example 2"
+      	"BettiCharacters Example 3"
 
 	    
 Node
    Key
-       "Example 1"
+       "BettiCharacters Example 1"
    Headline
        Specht ideals / subspace arrangements
    Description
@@ -543,7 +538,7 @@ Node
 
 Node
    Key
-       "Example 2"
+       "BettiCharacters Example 2"
    Headline
        Symbolic powers of star configurations
    Description
@@ -624,7 +619,7 @@ Node
 
 Node
    Key
-       "Example 3"
+       "BettiCharacters Example 3"
    Headline
        Klein configuration of points
    Description
