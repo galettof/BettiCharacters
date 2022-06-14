@@ -126,14 +126,16 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	);
     --store everything into a hash table
     new ActionOnComplex from {
-	cache => new CacheTable,
+	cache => new CacheTable from {
+	    (symbol actors,i) => apply(l0,g->map(C_i,C_i,g))
+	    },
 	(symbol ring) => R,
 	(symbol stage) => C,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
 	(symbol actors) => apply(l0,g->map(C_i,C_i,g)),
-	(symbol places) => i,
+	--(symbol places) => i,
 	}
     )
 
@@ -176,10 +178,13 @@ actors(Action) := List => A -> A.actors
 -- if homological degree is not the one passed by user,
 -- the actors are computed and stored
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
-    if i == A.places then return A.actors;
+    -- homological degrees where action is already cached
+    place := apply(keys A.cache, k -> k#1);
+    --if i == A.places then return A.actors;
     C := stage A;
     if zero(C_i) then return toList(numActors(A):map(C_i));
-    if i > A.places then (
+    --if i > A.places then (
+    if i > max place then (
     	-- function for actors of A in hom degree i
     	f := A -> apply(inverseRingActors A,actors(A,i-1),
 	    -- given a map of free modules C.dd_i : F <-- F',
