@@ -183,12 +183,24 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     if zero(C_i) then return toList(numActors(A):map(C_i));
     if i > A.places then (
     	-- function for actors of A in hom degree i
-    	f:=A->actionOnDomain(C.dd_i,inverseRingActors A,actors(A,i-1));
+    	f := A -> apply(inverseRingActors A,actors(A,i-1),
+	    -- given a map of free modules C.dd_i : F <-- F',
+	    -- the inverse group action on the ring (as substitution)
+	    -- and the group action on F, computes the group action on F'
+	    (gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i)
+	    );
     	-- make cache function from f and run it on A
     	((cacheValue (symbol actors,i)) f) A
     	) else (
     	-- function for actors of A in hom degree i
-    	f=A->actionOnCodomain(C.dd_(i+1),inverseRingActors A,actors(A,i+1));
+    	f = A -> apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
+	    -- given a map of free modules C.dd_i : F <-- F',
+	    -- the inverse group action on the ring (as substitution)
+	    -- and the group action on F', computes the group action on F
+	    -- it is necessary to transpose because we need a left factorization
+	    -- but M2's command // always produces a right factorization
+	    transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0))
+	    );
     	-- make cache function from f and run it on A
     	((cacheValue (symbol actors,i)) f) A
 	)
@@ -381,19 +393,19 @@ character(ActionOnGradedModule,ZZ,ZZ) := GradedCharacter => (A,lo,hi) -> (
 -- given a map of free modules F <-- F',
 -- the inverse group action on the ring (as substitution)
 -- and the group action on F, computes the group action on F'
-actionOnDomain = (M,lInv,l0) -> (
+-*actionOnDomain = (M,lInv,l0) -> (
     apply(lInv,l0, (gInv,g0) -> sub(M,gInv)\\(g0*M) )
-    )
+    )*-
 
 -- given a map of free modules F <-- F',
 -- the inverse group action on the ring (as substitution)
 -- and the group action on F', computes the group action on F
 -- WHY do I have to transpose?
-actionOnCodomain = (M,lInv,l0) -> (
+-*actionOnCodomain = (M,lInv,l0) -> (
     apply(lInv,l0, (gInv,g0) ->
 	transpose(transpose(M)\\transpose(sub(M,gInv)*g0))
 	)
-    )
+    )*-
 
 -- given a graded module M,
 -- and a list l of invertible matrices acting on M
