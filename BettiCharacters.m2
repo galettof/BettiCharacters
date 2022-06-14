@@ -231,7 +231,9 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	    );
 	-- create raw character from actors
 	H := applyPairs(degs,
-	    (d,indx) -> ((i,d),apply(actors(A,i), g -> trace g_indx^indx))
+	    (d,indx) -> ((i,d),apply(actors(A,i),
+		    g -> lift(trace g_indx^indx,K))
+		)
 	    );
 	new Character from {
 	    cache => new CacheTable,
