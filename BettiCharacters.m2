@@ -342,7 +342,6 @@ action(Module,List) := ActionOnGradedModule => op -> (M,l) -> (
 
 -- returns actors on component of given multidegree
 -- the actors are computed and stored
--- computation is handled by unexported function actionOnComponent
 actors(ActionOnGradedModule,List) := List => (A,d) -> (
     M := A.module;
     -- get basis in degree d as map of free modules
