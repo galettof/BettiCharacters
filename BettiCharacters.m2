@@ -205,6 +205,17 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 -- method for returning characters of various action types
 character = method()
 
+-- function to construct characters by hand
+character(Ring,PolynomialRing,HashTable) := Character => (K,D,H) -> (
+    --add consistency checks
+    new Character from {
+	cache => new CacheTable,
+	(symbol coefficientRing) => K,
+	(symbol degreesRing) => D,
+	(symbol characters) => H,
+	}
+    )
+
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
