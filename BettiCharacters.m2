@@ -274,6 +274,14 @@ coefficientRing Character := Character => c -> c.coefficientRing
 -- get degrees ring of character
 degreesRing Character := Character => c -> c.degreesRing
 
+-- printing for Character type
+net Character := c -> (
+    stack(
+    	"Character over "|(net coefficientRing c)|" graded by "|(net degreesRing c)|"\n",
+    	stack (horizontalJoin \ apply(sort pairs c.characters,(k,v) -> (net k, " => ", net v)))
+    	)
+    )
+
 -- direct sum of characters
 -- modeled after code in Macaulay2/Core/matrix.m2
 Character ++ Character := Character => directSum
