@@ -285,16 +285,16 @@ Character.directSum = args -> (
     D := degreesRing args#0;
     if not all(args, c -> degreesRing c === D) 
     then error "directSum: expected characters all over the same degrees ring";
-    c := fold( (c1,c2) -> merge(c1,c2,plus) , args);
     C := new Character from {
 	cache => new CacheTable,
 	(symbol coefficientRing) => K,
 	(symbol degreesRing) => D,
 	-- add raw characters
-	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus) , args),
+	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
+	    apply(args, c -> c.characters) ),
 	};
-    C.cache.components = toList args;
-    C.cache.formation = FunctionApplication (directSum, args);
+    --C.cache.components = toList args;
+    --C.cache.formation = FunctionApplication (directSum, args);
     C
     )
 
