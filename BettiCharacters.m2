@@ -18,7 +18,7 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "1.0",
+     Version => "1.0.1",
      Date => "June 30, 2021",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
