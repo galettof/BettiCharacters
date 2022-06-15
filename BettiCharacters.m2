@@ -1688,7 +1688,7 @@ a = character(R,3,hashTable {
     ((0,{0}), {1_R,1_R,1_R}),
     ((1,{2}), {0_R,1_R,3_R}),
     ((2,{3}), {-1_R,0_R,2_R})
-    }
+    })
 assert((character A) === a)
 B = action(R,S3)
 b = character(R,3,hashTable {
@@ -1696,15 +1696,13 @@ b = character(R,3,hashTable {
     ((0,{1}), {0_R,1_R,3_R}),
     ((0,{2}), {0_R,2_R,6_R}),
     ((0,{3}), {1_R,2_R,10_R})
-    }
+    })
 assert(character(B,0,3) === b)
 C = action(I,S3)
 c = character(R,3,hashTable {
-    ((0,{0}), {0_R,0_R,0_R}),
-    ((0,{1}), {0_R,0_R,0_R}),
     ((0,{2}), {0_R,1_R,3_R}),
     ((0,{3}), {1_R,1_R,7_R})
-    }
+    })
 assert(character(C,0,3) === c)
 D = action(R/I,S3)
 d = character(R,3,hashTable {
@@ -1712,7 +1710,7 @@ d = character(R,3,hashTable {
     ((0,{1}), {0_R,1_R,3_R}),
     ((0,{2}), {0_R,1_R,3_R}),
     ((0,{3}), {0_R,1_R,3_R})
-    }
+    })
 assert(character(D,0,3) === d)
 assert(b === c++d)
 ///
@@ -1739,37 +1737,36 @@ S5 = for p in partitions(5) list (
     matrix { flatten g }
     )
 A = action(RI,S5)
-a = new HashTable from {
-    (0,new GradedCharacter from { ({0}, new Character from {1_R,1_R,1_R,1_R,1_R,1_R,1_R}) }),
-    (1,new GradedCharacter from { ({2}, new Character from {0_R,-1_R,1_R,-1_R,1_R,1_R,5_R}) }),
-    (2,new GradedCharacter from { ({3}, new Character from {0_R,1_R,-1_R,-1_R,1_R,-1_R,5_R}) }),
-    (3,new GradedCharacter from { ({5}, new Character from {1_R,-1_R,-1_R,1_R,1_R,-1_R,1_R}) })
-    }
+a = character(R,7,hashTable {
+    ((0,{0}), {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
+    ((1,{2}), {0_R,-1_R,1_R,-1_R,1_R,1_R,5_R}),
+    ((2,{3}), {0_R,1_R,-1_R,-1_R,1_R,-1_R,5_R}),
+    ((3,{5}), {1_R,-1_R,-1_R,1_R,1_R,-1_R,1_R})
+    })
 assert((character A) === a)
 B = action(R,S5)
-b = new GradedCharacter from {
-    ({0},new Character from {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
-    ({1},new Character from {0_R,1_R,0_R,2_R,1_R,3_R,5_R}),
-    ({2},new Character from {0_R,1_R,1_R,3_R,3_R,7_R,15_R}),
-    ({3},new Character from {0_R,1_R,1_R,5_R,3_R,13_R,35_R})
-    }
+b = character(R,7,hashTable {
+    ((0,{0}), {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
+    ((0,{1}), {0_R,1_R,0_R,2_R,1_R,3_R,5_R}),
+    ((0,{2}), {0_R,1_R,1_R,3_R,3_R,7_R,15_R}),
+    ((0,{3}), {0_R,1_R,1_R,5_R,3_R,13_R,35_R})
+    })
 assert(character(B,0,3) === b)
 C = action(I,S5)
-c = new GradedCharacter from {
-    ({0},new Character from {0_R,0_R,0_R,0_R,0_R,0_R,0_R}),
-    ({1},new Character from {0_R,0_R,0_R,0_R,0_R,0_R,0_R}),
-    ({2},new Character from {0_R,-1_R,1_R,-1_R,1_R,1_R,5_R}),
-    ({3},new Character from {0_R,-2_R,1_R,-1_R,0_R,4_R,20_R})
-    }
+c = character(R,7,hashTable {
+    ((0,{2}), {0_R,-1_R,1_R,-1_R,1_R,1_R,5_R}),
+    ((0,{3}), {0_R,-2_R,1_R,-1_R,0_R,4_R,20_R})
+    })
 assert(character(C,0,3) === c)
 D = action(R/I,S5)
-d = new GradedCharacter from {
-    ({0},new Character from {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
-    ({1},new Character from {0_R,1_R,0_R,2_R,1_R,3_R,5_R}),
-    ({2},new Character from {0_R,2_R,0_R,4_R,2_R,6_R,10_R}),
-    ({3},new Character from {0_R,3_R,0_R,6_R,3_R,9_R,15_R})
-    }
+d = character(R,7,hashTable {
+    ((0,{0}), {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
+    ((0,{1}), {0_R,1_R,0_R,2_R,1_R,3_R,5_R}),
+    ((0,{2}), {0_R,2_R,0_R,4_R,2_R,6_R,10_R}),
+    ((0,{3}), {0_R,3_R,0_R,6_R,3_R,9_R,15_R})
+    })
 assert(character(D,0,3) === d)
+assert(b === c++d)
 ///
 
 -- Test 3 (non symmetric group, tests actors)
@@ -1791,14 +1788,15 @@ a = {
     map(R^{4:-3},R^{4:-3},{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}})
     }
 assert(actors(A,3) === a)
-ca = new GradedCharacter from {({3},new Character from apply(a,trace))}
+ca = character(R,4, hashTable {((0,{3}), apply(a,trace))})
 assert(character(A,3) === ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
 Rm=chainComplex(d1,d2)
 B = action(Rm,D5)
 assert(actors(B,1) === a)
-assert(character(B,1) === ca)
+cb1 = character(R,4, hashTable {((1,{3}), apply(a,trace))})
+assert(character(B,1) === cb1)
 b = {
     map(R^{3:-4},R^{3:-4},{{1,0,0},{0,1,0},{0,0,1}}),
     map(R^{3:-4},R^{3:-4},{{w^2,0,0},{0,1,0},{0,0,w^3}}),
@@ -1806,8 +1804,8 @@ b = {
     map(R^{3:-4},R^{3:-4},{{0,0,-1},{0,-1,0},{-1,0,0}})
     }
 assert(actors(B,2) === b)
-cb = new GradedCharacter from {({4},new Character from apply(b,trace))}
-assert(character(B,2) === cb)
+cb2 = character(R,4, hashTable {((2,{4}), apply(b,trace))})
+assert(character(B,2) === cb2)
 ///
 
 end
