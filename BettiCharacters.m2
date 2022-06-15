@@ -206,39 +206,46 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 character = method()
 
 -- construct a finite dimensional character
--- concentrated in single homological and internal degrees
 -- INPUT:
 -- 1) polynomial ring (dictates coefficients and degrees)
--- 2) homological degree
--- 3) internal degree
--- 4) list of characters values
-character(PolynomialRing,ZZ,List,List) := Character => (R,h,d,c) -> (
-    if not isPolynomialRing R then (
-	error "character: expected first argument to be a polynomial ring";
-	);
-    -- coefficient ring must be a field
+-- 2) hash table for raw character: (homdeg,deg) => character
+character(PolynomialRing,HashTable) := Character => (R,H) -> (
+    -- check first argument is a polynomial ring over a field
     K := coefficientRing R;
-    if not isField K then (
-	error "character: expected coefficients in a field";
-	);
-    -- check degree vector is allowed
-    if any(apply(d,class), i -> i=!=ZZ) then (
-	error "character: expected an integer degree vector";
+    if not isPolynomialRing R or not isField K then (
+	error "character: expected polynomial ring over a field";
 	);
     dl := degreeLength R;
-    if not length d == dl then (
-	error "character: expector degree vector of length " | toString(dl);
-	);
-    -- check character vector is allowed
-    if any(apply(c,class), i -> i=!=K) then (
-	error "character: expceted character values in coefficient ring";
+    -- if hash table is empty no checks needed    
+    if H === hashTable {} then (
+	cl := 0;
+	)
+    else (
+    	-- check keys are in the right format
+    	k := keys H;
+    	if any(k, i -> class i =!= Sequence or #i != 2 or
+	    class i#0 =!= ZZ or class i#1 =!= List) then (
+	    error "character: expected keys of the form (ZZ,List)";
+	    );
+    	-- check degree vectors are allowed
+    	degs := apply(k,last);
+    	if (not isTable degs or length degs#0 != dl or
+	    any(flatten degs, i -> class i =!= ZZ)) then (
+	    error "character: expected integer degree vectors of length " | toString(dl);
+	    );
+    	-- check character vector is allowed
+    	v := values H;
+    	cl = length v#0;
+    	if (cl == 0 or not isTable v or any(flatten v, i -> class i =!= K)) then (
+	    error "character: expceted characters in coefficient field and of same nonzero length";
+	    );
 	);
     new Character from {
 	cache => new CacheTable,
 	(symbol coefficientRing) => K,
 	(symbol degreeLength) => dl,
-	-- raw character
-	(symbol characters) => hashTable {(h,d) => c},
+	(symbol numActors) => cl,
+	(symbol characters) => H,
 	}
     )
 
@@ -247,7 +254,6 @@ character(PolynomialRing,ZZ,List,List) := Character => (R,h,d,c) -> (
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
     -- grab action info to construct character
     K := coefficientRing ring A;
-    D := degreesRing ring A;        
     -- function for character of A in hom degree i
     f := A -> (
 	-- separate degrees of i-th free module
@@ -263,7 +269,8 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	new Character from {
 	    cache => new CacheTable,
 	    (symbol coefficientRing) => K,
-	    (symbol degreesRing) => D,
+	    (symbol degreeLength) => degreeLength ring A,
+	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
 	    }
 	);
@@ -297,14 +304,19 @@ ring Action := PolynomialRing => A -> A.ring
 coefficientRing Character := Character => c -> c.coefficientRing
 
 -- get degrees ring of character
-degreesRing Character := Character => c -> c.degreesRing
+degreeLength Character := Character => c -> c.degreeLength
+
+-- get length of characters
+numActors Character := Character => c -> c.numActors
 
 -- printing for Character type
 net Character := c -> (
-    stack(
-    	"Character over "|(net coefficientRing c)|" graded by "|(net degreesRing c)," ",
-    	stack (horizontalJoin \ apply(sort pairs c.characters,(k,v) -> (net k, " => ", net v)))
-    	)
+    if numActors c != 0 then (
+    	bottom := stack(" ",
+    	    stack (horizontalJoin \ apply(sort pairs c.characters,(k,v) -> (net k, " => ", net v)))
+    	    )
+	) else bottom = null;
+    stack("Character over "|(net coefficientRing c), bottom)
     )
 
 -- direct sum of characters
@@ -313,15 +325,19 @@ Character ++ Character := Character => directSum
 directSum Character := c -> Character.directSum (1 : c)
 Character.directSum = args -> (
     K := coefficientRing args#0;
-    if not all(args, c -> coefficientRing c === K) 
+    if not all(args, c -> coefficientRing c === K)
     then error "directSum: expected characters all over the same coefficient ring";
-    D := degreesRing args#0;
-    if not all(args, c -> degreesRing c === D) 
-    then error "directSum: expected characters all over the same degrees ring";
+    dl := degreeLength args#0;
+    if not all(args, c -> degreeLength c === dl)
+    then error "directSum: expected character degrees all of the same length";
+    cl := numActors args#0;
+    if not all(args, c -> numActors c === cl)
+    then error "directSum: expected character all of the same length";
     C := new Character from {
 	cache => new CacheTable,
 	(symbol coefficientRing) => K,
-	(symbol degreesRing) => D,
+	(symbol degreeLength) => dl,
+	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
 	    apply(args, c -> c.characters) ),
