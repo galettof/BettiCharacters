@@ -437,6 +437,7 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
     -- get basis in degree d as map of free modules
     -- how to get this depends on the class of M
     b := ambient basis(d,M);
+    if zero b then return toList(numActors(A):map(source b));
     -- function for actors of A in degree d
     f := A -> apply(ringActors A,actors A, (g,g0) -> (
     	    --g0*b acts on the basis of the ambient module
@@ -455,24 +456,22 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
 character(ActionOnGradedModule,List) := Character => (A,d) -> (
-    -- grab action info to construct character
-    K := coefficientRing ring A;
-    D := degreesRing ring A;        
+    acts := actors(A,d);
+    if all(acts,zero) then (
+	return new Character from {
+	    cache => new CacheTable,
+	    (symbol ring) => ring A,
+	    (symbol numActors) => numActors A,
+	    (symbol characters) => hashTable {},
+	    };
+	);
     -- function for character of A in degree d
     f := A -> (
-	acts := actors(A,d);
-	if all(acts,zero) then (
-	    H := new HashTable from {(0,d) => toList( #acts : 0_K )};
-	    ) else (
-	    H = new HashTable from {
-	    	(0,d) => apply(acts, u -> lift(trace u,coefficientRing ring A))
-	    	};
-	    );
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol coefficientRing) => K,
-	    (symbol degreesRing) => D,
-	    (symbol characters) => H,
+	    (symbol ring) => ring A,
+	    (symbol numActors) => numActors A,
+	    (symbol characters) => hashTable {(0,d) => apply(acts, trace)},
 	    }
 	);
     -- make cache function from f and run it on A
