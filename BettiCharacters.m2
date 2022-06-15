@@ -849,21 +849,6 @@ Node
 	    This class is provided by the package
 	    @TO BettiCharacters@.
 	    
-	    Characters appear as values in @TO GradedCharacter@s.
-    Subnodes
-    	GradedCharacter
-	    
-Node
-    Key
-    	GradedCharacter
-    Headline
-    	the class of all graded characters of finite group representations
-    Description
-    	Text
-	    This class is provided by the package
-	    @TO BettiCharacters@.
-
-	    
 Node
     Key
     	action
@@ -1374,7 +1359,7 @@ Node
 	i:ZZ
 	    a homological degree
     Outputs
-    	:GradedCharacter
+    	:Character
 	    the @TT "i"@-th Betti character of the resolution
     Description
     	Text
@@ -1466,7 +1451,7 @@ Node
 	d:List
 	    a (multi)degree
     Outputs
-    	:GradedCharacter
+    	:Character
 	    the character of the components of a module in given degrees
     Description
     	Text
@@ -1720,36 +1705,37 @@ I = ideal(x*y,x*z,y*z)
 RI = res I
 S3 = {matrix{{y,z,x}},matrix{{y,x,z}},matrix{{x,y,z}}}
 A = action(RI,S3)
-a = new HashTable from {
-    (0,new GradedCharacter from { ({0}, new Character from {1_R,1_R,1_R}) }),
-    (1,new GradedCharacter from { ({2}, new Character from {0_R,1_R,3_R}) }),
-    (2,new GradedCharacter from { ({3}, new Character from {-1_R,0_R,2_R}) })
+a = character(R,3,hashTable {
+    ((0,{0}), {1_R,1_R,1_R}),
+    ((1,{2}), {0_R,1_R,3_R}),
+    ((2,{3}), {-1_R,0_R,2_R})
     }
 assert((character A) === a)
 B = action(R,S3)
-b = new GradedCharacter from {
-    ({0},new Character from {1_R,1_R,1_R}),
-    ({1},new Character from {0_R,1_R,3_R}),
-    ({2},new Character from {0_R,2_R,6_R}),
-    ({3},new Character from {1_R,2_R,10_R})
+b = character(R,3,hashTable {
+    ((0,{0}), {1_R,1_R,1_R}),
+    ((0,{1}), {0_R,1_R,3_R}),
+    ((0,{2}), {0_R,2_R,6_R}),
+    ((0,{3}), {1_R,2_R,10_R})
     }
 assert(character(B,0,3) === b)
 C = action(I,S3)
-c = new GradedCharacter from {
-    ({0},new Character from {0_R,0_R,0_R}),
-    ({1},new Character from {0_R,0_R,0_R}),
-    ({2},new Character from {0_R,1_R,3_R}),
-    ({3},new Character from {1_R,1_R,7_R})
+c = character(R,3,hashTable {
+    ((0,{0}), {0_R,0_R,0_R}),
+    ((0,{1}), {0_R,0_R,0_R}),
+    ((0,{2}), {0_R,1_R,3_R}),
+    ((0,{3}), {1_R,1_R,7_R})
     }
 assert(character(C,0,3) === c)
 D = action(R/I,S3)
-d = new GradedCharacter from {
-    ({0},new Character from {1_R,1_R,1_R}),
-    ({1},new Character from {0_R,1_R,3_R}),
-    ({2},new Character from {0_R,1_R,3_R}),
-    ({3},new Character from {0_R,1_R,3_R})
+d = character(R,3,hashTable {
+    ((0,{0}), {1_R,1_R,1_R}),
+    ((0,{1}), {0_R,1_R,3_R}),
+    ((0,{2}), {0_R,1_R,3_R}),
+    ((0,{3}), {0_R,1_R,3_R})
     }
 assert(character(D,0,3) === d)
+assert(b === c++d)
 ///
 
 -- Test 1 (non-monomial ideal, symmetric group)
