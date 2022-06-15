@@ -1261,16 +1261,25 @@ Node
 	    This function is provided by the package
 	    @TO BettiCharacters@.
 	    
-	    Use this function to compute the Betti characters
+	    Use this method to compute the Betti characters
 	    of a finite group action on a minimal free resolution
 	    or the characters of a finite group action on the
 	    components of a graded module.
 	    See the specific use cases for more details.
+	    
+	    All characters are bigraded by homological degree and
+	    internal degree (inherited from the complex or module
+		they are computed from). Modules are considered to
+	    be concentrated in homological degree zero.
+	    
+	    Characters may also be constructed by hand using
+	    @TO (character,PolynomialRing,ZZ,HashTable)@.
     Subnodes
     	Character
     	(character,ActionOnComplex)
-    	(character,ActionOnComplex,ZZ)   
+    	(character,ActionOnComplex,ZZ)
      	(character,ActionOnGradedModule,List)
+	(character,PolynomialRing,ZZ,HashTable)
 	    
 Node
     Key
@@ -1469,6 +1478,37 @@ Node
     SeeAlso
     	action
 
+	    
+Node
+    Key
+    	(character,PolynomialRing,ZZ,HashTable)
+    Headline
+    	construct a character
+    Usage
+    	character(R,l,H)
+    Inputs
+    	R:PolynomialRing
+	    over a field
+    	l:ZZ
+	    character length
+    	H:HashTable
+	    raw character data
+    Outputs
+    	:Character
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    To be filled later.
+	Example
+	    R = QQ[x_1..x_4]
+    Caveat
+    	This constructor implements basic consistency checks but
+	it may still be possible to construct objects that are not
+	actually characters (not even virtual).
+    SeeAlso
+    	character
 
 Node
     Key
