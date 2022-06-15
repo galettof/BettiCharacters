@@ -328,11 +328,12 @@ Character.directSum = args -> (
     if not all(args, c -> coefficientRing c === K)
     then error "directSum: expected characters all over the same coefficient ring";
     dl := degreeLength args#0;
-    if not all(args, c -> degreeLength c === dl)
+    if not all(args, c -> degreeLength c == dl)
     then error "directSum: expected character degrees all of the same length";
+    
     cl := numActors args#0;
-    if not all(args, c -> numActors c === cl)
-    then error "directSum: expected character all of the same length";
+    if not all(args, c -> numActors c == cl)
+    then error "directSum: expected characters all of the same length";
     C := new Character from {
 	cache => new CacheTable,
 	(symbol coefficientRing) => K,
