@@ -1500,12 +1500,43 @@ Node
 	    This function is provided by the package
 	    @TO BettiCharacters@.
 	    
-	    To be filled later.
+	    The @TO character@ method is mainly designed to compute
+	    characters of finite group actions defined via @TO action@.
+	    The user who wishes to define characters by hand
+	    may do so with this particular application of the method.
+	    
+	    The first argument is the polynomial ring the character
+	    values will live in; this makes it possible to compare or
+	    combine the hand-constructed character with other
+	    characters over the same ring. The second argument is
+	    the length of the character, i.e., the number of conjugacy
+	    classes of the group whose representations the character
+	    is coming from. The third argument is a hash table
+	    containing the "raw" character data. The hash table
+	    entries are in the format @TT "(i,d) => c"@, where @TT "i"@
+	    is an integer representing homological degree, @TT "d"@
+	    is a list representing the internal (multi)degree, and
+	    @TT "c"@ is a list containing the values of the character
+	    in the given degrees. Note that the values of the character
+	    are elements in the ring given as the first argument.
 	Example
-	    R = QQ[x_1..x_4]
+	    R = QQ[x_1..x_3]
+	    regRep = character(R,3, hashTable {
+		    (0,{0}) => {1_R,1_R,1_R},
+		    (0,{1}) => {-1_R,0_R,2_R},
+		    (0,{2}) => {-1_R,0_R,2_R},
+		    (0,{3}) => {1_R,-1_R,1_R},
+		    })
+	    I = ideal(x_1+x_2+x_3,x_1*x_2+x_1*x_3+x_2*x_3,x_1*x_2*x_3)
+	    S3 = {matrix{{x_2,x_3,x_1}},
+		  matrix{{x_2,x_1,x_3}},
+		  matrix{{x_1,x_2,x_3}} }
+	    Q = R/I
+	    A = action(Q,S3)
+	    character(A,0,3) === regRep
     Caveat
     	This constructor implements basic consistency checks but
-	it may still be possible to construct objects that are not
+	it is still be possible to construct objects that are not
 	actually characters (not even virtual).
     SeeAlso
     	character
