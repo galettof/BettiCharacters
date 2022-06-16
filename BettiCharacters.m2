@@ -1543,6 +1543,44 @@ Node
 
 Node
     Key
+    	(directSum,Character)
+	(symbol ++,Character,Character)
+    Headline
+    	direct sum of characters
+    Usage
+    	character(c)
+    	character(c1,c2,...)
+    Inputs
+    	c:Character
+	    or sequence of characters
+    Outputs
+    	:Character
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Returns the direct sum of the input characters.
+	    The operator @TT "++"@ may be used for the same purpose.
+	Example
+	    R = QQ[x_1..x_3]
+	    I = ideal(x_1+x_2+x_3)
+	    J = ideal(x_1-x_2,x_1-x_3)
+	    S3 = {matrix{{x_2,x_3,x_1}},
+		  matrix{{x_2,x_1,x_3}},
+		  matrix{{x_1,x_2,x_3}} }
+	    A = action(I,S3)
+	    B = action(J,S3)
+	    a = character(A,1)
+	    b = character(B,1)
+	    a ++ b
+	    K = ideal(x_1,x_2,x_3)
+	    C = action(K,S3)
+	    c = character(C,1)
+	    a ++ b === c
+
+Node
+    Key
     	inverseRingActors
     	(inverseRingActors,Action)
     Headline
