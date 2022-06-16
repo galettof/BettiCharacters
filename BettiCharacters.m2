@@ -53,6 +53,7 @@ Action = new Type of HashTable
 ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
 Character = new Type of HashTable
+CharacterTable = new Type of HashTable
 
 ----------------------------------------------------------------------
 -- New Methods-
@@ -490,6 +491,28 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
     	);
     directSum for d from lo to hi list character(A,d)
     )
+
+
+---------------------------------------------------------------------
+-- New Methods for CharacterTable and decompositions ----------------
+---------------------------------------------------------------------
+
+-- method to construct character tables
+characterTable = new method();
+
+-- main character table constructor
+characterTable(List,Matrix,PolynomialRing,List) :=
+(conjSize,charTable,R,labels) -> (
+    
+    )
+
+-- unspecified labels constructor
+characterTable(List,Matrix,PolynomialRing) :=
+(conjSize,charTable,R) -> (
+    labels := for i to #conjSize-1 list "ꭓ"|toString(i);
+    (conjSize,charTable,R,labels)
+    )
+
 
 ----------------------------------------------------------------------
 -- Documentation
