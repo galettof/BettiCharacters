@@ -827,7 +827,10 @@ Node
     	Text
 	    This class is provided by the package
 	    @TO BettiCharacters@.
-	    
+    Subnodes
+	(directSum,Character)
+	(net,Character)
+    	    
 Node
     Key
     	action
@@ -1647,6 +1650,16 @@ Node
     Description
     	Text
 	    Format objects of type @TO Action@ for printing.
+	    See @TO net@ for more information.
+
+Node
+    Key
+    	(net,Character)
+    Headline
+    	format for printing, as a net
+    Description
+    	Text
+	    Format objects of type @TO Character@ for printing.
 	    See @TO net@ for more information.
 
 
