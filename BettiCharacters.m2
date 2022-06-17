@@ -503,7 +503,12 @@ characterTable = new method();
 -- main character table constructor
 characterTable(List,Matrix,PolynomialRing,List) :=
 (conjSize,charTable,R,labels) -> (
-    
+    new CharacterTable from {
+	(symbol classSize) => conjSize,
+	(symbol table) => charTable,
+	(symbol ring) => R,
+	(symbol labels) => labels,
+	}
     )
 
 -- unspecified labels constructor
