@@ -37,7 +37,9 @@ export {
     "ActionOnGradedModule",
     "actors",
     "character",
+    "characterTable",
     "Character",
+    "CharacterTable",
     "inverseRingActors",
     "numActors",
     "ringActors",
@@ -498,16 +500,49 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
 ---------------------------------------------------------------------
 
 -- method to construct character tables
-characterTable = new method();
+characterTable = method();
 
 -- main character table constructor
+-- INPUT:
+-- 1) list of conjugacy class sizes
+-- 2) matrix of irreducible character values
+-- 3) ring over which to construct the table
+-- 4) list, permutation of conjugacy class inverses
 characterTable(List,Matrix,PolynomialRing,List) :=
-(conjSize,charTable,R,labels) -> (
+(conjSize,charTable,R,perm) -> (
+    n := #conjSize;
+    -- check all arguments have the right size
+    if numRows charTable != n or numColumns charTable != n then (
+	error "characterTable: expected matrix size to match number of conjugacy classes";
+	);
+    if #perm != n then (
+	error "characterTable: expected permutation size to match number of conjugacy classes";
+	);
+    -- promote character matrix to R
+    X := try promote(charTable,R) else (
+	error "characterTable: could not promote character table to given ring";
+	);
+    -- check permutation has the right entries
+    if set perm =!= set(1..n) then (
+	error "characterTable: expected a permutation of {1,..," | toString(n) | "}";
+	);
+    -- check orthogonality relations
+    ordG := sum conjSize;
+    C := diagonalMatrix(R,conjSize);
+    P := map(R^n)_(apply(perm, i -> i-1));
+    m := C*transpose(X*P);
+    -- if x is a character in a one-row matrix, then x*m is the one-row matrix
+    -- containing the inner products of x with the irreducible characters
+    if X*m != ordG*map(R^n) then (
+	error "characterTable: orthogonality relations not satisfied";
+	);
     new CharacterTable from {
-	(symbol classSize) => conjSize,
-	(symbol table) => charTable,
+	(symbol size) => conjSize,
+	(symbol table) => X,
 	(symbol ring) => R,
-	(symbol labels) => labels,
+	(symbol inverse) => perm,
+	(symbol matrix) => m,
+	--(symbol labels) => labels,
 	}
     )
 
