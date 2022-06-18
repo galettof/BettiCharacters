@@ -41,6 +41,7 @@ export {
     "Character",
     "CharacterTable",
     "inverseRingActors",
+    "labels",
     "numActors",
     "ringActors",
     "Sub"
@@ -536,23 +537,28 @@ characterTable(List,Matrix,PolynomialRing,List) :=
     if X*m != ordG*map(R^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
+    -- create default labels
+    l := for i to n-1 list "X"|toString(i);
     new CharacterTable from {
 	(symbol size) => conjSize,
 	(symbol table) => X,
 	(symbol ring) => R,
 	(symbol inverse) => perm,
 	(symbol matrix) => m,
-	--(symbol labels) => labels,
+	(symbol labels) => l,
 	}
     )
 
--- unspecified labels constructor
-characterTable(List,Matrix,PolynomialRing) :=
-(conjSize,charTable,R) -> (
-    labels := for i to #conjSize-1 list "ꭓ"|toString(i);
-    (conjSize,charTable,R,labels)
+-- printing for character tables
+net CharacterTable := C -> (
+    -- top row of character table
+    a := {{""} | C.size};
+    -- body of character table
+    b := apply(pack(1,C.labels),entries C.table,(i,j)->i|j);
+    stack("Character table over "|(net C.ring)," ",
+	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
+	)
     )
-
 
 ----------------------------------------------------------------------
 -- Documentation
