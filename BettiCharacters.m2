@@ -40,6 +40,7 @@ export {
     "characterTable",
     "Character",
     "CharacterTable",
+    "decomposeCharacter",
     "inverseRingActors",
     "labels",
     "numActors",
@@ -550,13 +551,34 @@ characterTable(List,Matrix,PolynomialRing,List) :=
     )
 
 -- printing for character tables
-net CharacterTable := C -> (
+net CharacterTable := T -> (
     -- top row of character table
-    a := {{""} | C.size};
+    a := {{""} | T.size};
     -- body of character table
-    b := apply(pack(1,C.labels),entries C.table,(i,j)->i|j);
-    stack("Character table over "|(net C.ring)," ",
+    b := apply(pack(1,T.labels),entries T.table,(i,j)->i|j);
+    stack("Character table over "|(net T.ring)," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
+	)
+    )
+
+-- character decomposition
+decomposeCharacter = method();
+decomposeCharacter(Character,CharacterTable) := (C,T) -> (
+    -- check character and table are over same ring
+    R := C.ring;
+    if T.ring =!= R then (
+	error "decomposeCharacter: expected character and table over the same ring";
+	);
+    -- check number of actors is the same
+    if C.numActors != #T.size then (
+	error "decomposeCharacter: expected character length does not match table";
+	);
+    ord := sum T.size;
+    applyValues(C.characters, char -> (
+	    prod := flatten entries (1/ord*promote(matrix{char},R)*T.matrix);
+	    pos := positions(prod, v -> not zero v);
+	    hashTable pack(2,mingle((T.labels)_pos,prod_pos))
+	    )
 	)
     )
 
