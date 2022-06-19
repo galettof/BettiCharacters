@@ -45,6 +45,7 @@ export {
     "decomposeCharacter",
     "inverseRingActors",
     "labels",
+    "Labels",
     "numActors",
     "ringActors",
     "Sub"
@@ -508,7 +509,7 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
 ---------------------------------------------------------------------
 
 -- method to construct character tables
-characterTable = method();
+characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
 -- main character table constructor
 -- INPUT:
@@ -517,7 +518,7 @@ characterTable = method();
 -- 3) ring over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
 characterTable(List,Matrix,PolynomialRing,List) :=
-(conjSize,charTable,R,perm) -> (
+o -> (conjSize,charTable,R,perm) -> (
     n := #conjSize;
     -- check all arguments have the right size
     if numRows charTable != n or numColumns charTable != n then (
@@ -544,8 +545,18 @@ characterTable(List,Matrix,PolynomialRing,List) :=
     if X*m != ordG*map(R^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
-    -- create default labels
-    l := for i to n-1 list "X"|toString(i);
+    -- check user labels or create default ones
+    if o.Labels == {} then (
+    	l := for i to n-1 list "X"|toString(i);
+	) else (
+	if #o.Labels != n then (
+	    error "characterTable: expected " | toString(n) | " labels";
+	    );
+	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
+	    error "characterTable: expected labels to be strings (or nets)";	    
+	    );
+	l = o.Labels;
+	);
     new CharacterTable from {
 	(symbol size) => conjSize,
 	(symbol table) => X,
