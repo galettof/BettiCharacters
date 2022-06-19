@@ -605,7 +605,17 @@ character(CharacterDecomposition,CharacterTable) := (D,T) -> (
 CharacterDecomposition * CharacterTable := Character => character
 
 -- printing character decompositions
-net CharacterDecomposition := D -> net D.decompose
+net CharacterDecomposition := D -> (
+    -- top row of decomposition table
+    a := {{""} | D.labels};
+    -- body of decomposition table
+    b := apply(sort pairs D.decompose,(k,v)->{k}|(flatten entries v));
+    stack("Decomposition table"," ",
+    	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
+	)
+    )
+--net D.decompose
+
 
 -* hash table output for character decomposition
 applyValues(C.characters, char -> (
