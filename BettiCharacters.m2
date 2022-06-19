@@ -40,6 +40,7 @@ export {
     "character",
     "characterTable",
     "Character",
+    "CharacterDecomposition",
     "CharacterTable",
     "decomposeCharacter",
     "inverseRingActors",
@@ -59,6 +60,7 @@ ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
 Character = new Type of HashTable
 CharacterTable = new Type of HashTable
+CharacterDecomposition = new Type of HashTable
 
 ----------------------------------------------------------------------
 -- New Methods-
@@ -578,8 +580,16 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 	error "decomposeCharacter: expected character length does not match table";
 	);
     ord := sum T.size;
-    applyValues(C.characters, char -> 1/ord*char*T.matrix)
+    new CharacterDecomposition from {
+	(symbol numActors) => C.numActors,
+	(symbol ring) => R,
+	(symbol labels) => T.labels,
+	(symbol decompose) => applyValues(C.characters, char -> 1/ord*char*T.matrix)
+	}
     )
+
+-- printing character decompositions
+net CharacterDecomposition := D -> net D.decompose
 
 -* hash table output for character decomposition
 applyValues(C.characters, char -> (
