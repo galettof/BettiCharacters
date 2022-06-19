@@ -235,14 +235,17 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	);
     -- check character vectors are allowed
     v := values H;
-    if any(v, i -> numColumns i != cl or class i =!= Matrix or ring i =!= R) then (
-	error "character: expceted characters in input ring and of length" | toString(cl);
+    if any(v, i -> numColumns i != cl or class i =!= Matrix) then (
+	error "character: expceted characters to be one-row matrices with " | toString(cl) | " columns";
+	);
+    H2 := try applyValues(H, v -> promote(v,R)) else (
+	error "character: could not promote characters to given ring";
 	);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol numActors) => cl,
-	(symbol characters) => H,
+	(symbol characters) => H2,
 	}
     )
 
@@ -1648,10 +1651,10 @@ Node
 	Example
 	    R = QQ[x_1..x_3]
 	    regRep = character(R,3, hashTable {
-		    (0,{0}) => {1_R,1_R,1_R},
-		    (0,{1}) => {-1_R,0_R,2_R},
-		    (0,{2}) => {-1_R,0_R,2_R},
-		    (0,{3}) => {1_R,-1_R,1_R},
+		    (0,{0}) => matrix{{1,1,1}},
+		    (0,{1}) => matrix{{-1,0,2}},
+		    (0,{2}) => matrix{{-1,0,2}},
+		    (0,{3}) => matrix{{1,-1,1}},
 		    })
 	    I = ideal(x_1+x_2+x_3,x_1*x_2+x_1*x_3+x_2*x_3,x_1*x_2*x_3)
 	    S3 = {matrix{{x_2,x_3,x_1}},
@@ -1930,31 +1933,31 @@ RI = res I
 S3 = {matrix{{y,z,x}},matrix{{y,x,z}},matrix{{x,y,z}}}
 A = action(RI,S3)
 a = character(R,3,hashTable {
-    ((0,{0}), {1_R,1_R,1_R}),
-    ((1,{2}), {0_R,1_R,3_R}),
-    ((2,{3}), {-1_R,0_R,2_R})
+    ((0,{0}), matrix{{1,1,1}}),
+    ((1,{2}), matrix{{0,1,3}}),
+    ((2,{3}), matrix{{-1,0,2}})
     })
 assert((character A) === a)
 B = action(R,S3)
 b = character(R,3,hashTable {
-    ((0,{0}), {1_R,1_R,1_R}),
-    ((0,{1}), {0_R,1_R,3_R}),
-    ((0,{2}), {0_R,2_R,6_R}),
-    ((0,{3}), {1_R,2_R,10_R})
+    ((0,{0}), matrix{{1,1,1}}),
+    ((0,{1}), matrix{{0,1,3}}),
+    ((0,{2}), matrix{{0,2,6}}),
+    ((0,{3}), matrix{{1,2,10}})
     })
 assert(character(B,0,3) === b)
 C = action(I,S3)
 c = character(R,3,hashTable {
-    ((0,{2}), {0_R,1_R,3_R}),
-    ((0,{3}), {1_R,1_R,7_R})
+    ((0,{2}), matrix{{0,1,3}}),
+    ((0,{3}), matrix{{1,1,7}})
     })
 assert(character(C,0,3) === c)
 D = action(R/I,S3)
 d = character(R,3,hashTable {
-    ((0,{0}), {1_R,1_R,1_R}),
-    ((0,{1}), {0_R,1_R,3_R}),
-    ((0,{2}), {0_R,1_R,3_R}),
-    ((0,{3}), {0_R,1_R,3_R})
+    ((0,{0}), matrix{{1,1,1}}),
+    ((0,{1}), matrix{{0,1,3}}),
+    ((0,{2}), matrix{{0,1,3}}),
+    ((0,{3}), matrix{{0,1,3}})
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
@@ -1983,32 +1986,32 @@ S5 = for p in partitions(5) list (
     )
 A = action(RI,S5)
 a = character(R,7,hashTable {
-    ((0,{0}), {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
-    ((1,{2}), {0_R,-1_R,1_R,-1_R,1_R,1_R,5_R}),
-    ((2,{3}), {0_R,1_R,-1_R,-1_R,1_R,-1_R,5_R}),
-    ((3,{5}), {1_R,-1_R,-1_R,1_R,1_R,-1_R,1_R})
+    ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
+    ((1,{2}), matrix{{0,-1,1,-1,1,1,5}}),
+    ((2,{3}), matrix{{0,1,-1,-1,1,-1,5}}),
+    ((3,{5}), matrix{{1,-1,-1,1,1,-1,1}})
     })
 assert((character A) === a)
 B = action(R,S5)
 b = character(R,7,hashTable {
-    ((0,{0}), {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
-    ((0,{1}), {0_R,1_R,0_R,2_R,1_R,3_R,5_R}),
-    ((0,{2}), {0_R,1_R,1_R,3_R,3_R,7_R,15_R}),
-    ((0,{3}), {0_R,1_R,1_R,5_R,3_R,13_R,35_R})
+    ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
+    ((0,{1}), matrix{{0,1,0,2,1,3,5}}),
+    ((0,{2}), matrix{{0,1,1,3,3,7,15}}),
+    ((0,{3}), matrix{{0,1,1,5,3,13,35}})
     })
 assert(character(B,0,3) === b)
 C = action(I,S5)
 c = character(R,7,hashTable {
-    ((0,{2}), {0_R,-1_R,1_R,-1_R,1_R,1_R,5_R}),
-    ((0,{3}), {0_R,-2_R,1_R,-1_R,0_R,4_R,20_R})
+    ((0,{2}), matrix{{0,-1,1,-1,1,1,5}}),
+    ((0,{3}), matrix{{0,-2,1,-1,0,4,20}})
     })
 assert(character(C,0,3) === c)
 D = action(R/I,S5)
 d = character(R,7,hashTable {
-    ((0,{0}), {1_R,1_R,1_R,1_R,1_R,1_R,1_R}),
-    ((0,{1}), {0_R,1_R,0_R,2_R,1_R,3_R,5_R}),
-    ((0,{2}), {0_R,2_R,0_R,4_R,2_R,6_R,10_R}),
-    ((0,{3}), {0_R,3_R,0_R,6_R,3_R,9_R,15_R})
+    ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
+    ((0,{1}), matrix{{0,1,0,2,1,3,5}}),
+    ((0,{2}), matrix{{0,2,0,4,2,6,10}}),
+    ((0,{3}), matrix{{0,3,0,6,3,9,15}})
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
@@ -2033,14 +2036,14 @@ a = {
     map(R^{4:-3},R^{4:-3},{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}})
     }
 assert(actors(A,3) === a)
-ca = character(R,4, hashTable {((0,{3}), apply(a,trace))})
+ca = character(R,4, hashTable {((0,{3}), matrix{apply(a,trace)})})
 assert(character(A,3) === ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
 Rm=chainComplex(d1,d2)
 B = action(Rm,D5)
 assert(actors(B,1) === a)
-cb1 = character(R,4, hashTable {((1,{3}), apply(a,trace))})
+cb1 = character(R,4, hashTable {((1,{3}), matrix{apply(a,trace)})})
 assert(character(B,1) === cb1)
 b = {
     map(R^{3:-4},R^{3:-4},{{1,0,0},{0,1,0},{0,0,1}}),
@@ -2049,7 +2052,7 @@ b = {
     map(R^{3:-4},R^{3:-4},{{0,0,-1},{0,-1,0},{-1,0,0}})
     }
 assert(actors(B,2) === b)
-cb2 = character(R,4, hashTable {((2,{4}), apply(b,trace))})
+cb2 = character(R,4, hashTable {((2,{4}), matrix{apply(b,trace)})})
 assert(character(B,2) === cb2)
 ///
 
