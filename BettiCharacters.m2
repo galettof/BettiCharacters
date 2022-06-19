@@ -588,6 +588,22 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 	}
     )
 
+-- shortcut for character decomposition
+Character / CharacterTable := CharacterDecomposition => decomposeCharacter
+
+-- recreate character from decomposition
+character(CharacterDecomposition,CharacterTable) := (D,T) -> (
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => D.ring,
+	(symbol numActors) => D.numActors,
+	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
+	}
+    )
+
+-- shortcut to recreate character from decomposition
+CharacterDecomposition * CharacterTable := Character => character
+
 -- printing character decompositions
 net CharacterDecomposition := D -> net D.decompose
 
