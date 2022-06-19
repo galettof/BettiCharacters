@@ -235,7 +235,7 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	);
     -- check character vectors are allowed
     v := values H;
-    if any(v, i -> #i != cl or any(i, j -> class j =!= R)) then (
+    if any(v, i -> numColumns i != cl or class i =!= Matrix or ring i =!= R) then (
 	error "character: expceted characters in input ring and of length" | toString(cl);
 	);
     new Character from {
@@ -267,7 +267,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	-- create raw character from actors
 	H := applyPairs(degs,
 	    (d,indx) -> ((i,d),
-		apply(actors(A,i), g -> trace g_indx^indx)
+		matrix{apply(actors(A,i), g -> trace g_indx^indx)}
 		)
 	    );
 	new Character from {
@@ -477,7 +477,7 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 	    cache => new CacheTable,
 	    (symbol ring) => ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {(0,d) => apply(acts, trace)},
+	    (symbol characters) => hashTable {(0,d) => matrix{apply(acts, trace)}},
 	    }
 	);
     -- make cache function from f and run it on A
@@ -575,7 +575,7 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 	error "decomposeCharacter: expected character length does not match table";
 	);
     ord := sum T.size;
-    applyValues(C.characters, char -> 1/ord*promote(matrix{char},R)*T.matrix)
+    applyValues(C.characters, char -> 1/ord*char*T.matrix)
     )
 
 -* hash table output for character decomposition
