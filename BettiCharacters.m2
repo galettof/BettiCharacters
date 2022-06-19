@@ -29,6 +29,7 @@ newPackage(
      DebuggingMode => false
      )
 
+--importFrom("SpechtModule",{"characterTable","cardinalityOfConjugacyClass"})
 
 export {
     "action",
@@ -585,14 +586,33 @@ applyValues(C.characters, char -> (
 	)
 *-
 
+-- compact partition notation
+compactPartition = p -> (
+    t := tally toList p;
+    pows := apply(rsort keys t, k -> net Power(k,t#k));
+    commas := #pows-1:net(",");
+    net("(")|horizontalJoin mingle(pows,commas)|net(")")
+    )
+
+-* symmetric group character table
 symmetricGroupTable = method();
-symmetricGroupTable ZZ := n -> (
+symmetricGroupTable(ZZ,PolynomialRing) := (n,R) -> (
     if n < 1 then (
 	error "symmetricGroupTable: expected positive integer";
 	);
     X := matrix (characterTable n)#values;
     conjSize := apply(partitions n,cardinalityOfConjugacyClass);
+    m := diagonalMatrix(R,conjSize)*transpose(X);
+    new CharacterTable from {
+	(symbol size) => conjSize,
+	(symbol table) => X,
+	(symbol ring) => R,
+	(symbol inverse) => toList(1..n),
+	(symbol matrix) => m,
+	(symbol labels) => l,
+	}
     )
+*-
 
 ----------------------------------------------------------------------
 -- Documentation
