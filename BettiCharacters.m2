@@ -498,7 +498,7 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
 
 
 ---------------------------------------------------------------------
--- New Methods for CharacterTable and decompositions ----------------
+-- New/Overloaded Methods for character tables and decompositions ---
 ---------------------------------------------------------------------
 
 -- method to construct character tables
