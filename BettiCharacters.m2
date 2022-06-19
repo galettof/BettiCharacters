@@ -29,7 +29,7 @@ newPackage(
      DebuggingMode => false
      )
 
---importFrom("SpechtModule",{"characterTable","cardinalityOfConjugacyClass"})
+--exportFrom(package SpechtModule,{"characterTable","cardinalityOfConjugacyClass"})
 
 export {
     "action",
