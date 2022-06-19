@@ -574,12 +574,24 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 	error "decomposeCharacter: expected character length does not match table";
 	);
     ord := sum T.size;
-    applyValues(C.characters, char -> (
-	    prod := flatten entries (1/ord*promote(matrix{char},R)*T.matrix);
-	    pos := positions(prod, v -> not zero v);
-	    hashTable pack(2,mingle((T.labels)_pos,prod_pos))
-	    )
+    applyValues(C.characters, char -> 1/ord*promote(matrix{char},R)*T.matrix)
+    )
+
+-* hash table output for character decomposition
+applyValues(C.characters, char -> (
+	prod := flatten entries (1/ord*promote(matrix{char},R)*T.matrix);
+	pos := positions(prod, v -> not zero v);
+	hashTable pack(2,mingle((T.labels)_pos,prod_pos))
 	)
+*-
+
+symmetricGroupTable = method();
+symmetricGroupTable ZZ := n -> (
+    if n < 1 then (
+	error "symmetricGroupTable: expected positive integer";
+	);
+    X := matrix (characterTable n)#values;
+    conjSize := apply(partitions n,cardinalityOfConjugacyClass);
     )
 
 ----------------------------------------------------------------------
