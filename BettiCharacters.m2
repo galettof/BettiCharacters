@@ -218,7 +218,7 @@ character = method()
 -- 3) hash table for raw character: (homdeg,deg) => character
 character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
     -- check first argument is a polynomial ring over a field
-    if not isPolynomialRing R or not isField coefficientRing R then (
+    if not isField coefficientRing R then (
 	error "character: expected polynomial ring over a field";
 	);
     dl := degreeLength R;
