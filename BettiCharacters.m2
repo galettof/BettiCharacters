@@ -48,7 +48,8 @@ export {
     "Labels",
     "numActors",
     "ringActors",
-    "Sub"
+    "Sub",
+    "symmetricGroupTable"
     }
 
 
@@ -56,16 +57,188 @@ export {
 -- Types
 ----------------------------------------------------------------------
 
-Action = new Type of HashTable
-ActionOnComplex = new Type of Action
-ActionOnGradedModule = new Type of Action
 Character = new Type of HashTable
 CharacterTable = new Type of HashTable
 CharacterDecomposition = new Type of HashTable
+Action = new Type of HashTable
+ActionOnComplex = new Type of Action
+ActionOnGradedModule = new Type of Action
 
 ----------------------------------------------------------------------
--- New Methods-
----------------------------------------------------------------------
+-- Characters and character tables -----------------------------------
+----------------------------------------------------------------------
+
+-- method for returning characters of various action types
+character = method()
+
+-- construct a finite dimensional character by hand
+-- INPUT:
+-- 1) polynomial ring (dictates coefficients and degrees)
+-- 2) integer: character length (or number of actors)
+-- 3) hash table for raw character: (homdeg,deg) => character matrix
+character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
+    -- check first argument is a polynomial ring over a field
+    if not isField coefficientRing R then (
+	error "character: expected polynomial ring over a field";
+	);
+    -- check keys are in the right format
+    k := keys H;
+    if any(k, i -> class i =!= Sequence or #i != 2 or
+	class i#0 =!= ZZ or class i#1 =!= List) then (
+	error "character: expected keys of the form (ZZ,List)";
+	);
+    -- check degree vectors are allowed
+    dl := degreeLength R;
+    degs := apply(k,last);
+    if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
+	error "character: expected integer degree vectors of length "
+	| toString(dl);
+	);
+    -- check character vectors are allowed
+    v := values H;
+    if any(v, i -> numColumns i != cl or class i =!= Matrix) then (
+	error "character: expceted characters to be one-row matrices with "
+	| toString(cl) | " columns";
+	);
+    -- move character values into given ring
+    H2 := try applyValues(H, v -> promote(v,R)) else (
+	error "character: could not promote characters to given ring";
+	);
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => R,
+	(symbol numActors) => cl,
+	(symbol characters) => H2,
+	}
+    )
+
+
+-- direct sum of characters
+-- modeled after code in Macaulay2/Core/matrix.m2
+Character ++ Character := Character => directSum
+directSum Character := c -> Character.directSum (1 : c)
+Character.directSum = args -> (
+    -- check ring is the same for all summands
+    R := (args#0).ring;
+    if any(args, c -> c.ring =!= R)
+    then error "directSum: expected characters all over the same ring";
+    -- check character length is the same for all summands
+    cl := (args#0).numActors;
+    if any(args, c -> c.numActors != cl)
+    then error "directSum: expected characters all of the same length";
+    C := new Character from {
+	cache => new CacheTable,
+	(symbol ring) => R,
+	(symbol numActors) => cl,
+	-- add raw characters
+	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
+	    apply(args, c -> c.characters) ),
+	};
+    C
+    )
+
+-- method to construct character tables
+characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
+
+-- main character table constructor
+-- INPUT:
+-- 1) list of conjugacy class sizes
+-- 2) matrix of irreducible character values
+-- 3) ring over which to construct the table
+-- 4) list, permutation of conjugacy class inverses
+-- OPTIONAL: list of labels for irreducible characters
+characterTable(List,Matrix,PolynomialRing,List) :=
+o -> (conjSize,charTable,R,perm) -> (
+    n := #conjSize;
+    -- check all arguments have the right size
+    if numRows charTable != n or numColumns charTable != n then (
+	error "characterTable: expected matrix size to match number of conjugacy classes";
+	);
+    if #perm != n then (
+	error "characterTable: expected permutation size to match number of conjugacy classes";
+	);
+    -- promote character matrix to R
+    X := try promote(charTable,R) else (
+	error "characterTable: could not promote character table to given ring";
+	);
+    -- check permutation has the right entries
+    if set perm =!= set(1..n) then (
+	error "characterTable: expected a permutation of {1,..," | toString(n) | "}";
+	);
+    -- check orthogonality relations
+    ordG := sum conjSize;
+    C := diagonalMatrix(R,conjSize);
+    P := map(R^n)_(apply(perm, i -> i-1));
+    m := C*transpose(X*P);
+    -- if x is a character in a one-row matrix, then x*m is the one-row matrix
+    -- containing the inner products of x with the irreducible characters
+    if X*m != ordG*map(R^n) then (
+	error "characterTable: orthogonality relations not satisfied";
+	);
+    -- check user labels or create default ones
+    if o.Labels == {} then (
+    	l := for i to n-1 list "X"|toString(i);
+	) else (
+	if #o.Labels != n then (
+	    error "characterTable: expected " | toString(n) | " labels";
+	    );
+	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
+	    error "characterTable: expected labels to be strings (or nets)";	    
+	    );
+	l = o.Labels;
+	);
+    new CharacterTable from {
+	(symbol size) => conjSize,
+	(symbol table) => X,
+	(symbol ring) => R,
+	(symbol inverse) => perm,
+	(symbol matrix) => m,
+	(symbol labels) => l,
+	}
+    )
+
+-- new method for character decomposition
+decomposeCharacter = method();
+
+-- decompose a character against a character table
+decomposeCharacter(Character,CharacterTable) := (C,T) -> (
+    -- check character and table are over same ring
+    R := C.ring;
+    if T.ring =!= R then (
+	error "decomposeCharacter: expected character and table over the same ring";
+	);
+    -- check number of actors is the same
+    if C.numActors != #T.size then (
+	error "decomposeCharacter: expected character length does not match table";
+	);
+    ord := sum T.size;
+    new CharacterDecomposition from {
+	(symbol numActors) => C.numActors,
+	(symbol ring) => R,
+	(symbol labels) => T.labels,
+	(symbol decompose) => applyValues(C.characters, char -> 1/ord*char*T.matrix)
+	}
+    )
+
+-- shortcut for character decomposition
+Character / CharacterTable := CharacterDecomposition => decomposeCharacter
+
+-- recreate a character from decomposition
+character(CharacterDecomposition,CharacterTable) := (D,T) -> (
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => D.ring,
+	(symbol numActors) => D.numActors,
+	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
+	}
+    )
+
+-- shortcut to recreate character from decomposition
+CharacterDecomposition * CharacterTable := Character => character
+
+----------------------------------------------------------------------
+-- Actions on complexes and characters of complexes ------------------
+----------------------------------------------------------------------
 
 -- constructor for action on resolutions and modules
 -- optional argument Sub=>true means ring actors are passed
@@ -211,47 +384,6 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	)
     )
 
--- method for returning characters of various action types
-character = method()
-
--- construct a finite dimensional character
--- INPUT:
--- 1) polynomial ring (dictates coefficients and degrees)
--- 2) integer: character length (or number of actors)
--- 3) hash table for raw character: (homdeg,deg) => character
-character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
-    -- check first argument is a polynomial ring over a field
-    if not isField coefficientRing R then (
-	error "character: expected polynomial ring over a field";
-	);
-    dl := degreeLength R;
-    -- check keys are in the right format
-    k := keys H;
-    if any(k, i -> class i =!= Sequence or #i != 2 or
-	class i#0 =!= ZZ or class i#1 =!= List) then (
-	error "character: expected keys of the form (ZZ,List)";
-	);
-    -- check degree vectors are allowed
-    degs := apply(k,last);
-    if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
-	error "character: expected integer degree vectors of length " | toString(dl);
-	);
-    -- check character vectors are allowed
-    v := values H;
-    if any(v, i -> numColumns i != cl or class i =!= Matrix) then (
-	error "character: expceted characters to be one-row matrices with " | toString(cl) | " columns";
-	);
-    H2 := try applyValues(H, v -> promote(v,R)) else (
-	error "character: could not promote characters to given ring";
-	);
-    new Character from {
-	cache => new CacheTable,
-	(symbol ring) => R,
-	(symbol numActors) => cl,
-	(symbol characters) => H2,
-	}
-    )
-
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
@@ -295,57 +427,7 @@ character ActionOnComplex := HashTable => A -> (
     )
 
 ----------------------------------------------------------------------
--- Overloaded Methods
-----------------------------------------------------------------------
-
--- get object acted upon
-target(Action) := A -> A.target
-
--- printing for Action type
-net Action := A -> (
-    (net class target A)|" with "|(net numActors A)|" actors"
-    )
-
--- get polynomial ring acted upon
-ring Action := PolynomialRing => A -> A.ring
-
--- printing for Character type
-net Character := c -> (
-    if c.characters =!= hashTable {} then (
-    	bottom := stack(" ",
-    	    stack (horizontalJoin \ apply(sort pairs c.characters,(k,v) -> (net k, " => ", net v)))
-    	    )
-	) else bottom = null;
-    stack("Character over "|(net c.ring), bottom)
-    )
-
--- direct sum of characters
--- modeled after code in Macaulay2/Core/matrix.m2
-Character ++ Character := Character => directSum
-directSum Character := c -> Character.directSum (1 : c)
-Character.directSum = args -> (
-    -- check ring is the same for all summands
-    R := (args#0).ring;
-    if any(args, c -> c.ring =!= R)
-    then error "directSum: expected characters all over the same ring";
-    -- check character length is the same for all summands
-    cl := (args#0).numActors;
-    if any(args, c -> c.numActors != cl)
-    then error "directSum: expected characters all of the same length";
-    C := new Character from {
-	cache => new CacheTable,
-	(symbol ring) => R,
-	(symbol numActors) => cl,
-	-- add raw characters
-	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
-	    apply(args, c -> c.characters) ),
-	};
-    C
-    )
-
-
-----------------------------------------------------------------------
--- New methods for ActionOnGradedModule
+-- Actions on modules and characters of modules ----------------------
 ----------------------------------------------------------------------
 
 -- constructor for action on various kinds of graded modules
@@ -503,68 +585,120 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
     directSum for d from lo to hi list character(A,d)
     )
 
-
 ---------------------------------------------------------------------
--- New/Overloaded Methods for character tables and decompositions ---
+-- Specialized functions for symmetric groups -----------------------
 ---------------------------------------------------------------------
 
--- method to construct character tables
-characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
--- main character table constructor
--- INPUT:
--- 1) list of conjugacy class sizes
--- 2) matrix of irreducible character values
--- 3) ring over which to construct the table
--- 4) list, permutation of conjugacy class inverses
-characterTable(List,Matrix,PolynomialRing,List) :=
-o -> (conjSize,charTable,R,perm) -> (
-    n := #conjSize;
-    -- check all arguments have the right size
-    if numRows charTable != n or numColumns charTable != n then (
-	error "characterTable: expected matrix size to match number of conjugacy classes";
+-- compact partition notation used for symmetric group labels
+-- unexported
+compactPartition := p -> (
+    t := tally toList p;
+    pows := apply(rsort keys t, k -> net Power(k,t#k));
+    commas := #pows-1:net(",");
+    net("(")|horizontalJoin mingle(pows,commas)|net(")")
+    )
+
+-- take r boxes from partition mu along border
+-- unexported auxiliary function for Murnaghan-Nakayama
+strip := (mu,r) -> (
+    -- if one row, strip r boxes
+    if #mu == 1 then return {mu_0 - r};
+    -- if possible, strip r boxes in 1st row
+    d := mu_0 - mu_1;
+    if d >= r then (
+	return {mu_0 - r} | drop(mu,1);
 	);
-    if #perm != n then (
-	error "characterTable: expected permutation size to match number of conjugacy classes";
+    -- else, remove d+1 boxes and iterate
+    {mu_0-d-1} | strip(drop(mu,1),r-d-1)
+    )
+
+-- check if list is partition (0 allowed)
+-- unexported auxiliary function for Murnaghan-Nakayama
+isPartition := mu -> (
+    -- check no negative parts
+    if any(mu, i -> i<0) then return false;
+    -- check non increasing
+    for i to #mu-2 do (
+	if mu_i < mu_(i+1) then return false;
 	);
-    -- promote character matrix to R
-    X := try promote(charTable,R) else (
-	error "characterTable: could not promote character table to given ring";
+    true
+    )
+
+-- irreducible Sn character chi^lambda
+-- evaluated at conjugacy class of cycle type rho
+murnaghanNakayama := (lambda,rho) -> (
+    -- if both empty, character is 1
+    if lambda == {} and rho == {} then return 1;
+    r := rho#0;
+    -- check if border strip fits ending at each row
+    borderStrips := select(for c to #lambda-1 list (
+	take(lambda,c) | strip(drop(lambda,c),r)
+	), isPartition);
+    -- find border strip height
+    heights := apply(borderStrips,
+	bs -> number(lambda - bs, i -> i>0) - 1);
+    -- recursive computation
+    rho' := drop(rho,1);
+    sum(borderStrips,heights, (bs,h) ->
+	(-1)^h * murnaghanNakayama(delete(0,bs),rho')
+	)
+    )
+
+-- speed up computation by caching values
+murnaghanNakayama = memoize murnaghanNakayama
+
+-- symmetric group character table
+symmetricGroupTable = method();
+symmetricGroupTable(ZZ,PolynomialRing) := (n,R) -> (
+    if n < 1 then (
+	error "symmetricGroupTable: expected positive integer";
 	);
-    -- check permutation has the right entries
-    if set perm =!= set(1..n) then (
-	error "characterTable: expected a permutation of {1,..," | toString(n) | "}";
+    -- list partitions
+    P := apply(partitions n, toList);
+    -- compute table using Murnaghan-Nakayama
+    X := matrix(R, table(P,P,murnaghanNakayama));
+    -- compute size of conjugacy classes
+    conjSize := apply(P/tally,
+	t -> n! / product apply(pairs t, (k,v) -> k^v*v! )
 	);
-    -- check orthogonality relations
-    ordG := sum conjSize;
-    C := diagonalMatrix(R,conjSize);
-    P := map(R^n)_(apply(perm, i -> i-1));
-    m := C*transpose(X*P);
-    -- if x is a character in a one-row matrix, then x*m is the one-row matrix
-    -- containing the inner products of x with the irreducible characters
-    if X*m != ordG*map(R^n) then (
-	error "characterTable: orthogonality relations not satisfied";
-	);
-    -- check user labels or create default ones
-    if o.Labels == {} then (
-    	l := for i to n-1 list "X"|toString(i);
-	) else (
-	if #o.Labels != n then (
-	    error "characterTable: expected " | toString(n) | " labels";
-	    );
-	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
-	    error "characterTable: expected labels to be strings (or nets)";	    
-	    );
-	l = o.Labels;
-	);
+    -- matrix for inner product
+    m := diagonalMatrix(R,conjSize)*transpose(X);
     new CharacterTable from {
+	(symbol numActors) => #P,
 	(symbol size) => conjSize,
 	(symbol table) => X,
 	(symbol ring) => R,
-	(symbol inverse) => perm,
+	(symbol inverse) => toList(1..n),
 	(symbol matrix) => m,
-	(symbol labels) => l,
+	(symbol labels) => P/compactPartition,
 	}
+    )
+
+----------------------------------------------------------------------
+-- Overloaded Methods
+----------------------------------------------------------------------
+
+-- get object acted upon
+target(Action) := A -> A.target
+
+-- get polynomial ring acted upon
+ring Action := PolynomialRing => A -> A.ring
+
+
+---------------------------------------------------------------------
+-- Pretty printing of new types -------------------------------------
+---------------------------------------------------------------------
+
+-- printing for characters
+net Character := c -> (
+    if c.characters =!= hashTable {} then (
+    	bottom := stack(" ",
+    	    stack (horizontalJoin \ apply(sort pairs c.characters,
+		    (k,v) -> (net k, " => ", net v)))
+    	    )
+	) else bottom = null;
+    stack("Character over "|(net c.ring), bottom)
     )
 
 -- printing for character tables
@@ -578,43 +712,6 @@ net CharacterTable := T -> (
 	)
     )
 
--- character decomposition
-decomposeCharacter = method();
-decomposeCharacter(Character,CharacterTable) := (C,T) -> (
-    -- check character and table are over same ring
-    R := C.ring;
-    if T.ring =!= R then (
-	error "decomposeCharacter: expected character and table over the same ring";
-	);
-    -- check number of actors is the same
-    if C.numActors != #T.size then (
-	error "decomposeCharacter: expected character length does not match table";
-	);
-    ord := sum T.size;
-    new CharacterDecomposition from {
-	(symbol numActors) => C.numActors,
-	(symbol ring) => R,
-	(symbol labels) => T.labels,
-	(symbol decompose) => applyValues(C.characters, char -> 1/ord*char*T.matrix)
-	}
-    )
-
--- shortcut for character decomposition
-Character / CharacterTable := CharacterDecomposition => decomposeCharacter
-
--- recreate character from decomposition
-character(CharacterDecomposition,CharacterTable) := (D,T) -> (
-    new Character from {
-	cache => new CacheTable,
-	(symbol ring) => D.ring,
-	(symbol numActors) => D.numActors,
-	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
-	}
-    )
-
--- shortcut to recreate character from decomposition
-CharacterDecomposition * CharacterTable := Character => character
-
 -- printing character decompositions
 net CharacterDecomposition := D -> (
     -- top row of decomposition table
@@ -625,44 +722,12 @@ net CharacterDecomposition := D -> (
     	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
     )
---net D.decompose
 
-
--* hash table output for character decomposition
-applyValues(C.characters, char -> (
-	prod := flatten entries (1/ord*promote(matrix{char},R)*T.matrix);
-	pos := positions(prod, v -> not zero v);
-	hashTable pack(2,mingle((T.labels)_pos,prod_pos))
-	)
-*-
-
--- compact partition notation
-compactPartition = p -> (
-    t := tally toList p;
-    pows := apply(rsort keys t, k -> net Power(k,t#k));
-    commas := #pows-1:net(",");
-    net("(")|horizontalJoin mingle(pows,commas)|net(")")
+-- printing for Action type
+net Action := A -> (
+    (net class target A)|" with "|(net numActors A)|" actors"
     )
 
--* symmetric group character table
-symmetricGroupTable = method();
-symmetricGroupTable(ZZ,PolynomialRing) := (n,R) -> (
-    if n < 1 then (
-	error "symmetricGroupTable: expected positive integer";
-	);
-    X := matrix (characterTable n)#values;
-    conjSize := apply(partitions n,cardinalityOfConjugacyClass);
-    m := diagonalMatrix(R,conjSize)*transpose(X);
-    new CharacterTable from {
-	(symbol size) => conjSize,
-	(symbol table) => X,
-	(symbol ring) => R,
-	(symbol inverse) => toList(1..n),
-	(symbol matrix) => m,
-	(symbol labels) => l,
-	}
-    )
-*-
 
 ----------------------------------------------------------------------
 -- Documentation
