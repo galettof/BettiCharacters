@@ -2192,27 +2192,3 @@ end
 	B = action(M,G,Sub=>false)
 	character(B,21)
 
---multiplicities for example 1
-	multiplicities = c -> select(
-    	    applyValues(irrReps,
-		v -> innerProduct(7,v,mutableMatrix{new List from c})),
-    	    v -> v!=0
-    	    )
-	multiplicities c#0#{0}
-	multiplicities c#1#{2}
-	multiplicities c#2#{3}
-	multiplicities c#3#{4}
-	multiplicities c#4#{5}
-	multiplicities c#5#{7}
-
---multliplicities for example 2
-	multiplicities = c -> select(
-	    applyValues(irrReps,
-		v -> innerProduct(6,v,mutableMatrix{new List from c})),
-	    v -> v!=0
-	    )
-	applyValues(c#0, v -> multiplicities v)
-	applyValues(c#1, v -> multiplicities v)
-	applyValues(c#2, v -> multiplicities v)
-	applyValues(c#3, v -> multiplicities v)
-	applyValues(c#4, v -> multiplicities v)
