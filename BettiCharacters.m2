@@ -49,6 +49,7 @@ export {
     "numActors",
     "ringActors",
     "Sub",
+    "symmetricGroupActors",
     "symmetricGroupTable"
     }
 
@@ -674,6 +675,21 @@ symmetricGroupTable(ZZ,PolynomialRing) := (n,R) -> (
 	(symbol labels) => P/compactPartition,
 	}
     )
+
+-- symmetric group variable permutation action
+symmetricGroupActors = method();
+symmetricGroupActors(ZZ,PolynomialRing) := (n,R) -> (
+    for p in partitions(n) list (
+	L := gens R;
+	g := for u in p list (
+	    l := take(L,u);
+	    L = drop(L,u);
+	    rotate(1,l)
+	    );
+	matrix { flatten g }
+    	)
+    )
+
 
 ----------------------------------------------------------------------
 -- Overloaded Methods
