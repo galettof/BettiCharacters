@@ -657,9 +657,11 @@ murnaghanNakayama = memoize murnaghanNakayama
 
 -- symmetric group character table
 symmetricGroupTable = method();
-symmetricGroupTable(ZZ,PolynomialRing) := (n,R) -> (
+symmetricGroupTable PolynomialRing := R -> (
+    -- CHECK RING for consistency!
+    n := dim R;
     if n < 1 then (
-	error "symmetricGroupTable: expected positive integer";
+	error "symmetricGroupTable: expected a positive number of variables";
 	);
     -- list partitions
     P := apply(partitions n, toList);
@@ -684,7 +686,9 @@ symmetricGroupTable(ZZ,PolynomialRing) := (n,R) -> (
 
 -- symmetric group variable permutation action
 symmetricGroupActors = method();
-symmetricGroupActors(ZZ,PolynomialRing) := (n,R) -> (
+symmetricGroupActors PolynomialRing := R -> (
+    -- WRITE CONSISTENCY CHECKS
+    n := dim R;
     for p in partitions(n) list (
 	L := gens R;
 	g := for u in p list (
@@ -828,7 +832,7 @@ Node
 	subspace arrangement in a 7-dimensional affine space.
 	This point of view is explored in
 	@HREF("https://doi.org/10.1007/s00220-014-2010-4",
-	    "C. Berkesch, S. Griffeth, S. Sam - Jack polynomials as fractional quantum Hall states and the Betti numbers of the (k+1)-equals ideal")@.
+	    "C. Berkesch, S. Griffeth, S. Sam - Jack polynomials as fractional quantum Hall states and the Betti numbers of the (k+1)-equals ideal")@
 	where the action of the symmetric group on the resolution
 	is also described.
 	
@@ -848,36 +852,21 @@ Node
 	Its conjugacy classes are determined by cycle types,
 	which are in bijection with partitions of 7.
 	Once the action is set up, we compute the Betti characters.
-    Example	
-	G = for p in partitions(7) list (
-    	    L := gens R;
-    	    g := for u in p list (
-    		l := take(L,u);
-    		L = drop(L,u);
-    		rotate(1,l)
-    		);
-    	    matrix { flatten g }
-    	    )
-	A=action(RI,G)
+    Example
+    	S7 = symmetricGroupActors R
+	A=action(RI,S7)
 	elapsedTime c=character A
     Text
     	To make sense of these characters we decompose them
 	against	the character table of the symmetric group,
 	which can be computed using the function
-	@TO "SpechtModule::characterTable"@
-	provided by the package @TO "SpechtModule::SpechtModule"@.
-	First we form a hash table with the irreducible characters.
-	Then we define a function that computes the multiplicities
-	of the irreducible characters in a given character.
-	Finally, we apply this function to the Betti characters
-	computed above.
+	@TO "symmetricGroupTable"@. The irreducible characters
+	are indexed by the partitions of 7, which are written
+	using a compact notation (the exponents indicate how
+	    many times a part is repeated).
     Example
-    	irrReps = new HashTable from pack(2,
-    	    mingle {
-	    	partitions 7,
-	    	apply(entries (characterTable 7)#values, r -> mutableMatrix{r})
-	    	}
-    	    )
+    	T = symmetricGroupTable R
+	decomposeCharacter(c,T)
     Text
     	As expected from the general theory, we find a single
 	irreducible representation in each homological degree.	
