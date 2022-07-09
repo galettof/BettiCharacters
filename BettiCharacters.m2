@@ -213,11 +213,17 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 	error "decomposeCharacter: expected character length does not match table";
 	);
     ord := sum T.size;
+    -- create decomposition hash table
+    D := applyValues(C.characters, char -> 1/ord*char*T.matrix);
+    -- find non zero columns of table for printing
+    M := matrix apply(values D, m -> flatten entries m);
+    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     new CharacterDecomposition from {
 	(symbol numActors) => C.numActors,
 	(symbol ring) => R,
 	(symbol labels) => T.labels,
-	(symbol decompose) => applyValues(C.characters, char -> 1/ord*char*T.matrix)
+	(symbol decompose) => D,
+	(symbol positions) => p
 	}
     )
 
@@ -730,10 +736,11 @@ net CharacterTable := T -> (
 
 -- printing character decompositions
 net CharacterDecomposition := D -> (
+    p := D.positions;
     -- top row of decomposition table
-    a := {{""} | D.labels};
+    a := {{""} | D.labels_p };
     -- body of decomposition table
-    b := apply(sort pairs D.decompose,(k,v)->{k}|(flatten entries v));
+    b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
     	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
