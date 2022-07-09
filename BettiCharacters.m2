@@ -901,37 +901,21 @@ Node
 	Its conjugacy classes are determined by cycle types,
 	which are in bijection with partitions of 6.
 	Once the action is set up, we compute the Betti characters.
-    Example	
-	G = for p in partitions(6) list (
-	    L := gens R;
-	    g := for u in p list (
-		l := take(L,u);
-		L = drop(L,u);
-		rotate(1,l)
-		);
-	    matrix { flatten g }
-	    )
-	A=action(RI,G)
+    Example
+    	S6 = symmetricGroupActors R
+	A=action(RI,S6)
 	elapsedTime c=character A
     Text
     	To make sense of these characters we decompose them
 	against	the character table of the symmetric group,
 	which can be computed using the function
-	@TO "SpechtModule::characterTable"@
-	provided by the package @TO "SpechtModule::SpechtModule"@.
-	First we form a hash table with the irreducible characters.
-	Then we define a function that computes the multiplicities
-	of the irreducible characters in a given character.
-	Finally, we apply this function to the Betti characters
-	computed above.
+	@TO "symmetricGroupTable"@. The irreducible characters
+	are indexed by the partitions of 6, which are written
+	using a compact notation (the exponents indicate how
+	    many times a part is repeated).
     Example
-	needsPackage "SpechtModule"
-	irrReps = new HashTable from pack(2,
-	    mingle {
-		partitions 6,
-		apply(entries (characterTable 6)#values, r -> mutableMatrix{r})
-		}
-	    )
+    	T = symmetricGroupTable R
+	decomposeCharacter(c,T)
     Text
     	The description provided in
 	@HREF("https://doi.org/10.1016/j.jalgebra.2020.04.037",
