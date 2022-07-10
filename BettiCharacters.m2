@@ -209,8 +209,8 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 	error "decomposeCharacter: expected character and table over the same ring";
 	);
     -- check number of actors is the same
-    if C.numActors != #T.size then (
-	error "decomposeCharacter: expected character length does not match table";
+    if C.numActors != T.numActors then (
+	error "decomposeCharacter: character length does not match table";
 	);
     ord := sum T.size;
     -- create decomposition hash table
