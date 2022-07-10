@@ -202,7 +202,8 @@ o -> (conjSize,charTable,R,perm) -> (
 decomposeCharacter = method(TypicalValue=>CharacterDecomposition);
 
 -- decompose a character against a character table
-decomposeCharacter(Character,CharacterTable) := (C,T) -> (
+decomposeCharacter(Character,CharacterTable) :=
+CharacterDecomposition => (C,T) -> (
     -- check character and table are over same ring
     R := C.ring;
     if T.ring =!= R then (
@@ -231,7 +232,8 @@ decomposeCharacter(Character,CharacterTable) := (C,T) -> (
 Character / CharacterTable := CharacterDecomposition => decomposeCharacter
 
 -- recreate a character from decomposition
-character(CharacterDecomposition,CharacterTable) := (D,T) -> (
+character(CharacterDecomposition,CharacterTable) :=
+Character => (D,T) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => D.ring,
