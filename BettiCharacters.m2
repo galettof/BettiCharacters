@@ -334,13 +334,13 @@ action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
     )
 
 -- returns number of actors
-numActors = method()
+numActors = method(TypicalValue=>ZZ)
 numActors(Action) := ZZ => A -> A.numActors
 
 -- returns action on ring variables
 -- Sub=>true returns one-row substitution matrices
 -- Sub=>false returns square matrices
-ringActors = method(Options=>{Sub=>true})
+ringActors = method(TypicalValue=>List,Options=>{Sub=>true})
 ringActors(Action) := List => op -> A -> (
     if op.Sub then apply(A.ringActors,g->(vars ring A)*g)
     else A.ringActors
@@ -348,7 +348,7 @@ ringActors(Action) := List => op -> A -> (
 
 -- returns the inverses of the actors on ring variables
 -- same options as ringActors
-inverseRingActors = method(Options=>{Sub=>true})
+inverseRingActors = method(TypicalValue=>List,Options=>{Sub=>true})
 inverseRingActors(Action) := List => op -> A -> (
     if op.Sub then apply(A.inverseRingActors,g->(vars ring A)*g)
     else A.inverseRingActors
