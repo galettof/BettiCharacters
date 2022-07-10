@@ -127,15 +127,14 @@ Character.directSum = args -> (
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
     then error "directSum: expected characters all of the same length";
-    C := new Character from {
+    new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
 	    apply(args, c -> c.characters) ),
-	};
-    C
+	}
     )
 
 -- method to construct character tables
