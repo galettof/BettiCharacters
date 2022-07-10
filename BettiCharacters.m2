@@ -1105,6 +1105,30 @@ Node
     	    
 Node
     Key
+    	CharacterTable
+    Headline
+    	the class of all character tables of finite groups
+    Description
+    	Text
+	    This class is provided by the package
+	    @TO BettiCharacters@.
+    Subnodes
+	(net,CharacterTable)
+    	    
+Node
+    Key
+    	CharacterDecomposition
+    Headline
+    	the class of all finite group character decompositions
+    Description
+    	Text
+	    This class is provided by the package
+	    @TO BettiCharacters@.
+    Subnodes
+	(net,CharacterDecomposition)
+    	    
+Node
+    Key
     	action
     Headline
     	define finite group action
@@ -1889,6 +1913,47 @@ Node
 
 Node
     Key
+    	(net,Action)
+    Headline
+    	format for printing, as a net
+    Description
+    	Text
+	    Format objects of type @TO Action@ for printing.
+	    See @TO net@ for more information.
+
+Node
+    Key
+    	(net,Character)
+    Headline
+    	format for printing, as a net
+    Description
+    	Text
+	    Format objects of type @TO Character@ for printing.
+	    See @TO net@ for more information.
+
+Node
+    Key
+    	(net,CharacterTable)
+    Headline
+    	format for printing, as a net
+    Description
+    	Text
+	    Format objects of type @TO CharacterTable@ for printing.
+	    See @TO net@ for more information.
+
+Node
+    Key
+    	(net,CharacterDecomposition)
+    Headline
+    	format for printing, as a net
+    Description
+    	Text
+	    Format objects of type @TO CharacterDecomposition@ for printing.
+	    See @TO net@ for more information.
+
+
+Node
+    Key
     	numActors
     	(numActors,Action)
     Headline
@@ -1912,27 +1977,6 @@ Node
 	    class of the group.
     SeeAlso
     	action
-
-
-Node
-    Key
-    	(net,Action)
-    Headline
-    	format for printing, as a net
-    Description
-    	Text
-	    Format objects of type @TO Action@ for printing.
-	    See @TO net@ for more information.
-
-Node
-    Key
-    	(net,Character)
-    Headline
-    	format for printing, as a net
-    Description
-    	Text
-	    Format objects of type @TO Character@ for printing.
-	    See @TO net@ for more information.
 
 
 Node
