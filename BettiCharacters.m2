@@ -147,7 +147,7 @@ characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 -- 3) ring over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
 -- OPTIONAL: list of labels for irreducible characters
-characterTable(List,Matrix,PolynomialRing,List) :=
+characterTable(List,Matrix,PolynomialRing,List) := CharacterTable =>
 o -> (conjSize,charTable,R,perm) -> (
     n := #conjSize;
     -- check all arguments have the right size
