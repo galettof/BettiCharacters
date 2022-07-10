@@ -947,16 +947,16 @@ Node
 	adjoining a primitive 7th root of unity to $\mathbb{Q}$.
 	(This example was precompiled by the package author.)
     Example
-    	kk=toField(QQ[a]/ideal(sum apply(7,i->a^i)))
-	R=kk[x,y,z]
-	f4=x^3*y+y^3*z+z^3*x
-	H=jacobian transpose jacobian f4
-	f6=-1/54*det(H)
-	I=minors(2,jacobian matrix{{f4,f6}})
-	RI=res I
+    	kk = toField(QQ[a]/ideal(sum apply(7,i->a^i)))
+	R = kk[x,y,z]
+	f4 = x^3*y+y^3*z+z^3*x
+	H = jacobian transpose jacobian f4
+	f6 = -1/54*det(H)
+	I = minors(2,jacobian matrix{{f4,f6}})
+	RI = res I
 	betti RI
-	I2=I^2;
-	RI2=res I2
+	I2 = I^2;
+	RI2 = res I2
 	betti RI2
     Text
 	The unique simple group of order 168 acts as described
@@ -972,26 +972,47 @@ Node
 	both ideals is described in the second proof of
 	Proposition 8.1.
     Example
-	g=matrix{{a^4,0,0},{0,a^2,0},{0,0,a}}
-	h=matrix{{0,1,0},{0,0,1},{1,0,0}}
-	i=(2*a^4+2*a^2+2*a+1)/7 * matrix{
+	g = matrix{{a^4,0,0},{0,a^2,0},{0,0,a}}
+	h = matrix{{0,1,0},{0,0,1},{1,0,0}}
+	i = (2*a^4+2*a^2+2*a+1)/7 * matrix{
     	    {a-a^6,a^2-a^5,a^4-a^3},
     	    {a^2-a^5,a^4-a^3,a-a^6},
     	    {a^4-a^3,a-a^6,a^2-a^5}
     	    }
-	j=-1/(2*a^4+2*a^2+2*a+1) * matrix{
+	j = -1/(2*a^4+2*a^2+2*a+1) * matrix{
     	    {a^5-a^4,1-a^5,1-a^3},
     	    {1-a^5,a^6-a^2,1-a^6},
     	    {1-a^3,1-a^6,a^3-a}
     	    }
-	G={id_(R^3),i,h,j,g,inverse g};
-	A1=action(RI,G,Sub=>false)
-	A2=action(RI2,G,Sub=>false)
-	elapsedTime character A1
-	elapsedTime character A2
+	G = {id_(R^3),i,h,j,g,inverse g};
     Text
-	The character of the resolution of the ideal shows the
-	free module in homological degree two is a direct sum
+    	We compute the action of this group
+	on the two resolutions above.
+    Example
+	A1 = action(RI,G,Sub=>false)
+	A2 = action(RI2,G,Sub=>false)
+	elapsedTime a1 = character A1
+	elapsedTime a2 = character A2
+    Text
+    	Next we set up the character table of the group
+	and decompose the Betti characters of the resolutions.
+	See @TO characterTable@ for an explanation of the arguments.
+    Example
+        s = {1,21,56,42,24,24}
+	m = matrix{{1,1,1,1,1,1},
+    	    {3,-1,0,1,a^4+a^2+a,-a^4-a^2-a-1},
+    	    {3,-1,0,1,-a^4-a^2-a-1,a^4+a^2+a},
+    	    {6,2,0,0,-1,-1},
+    	    {7,-1,1,-1,0,0},
+    	    {8,0,-1,0,1,1}};
+        T = characterTable(s,m,R,{1,2,3,4,6,5})
+	a1/T
+	a2/T
+    Text
+    	Since @TT "X0"@ is the trivial character,
+	this computation shows that the
+	free module in homological degree two in the resolution of the
+	defining ideal of the Klein configuration is a direct sum
 	of two trivial representations. It follows that its second
 	exterior power is also trivial. As observed in the second
 	proof of Proposition 8.1 in @HREF("https://doi.org/10.1093/imrn/rnx329",
@@ -1011,7 +1032,8 @@ Node
 	Is2 = symbolicPower(I,2);
 	M = Is2 / I2;
 	B = action(M,G,Sub=>false)
-	elapsedTime character(B,21)
+	elapsedTime b = character(B,21)
+	b/T
 
 
 Node
@@ -2191,4 +2213,3 @@ end
 	M = Is2 / I2;
 	B = action(M,G,Sub=>false)
 	character(B,21)
-
