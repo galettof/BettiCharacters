@@ -430,7 +430,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 
 -- return characters of all free modules in a resolution
 -- by repeatedly using previous function
-character ActionOnComplex := HashTable => A -> (
+character ActionOnComplex := Character => A -> (
     C := target A;
     directSum for i from min(C) to min(C)+length(C) list character(A,i)
     )
