@@ -634,6 +634,7 @@ isPartition := mu -> (
 
 -- irreducible Sn character chi^lambda
 -- evaluated at conjugacy class of cycle type rho
+-- unexported
 murnaghanNakayama := (lambda,rho) -> (
     -- if both empty, character is 1
     if lambda == {} and rho == {} then return 1;
@@ -656,7 +657,7 @@ murnaghanNakayama := (lambda,rho) -> (
 murnaghanNakayama = memoize murnaghanNakayama
 
 -- symmetric group character table
-symmetricGroupTable = method();
+symmetricGroupTable = method(TypicalValue=>CharacterTable);
 symmetricGroupTable PolynomialRing := R -> (
     -- CHECK RING for consistency!
     n := dim R;
