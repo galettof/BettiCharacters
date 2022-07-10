@@ -253,7 +253,7 @@ CharacterDecomposition * CharacterTable := Character => character
 -- optional argument Sub=>true means ring actors are passed
 -- as one-row matrices of substitutions, Sub=>false means
 -- ring actors are passed as matrices
-action = method(Options=>{Sub=>true})
+action = method(TypicalValue=>Action,Options=>{Sub=>true})
 
 -- constructor for action on resolutions
 -- INPUT:
