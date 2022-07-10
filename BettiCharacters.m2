@@ -29,8 +29,6 @@ newPackage(
      DebuggingMode => false
      )
 
---exportFrom(package SpechtModule,{"characterTable","cardinalityOfConjugacyClass"})
-
 export {
     "action",
     "Action",
