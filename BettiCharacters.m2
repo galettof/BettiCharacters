@@ -70,7 +70,7 @@ ActionOnGradedModule = new Type of Action
 ----------------------------------------------------------------------
 
 -- method for returning characters of various action types
-character = method()
+character = method(TypicalValue=>Character)
 
 -- construct a finite dimensional character by hand
 -- INPUT:
