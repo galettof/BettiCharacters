@@ -188,6 +188,7 @@ o -> (conjSize,charTable,R,perm) -> (
 	l = o.Labels;
 	);
     new CharacterTable from {
+	(symbol numActors) => #conjSize,
 	(symbol size) => conjSize,
 	(symbol table) => X,
 	(symbol ring) => R,
