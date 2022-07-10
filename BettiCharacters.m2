@@ -659,10 +659,18 @@ murnaghanNakayama = memoize murnaghanNakayama
 -- symmetric group character table
 symmetricGroupTable = method(TypicalValue=>CharacterTable);
 symmetricGroupTable PolynomialRing := R -> (
-    -- CHECK RING for consistency!
+    -- check argument is a polynomial ring over a field
+    if not isField coefficientRing R then (
+	error "symmetricGroupTable: expected polynomial ring over a field";
+	);
+    -- check number of variables
     n := dim R;
     if n < 1 then (
 	error "symmetricGroupTable: expected a positive number of variables";
+	);
+    -- check characteristic
+    if n! % (char R) == 0 then (
+	error ("symmetricGroupTable: expected characteristic not dividing " | toString(n) | "!");
 	);
     -- list partitions
     P := apply(partitions n, toList);
