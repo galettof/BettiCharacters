@@ -199,7 +199,7 @@ o -> (conjSize,charTable,R,perm) -> (
     )
 
 -- new method for character decomposition
-decomposeCharacter = method();
+decomposeCharacter = method(TypicalValue=>CharacterDecomposition);
 
 -- decompose a character against a character table
 decomposeCharacter(Character,CharacterTable) := (C,T) -> (
