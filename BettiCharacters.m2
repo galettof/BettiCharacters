@@ -696,8 +696,15 @@ symmetricGroupTable PolynomialRing := R -> (
 -- symmetric group variable permutation action
 symmetricGroupActors = method();
 symmetricGroupActors PolynomialRing := R -> (
-    -- WRITE CONSISTENCY CHECKS
+    -- check argument is a polynomial ring over a field
+    if not isField coefficientRing R then (
+	error "symmetricGroupTable: expected polynomial ring over a field";
+	);
+    -- check number of variables
     n := dim R;
+    if n < 1 then (
+	error "symmetricGroupTable: expected a positive number of variables";
+	);
     for p in partitions(n) list (
 	L := gens R;
 	g := for u in p list (
