@@ -1553,8 +1553,8 @@ Node
     	A:ActionOnComplex
 	    a finite group action on a minimal free resolution
     Outputs
-    	:HashTable
-	    of the Betti characters of the resolution
+    	:Character
+	    Betti characters of the resolution
     Description
     	Text
 	    This function is provided by the package
