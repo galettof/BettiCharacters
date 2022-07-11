@@ -1842,6 +1842,95 @@ Node
 
 Node
     Key
+    	characterTable
+    Headline
+    	construct a character table
+    Usage
+    	T = characterTable(s,M,R,P)
+    Inputs
+    	s:List
+	    of conjugacy class sizes
+    	M:Matrix
+	    with character table entries
+    	R:PolynomialRing
+	    over a field
+    	P:List
+	    permutation of conjugacy classes
+    Outputs
+    	T:CharacterTable
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Use the @TO characterTable@ method to construct
+	    the character table of a finite group.
+	    
+	    The first argument is a list containing the cardinalities
+	    of the conjugacy classes of the group.
+	    
+	    The second argument is a square matrix whose entry in
+	    row $i$ and column $j$ is the value of the $i$-th
+	    irreducible character of the group at an element
+	    of the $j$-th conjugacy class.
+	    
+	    The third argument is a polynomial ring over a field,
+	    the same ring over which the modules and resolutions
+	    are defined whose characters are to be decomposed
+	    against the character table. Note that the matrix in
+	    the second argument must be liftable to this ring.
+	    
+	    If all irreducible characters of the group take values
+	    in the rational numbers, then the last argument is the
+	    list of integers $1,\dots,r$, where $r$ is the number
+	    of conjugacy classes of the group.
+	    
+	    As an example, we construct the character table of the
+	    symmetric group on 3 elements.
+	Example
+	    s = {2,3,1}
+	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
+	    R = QQ[x_1..x_3]
+	    P = {1,2,3}
+	    T = characterTable(s,M,R,P)
+	Text
+	    By default, irreducible characters in a character table
+	    are labeled as @TT "X0, X1, ..."@, etc.
+	    The user may pass custom labels in a list using
+	    the option @TO Labels@.
+	    
+	    More generally, the fourth argument is a list containing a
+	    permutation  $\pi$ of the integers $1,\dots,r$, where
+	    $r$ is the number of conjugacy classes of the group.
+	    The permutation $\pi$ is defined as follows:
+	    if $g$ is an element of the $j$-th conjugacy class,
+	    then $g^{-1}$ is an element of the $\pi (j)$-th class.
+	    
+	    As an example, we construct the character table of the
+	    cyclic group of order 3. If $g$ is a generator of the group,
+	    then we take the conjugacy classes to be, in order, $\{1\}$,
+	    $\{g\}$, and $\{g^2\}$. The inverse of $g^2$ is $g$, so the
+	    permutation $\pi$ is $1,3,2$ in one-line notation.
+	    We let @TT "w"@ be a primitive third root of unity.
+    	Example
+	    F = toField(QQ[w]/ideal(1+w+w^2))
+	    s = {1,1,1}
+	    M = matrix{{1,1,1},{1,w,w^2},{1,w^2,w}}
+	    R = F[x_1..x_3]
+	    P = {1,3,2}
+	    T = characterTable(s,M,R,P)
+    Caveat
+    	This constructor checks orthonormality of the table
+	matrix under the standard scalar product of characters.
+	However, it may still be possible to construct a table
+	that is not an actual character table. Note also that
+	there are no further checks when using a character table
+	to decompose characters.
+    SeeAlso
+    	decomposeCharacter
+
+Node
+    Key
     	(directSum,Character)
 	(symbol ++,Character,Character)
     Headline
