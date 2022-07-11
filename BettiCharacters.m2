@@ -2319,6 +2319,34 @@ Node
 
 Node
     Key
+    	symmetricGroupTable
+    	(symmetricGroupTable,PolynomialRing)
+    Headline
+    	character table of the symmetric group
+    Usage
+    	symmetricGroupTable(R)
+    Inputs
+    	R:PolynomialRing
+    Outputs
+    	:CharacterTable
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Returns the character table of the symmetric group
+	    $S_n$, where $n$ is the number of variables of the
+	    polynomial ring in the input. The irreducible
+	    characters are indexed by the partitions of $n$ written
+	    using a compact notation where an exponent indicates
+	    how many times a part is repeated. The computation uses
+	    the recursive Murnaghan-Nakayama formula.
+    	Example
+	    R=QQ[x_1..x_4]
+	    symmetricGroupTable(R)
+
+Node
+    Key
     	Sub
 	[action, Sub]
 	[ringActors, Sub]
