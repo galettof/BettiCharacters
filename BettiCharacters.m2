@@ -1920,6 +1920,20 @@ Node
 	    R = F[x_1..x_3]
 	    P = {1,3,2}
 	    T = characterTable(s,M,R,P)
+    	Text
+	    When working over a splitting field for a finite group
+	    $G$ in the non modular case, the irreducible characters
+	    of $G$ form an orthonormal basis for the space of class
+	    functions on $G$ with the scalar product given by
+	    $$\langle \chi_1, \chi_2 \rangle = \frac{1}{|G|}
+	    \sum_{g\in G} \chi_1 (g) \chi_2 (g^{-1}).$$
+    	    Over the complex numbers, the second factor in the summation
+	    is equal to $\overline{\chi_2 (g)}$. However, to avoid
+	    defining conjugation, and to allow other fields, the
+	    scalar product is computed using the permutation @TT "P"@
+	    in the last argument of the @TO characterTable@ command
+	    to decide which conjugacy class the inverse of an
+	    element belongs to.
     Caveat
     	This constructor checks orthonormality of the table
 	matrix under the standard scalar product of characters.
@@ -1981,11 +1995,6 @@ Node
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@ when constructing the character
 	    table.
-    Caveat
-    	The decomposition is achieved using the standard scalar
-	product of characters given by
-	$$\langle \chi_1, \chi_2 \rangle = \frac{1}{|G|}
-	\sum_{g\in G} \chi_1 (g) \chi_2 (g^{-1}).$$
     SeeAlso
     	characterTable
 
