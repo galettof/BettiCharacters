@@ -1842,6 +1842,49 @@ Node
 
 Node
     Key
+    	(character,CharacterDecomposition,CharacterTable)
+	(symbol *,CharacterDecomposition,CharacterTable)
+    Headline
+    	recover character from decomposition
+    Usage
+    	character(d,T)
+	d*T
+    Inputs
+    	d:CharacterDecomposition
+    	T:CharacterTable
+    Outputs
+    	:Character
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Use this function to recover a character from its decomposition
+	    into a linear combination of the irreducible characters
+	    in a character table. The shortcut @TT "d*T"@
+	    is equivalent to the command @TT "character(d,T)"@.
+	    
+	    As an example, we construct the character table of the
+	    symmetric group on 3 elements, then use it to decompose
+	    the character of the action of the same symmetric group
+	    permuting the variables of a standard graded polynomial ring.
+	Example
+	    s = {2,3,1}
+	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
+	    R = QQ[x_1..x_3]
+	    P = {1,2,3}
+	    T = characterTable(s,M,R,P)
+	    acts = {matrix{{x_2,x_3,x_1}},matrix{{x_2,x_1,x_3}},matrix{{x_1,x_2,x_3}}}
+	    A = action(R,acts)
+	    c = character(A,0,10)
+	    d = c/T
+	    c === d*T
+    SeeAlso
+    	characterTable
+	decomposeCharacter
+
+Node
+    Key
     	characterTable
     	(characterTable,List,Matrix,PolynomialRing,List)
     Headline
