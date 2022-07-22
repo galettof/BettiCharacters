@@ -2588,29 +2588,3 @@ assert(character(B,2) === cb2)
 ///
 
 end
-
---below is code for Example 3
-    Example
-	g=matrix{{a^4,0,0},{0,a^2,0},{0,0,a}}
-	h=matrix{{0,1,0},{0,0,1},{1,0,0}}
-	i=(2*a^4+2*a^2+2*a+1)/7 * matrix{
-    	    {a-a^6,a^2-a^5,a^4-a^3},
-    	    {a^2-a^5,a^4-a^3,a-a^6},
-    	    {a^4-a^3,a-a^6,a^2-a^5}
-    	    }
-	j=-1/(2*a^4+2*a^2+2*a+1) * matrix{
-    	    {a^5-a^4,1-a^5,1-a^3},
-    	    {1-a^5,a^6-a^2,1-a^6},
-    	    {1-a^3,1-a^6,a^3-a}
-    	    }
-	G={id_(R^3),i,h,j,g,inverse g};
-	A1=action(RI,G,Sub=>false)
-	A2=action(RI2,G,Sub=>false)
-	elapsedTime character A1
-	elapsedTime character A2
-    Example
-	needsPackage "SymbolicPowers"
-	Is2 = symbolicPower(I,2);
-	M = Is2 / I2;
-	B = action(M,G,Sub=>false)
-	character(B,21)
