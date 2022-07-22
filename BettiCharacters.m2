@@ -165,7 +165,7 @@ tensor(Character,Character) := Character => (c1,c2) -> (
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol numActors) => cl,
-	-- add raw characters
+	-- multiply raw characters
 	(symbol characters) => combine(c1.characters,c2.characters,
 	    addDegrees,multiplyCharacters,plus)
 	}
@@ -180,7 +180,7 @@ Character Array := Character => (C,A) -> (
 	cache => new CacheTable,
 	(symbol ring) => C.ring,
 	(symbol numActors) => C.numActors,
-	-- add raw characters
+	-- homological shift raw characters
 	(symbol characters) => applyKeys(C.characters,
 	    k -> (k#0 - n, k#1))
 	}
