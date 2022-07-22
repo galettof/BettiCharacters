@@ -2383,6 +2383,9 @@ Node
     	Example
 	    R=QQ[x_1..x_4]
 	    symmetricGroupTable(R)
+    SeeAlso
+	"BettiCharacters Example 1"
+	"BettiCharacters Example 2"
 
 Node
     Key
