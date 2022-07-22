@@ -1585,6 +1585,7 @@ Node
     	(character,ActionOnComplex,ZZ)
      	(character,ActionOnGradedModule,List)
 	(character,PolynomialRing,ZZ,HashTable)
+	(character,CharacterDecomposition,CharacterTable)
 	    
 Node
     Key
@@ -2051,7 +2052,6 @@ Node
     	characterTable
     Subnodes
     	CharacterDecomposition
-	(character,CharacterDecomposition,CharacterTable)
 
 Node
     Key
