@@ -825,6 +825,12 @@ Node
       	:Computing actions and characters
 	actors
         character
+	:Decomposing characters
+	characterTable
+	decomposeCharacter
+	:Symmetric group actions
+	symmetricGroupActors
+	symmetricGroupTable
     	:Examples from the literature
       	"BettiCharacters Example 1"
       	"BettiCharacters Example 2"
@@ -1986,6 +1992,9 @@ Node
 	to decompose characters.
     SeeAlso
     	decomposeCharacter
+    Subnodes
+    	CharacterTable
+	labels
 
 Node
     Key
@@ -2040,6 +2049,8 @@ Node
 	    table.
     SeeAlso
     	characterTable
+    Subnodes
+    	CharacterDecomposition
 
 Node
     Key
