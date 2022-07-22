@@ -2319,6 +2319,45 @@ Node
 
 Node
     Key
+    	symmetricGroupActors
+    	(symmetricGroupActors,PolynomialRing)
+    Headline
+    	permutation action of the symmetric group
+    Usage
+    	symmetricGroupActors(R)
+    Inputs
+    	R:PolynomialRing
+    Outputs
+    	:List
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Returns a list of of matrices, each representing an
+	    element of the symmetric group permuting the variables
+	    of the polynomial ring in the input. This simplifies
+	    the setup for symmetric group actions with the
+	    @TO action@ command.
+	    
+	    The output list
+	    contains one element for each conjugacy class of
+	    the symmetric group. The conjugacy classes are
+	    determined by their cycle type and are in bijection
+	    with the partitions of $n$, where $n$ is the
+	    number of variables. Therefore the first element
+	    of the list will always be a cycle of length $n$,
+	    and the last element will be the identity.
+    	Example
+	    R=QQ[x_1..x_4]
+	    symmetricGroupActors(R)
+	    partitions 4
+    SeeAlso
+	"BettiCharacters Example 1"
+	"BettiCharacters Example 2"
+
+Node
+    Key
     	symmetricGroupTable
     	(symmetricGroupTable,PolynomialRing)
     Headline
