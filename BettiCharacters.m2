@@ -2528,6 +2528,7 @@ S5 = for p in partitions(5) list (
 	);
     matrix { flatten g }
     )
+assert(S5 == symmetricGroupActors(R))
 A = action(RI,S5)
 a = character(R,7,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
@@ -2559,6 +2560,30 @@ d = character(R,7,hashTable {
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
+cS5 = symmetricGroupTable(R)
+assert( cS5.table ==
+    matrix{{1_R,1,1,1,1,1,1},
+	{-1,0,-1,1,0,2,4},
+	{0,-1,1,-1,1,1,5},
+	{1,0,0,0,-2,0,6},
+	{0,1,-1,-1,1,-1,5},
+	{-1,0,1,1,0,-2,4},
+	{1,-1,-1,1,1,-1,1}}
+    )
+adec = a/cS5
+assert( set keys adec.decompose ===
+    set {(0,{0}),(1,{2}),(2,{3}),(3,{5})})
+assert( adec.decompose#(0,{0}) == matrix{{1_R,0,0,0,0,0,0}})
+assert( adec.decompose#(1,{2}) == matrix{{0,0,1_R,0,0,0,0}})
+assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_R,0,0}})
+assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_R}})
+ddec = d/cS5
+assert( set keys ddec.decompose ===
+    set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
+assert( ddec.decompose#(0,{0}) == matrix{{1_R,0,0,0,0,0,0}})
+assert( ddec.decompose#(0,{1}) == matrix{{1_R,1,0,0,0,0,0}})
+assert( ddec.decompose#(0,{2}) == matrix{{2_R,2,0,0,0,0,0}})
+assert( ddec.decompose#(0,{3}) == matrix{{3_R,3,0,0,0,0,0}})
 ///
 
 -- Test 3 (non symmetric group, tests actors)
