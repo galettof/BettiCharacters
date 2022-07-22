@@ -2051,6 +2051,7 @@ Node
     	characterTable
     Subnodes
     	CharacterDecomposition
+	(character,CharacterDecomposition,CharacterTable)
 
 Node
     Key
