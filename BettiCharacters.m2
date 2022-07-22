@@ -171,7 +171,20 @@ tensor(Character,Character) := Character => (c1,c2) -> (
 	}
     )
 
-
+-- shift homological degree of characters
+Character Array := Character => (C,A) -> (
+    if # A =!= 1 then error "expected array of length 1";
+    n := A#0;
+    if not instance(n,ZZ) then error "expected an integer";
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => C.ring,
+	(symbol numActors) => C.numActors,
+	-- add raw characters
+	(symbol characters) => applyKeys(C.characters,
+	    k -> (k#0 - n, k#1))
+	}
+    )
 
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
