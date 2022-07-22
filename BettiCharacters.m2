@@ -2497,10 +2497,14 @@ cS3 = symmetricGroupTable(R)
 assert( cS3.table ==
     matrix{{1_R,1,1},{-1,0,2},{1,-1,1}})
 adec = a/cS3
+assert( set keys adec.decompose ===
+    set {(0,{0}),(1,{2}),(2,{3})})
 assert( adec.decompose#(0,{0}) == matrix{{1_R,0,0}})
 assert( adec.decompose#(1,{2}) == matrix{{1_R,1,0}})
 assert( adec.decompose#(2,{3}) == matrix{{0,1_R,0}})
 ddec = d/cS3
+assert( set keys ddec.decompose ===
+    set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
 assert( ddec.decompose#(0,{0}) == matrix{{1_R,0,0}})
 assert( ddec.decompose#(0,{1}) == matrix{{1_R,1,0}})
 assert( ddec.decompose#(0,{2}) == matrix{{1_R,1,0}})
