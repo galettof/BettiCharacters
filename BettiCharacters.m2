@@ -135,6 +135,44 @@ Character.directSum = args -> (
 	}
     )
 
+-- tensor product of characters
+-- function to add sequences (homological,internal) degrees
+addDegrees = (d1,d2) -> apply(d1,d2,plus)
+
+-- function to multiply character matrices (Hadamard product)
+multiplyCharacters = (c1,c2) -> (
+    e1 := flatten entries c1;
+    e2 := flatten entries c2;
+    m := apply(e1,e2,times);
+    matrix{m}
+    )
+
+-- tensor product of characters
+-- modele after directSum above
+Character ** Character := Character => tensor
+--tensor Character := c -> Character.tensor (1 : c)
+--Character.tensor = args -> (
+tensor(Character,Character) := Character => (c1,c2) -> (
+    -- check ring is the same for all factors
+    R := c1.ring;
+    if (c2.ring =!= R)
+    then error "tensor: expected characters all over the same ring";
+    -- check character length is the same for all summands
+    cl := c1.numActors;
+    if (c2.numActors != cl)
+    then error "tensor: expected characters all of the same length";
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => R,
+	(symbol numActors) => cl,
+	-- add raw characters
+	(symbol characters) => combine(c1.characters,c2.characters,
+	    addDegrees,multiplyCharacters,plus)
+	}
+    )
+
+
+
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
