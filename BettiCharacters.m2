@@ -135,7 +135,7 @@ Character.directSum = args -> (
 	}
     )
 
--- tensor product of characters
+-- tensor product of characters (auxiliary functions)
 -- function to add sequences (homological,internal) degrees
 addDegrees = (d1,d2) -> apply(d1,d2,plus)
 
@@ -148,10 +148,8 @@ multiplyCharacters = (c1,c2) -> (
     )
 
 -- tensor product of characters
--- modele after directSum above
+-- modeled after directSum, but only works for two characters
 Character ** Character := Character => tensor
---tensor Character := c -> Character.tensor (1 : c)
---Character.tensor = args -> (
 tensor(Character,Character) := Character => (c1,c2) -> (
     -- check ring is the same for all factors
     R := c1.ring;
