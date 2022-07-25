@@ -215,6 +215,63 @@ characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
 -- 3) ring over which to construct the table
+-- 4) ring map, conjugation
+-- OPTIONAL: list of labels for irreducible characters
+characterTable(List,Matrix,PolynomialRing,RingMap) := CharacterTable =>
+o -> (conjSize,charTable,R,phi) -> (
+    n := #conjSize;
+    -- check all arguments have the right size
+    if numRows charTable != n or numColumns charTable != n then (
+	error "characterTable: expected matrix size to match number of conjugacy classes";
+	);
+    -- promote character matrix to R
+    X := try promote(charTable,R) else (
+	error "characterTable: could not promote character table to given ring";
+	);
+    -- check conjugation may
+    F := coefficientRing R;
+    if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
+	error "characterTable: expected an order 2 automorphism of the coefficient ring";
+	);
+    -- check orthogonality relations
+    ordG := sum conjSize;
+    C := diagonalMatrix(R,conjSize);
+    P := map(R^n)_(apply(perm, i -> i-1));
+    Phi := map(R,F) * phi;
+    m := C*transpose(Phi charTable);
+    -- if x is a character in a one-row matrix, then x*m is the one-row matrix
+    -- containing the inner products of x with the irreducible characters
+    if X*m != ordG*map(R^n) then (
+	error "characterTable: orthogonality relations not satisfied";
+	);
+    -- check user labels or create default ones
+    if o.Labels == {} then (
+    	l := for i to n-1 list "X"|toString(i);
+	) else (
+	if #o.Labels != n then (
+	    error "characterTable: expected " | toString(n) | " labels";
+	    );
+	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
+	    error "characterTable: expected labels to be strings (or nets)";	    
+	    );
+	l = o.Labels;
+	);
+    new CharacterTable from {
+	(symbol numActors) => #conjSize,
+	(symbol size) => conjSize,
+	(symbol table) => X,
+	(symbol ring) => R,
+	(symbol inverse) => perm,
+	(symbol matrix) => m,
+	(symbol labels) => l,
+	}
+    )
+
+-- main character table constructor
+-- INPUT:
+-- 1) list of conjugacy class sizes
+-- 2) matrix of irreducible character values
+-- 3) ring over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
 -- OPTIONAL: list of labels for irreducible characters
 characterTable(List,Matrix,PolynomialRing,List) := CharacterTable =>
