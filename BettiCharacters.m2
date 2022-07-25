@@ -917,12 +917,12 @@ Node
    Description
     Text
     	In this example, we identify the Betti characters of the
-	Specht ideal associated	with the partition (4,3).
+	Specht ideal associated	with the partition (5,2).
 	The action of the symmetric group on the resolution of
 	this ideal is described in	
 	@arXiv("2010.06522",
 	    "K. Shibata, K. Yanagawa - Minimal free resolutions of the Specht ideals of shapes (n−2,2) and (d,d,1)")@.
-	The same ideal is also the ideal of the 4-equals
+	The same ideal is also the ideal of the 6-equals
 	subspace arrangement in a 7-dimensional affine space.
 	This point of view is explored in
 	@HREF("https://doi.org/10.1007/s00220-014-2010-4",
@@ -930,14 +930,16 @@ Node
 	where the action of the symmetric group on the resolution
 	is also described.
 	
-	We begin by constructing the ideal using the function
-	@TO "SpechtModule::spechtPolynomials"@
-	provided by the package @TO "SpechtModule::SpechtModule"@.
+	We begin by constructing the ideal explictly.
+	As an alternative, the ideal can be obtained using the
+	function @TT "spechtPolynomials"@
+	provided by the package @TT "SpechtModule"@.
 	We compute a minimal free resolution and its Betti table.
     Example
     	R=QQ[x_1..x_7]
-	needsPackage "SpechtModule"
-	I=ideal values spechtPolynomials(new Partition from {5,2},R)
+	I1=ideal apply({4,5,6,7}, i -> (x_1-x_2)*(x_3-x_i));
+	I2=ideal apply(subsets({3,4,5,6,7},2), s -> (x_1-x_(s#0))*(x_2-x_(s#1)));
+	I=I1+I2
 	RI=res I
 	betti RI
     Text
@@ -948,8 +950,8 @@ Node
 	Once the action is set up, we compute the Betti characters.
     Example
     	S7 = symmetricGroupActors R
-	A=action(RI,S7)
-	elapsedTime c=character A
+	A = action(RI,S7)
+	elapsedTime c = character A
     Text
     	To make sense of these characters we decompose them
 	against	the character table of the symmetric group,
@@ -963,8 +965,21 @@ Node
 	decomposeCharacter(c,T)
     Text
     	As expected from the general theory, we find a single
-	irreducible representation in each homological degree.	
-
+	irreducible representation in each homological degree.
+	
+	Finally, we can observe the Gorenstein duality of the
+	resolution and its character. We construct the character
+	of the sign representation concentrated in homological
+	degree 0, internal degree 7. Then we dualize the character
+	of the resolution previously computed, shift its homological
+	degree by the length of the resolution, and twist it by
+	the sign character just constructed: the result is the
+	same as the character of the resolution.
+    Example
+    	sign = character(R,15,hashTable {(0,{7}) =>
+		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
+	dual(c,toList(1..15))[-5] ** sign === c
+    
 
 Node
    Key
