@@ -2053,11 +2053,13 @@ Node
 Node
     Key
     	characterTable
+    	(characterTable,List,Matrix,PolynomialRing,RingMap)
     	(characterTable,List,Matrix,PolynomialRing,List)
     Headline
     	construct a character table
     Usage
-    	T = characterTable(s,M,R,P)
+    	T = characterTable(s,M,R,conj)
+    	T = characterTable(s,M,R,perm)
     Inputs
     	s:List
 	    of conjugacy class sizes
@@ -2065,6 +2067,8 @@ Node
 	    with character table entries
     	R:PolynomialRing
 	    over a field
+    	conj:RingMap
+	    conjugation in coefficient field
     	P:List
 	    permutation of conjugacy classes
     Outputs
@@ -2091,46 +2095,34 @@ Node
 	    against the character table. Note that the matrix in
 	    the second argument must be liftable to this ring.
 	    
-	    If all irreducible characters of the group take values
-	    in the rational numbers, then the last argument is the
-	    list of integers $1,\dots,r$, where $r$ is the number
-	    of conjugacy classes of the group.
+	    Assuming the polynomial ring in the third argument
+	    has coefficient ring @TT "F"@ which is an extension of
+	    @TT "QQ"@, then the fourth argument is the restriction
+	    of complex conjugation to @TT "F"@.
 	    
-	    As an example, we construct the character table of the
-	    symmetric group on 3 elements.
-	Example
-	    s = {2,3,1}
-	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
-	    R = QQ[x_1..x_3]
-	    P = {1,2,3}
-	    T = characterTable(s,M,R,P)
-	Text
+	    For example, we construct the character table of the
+	    alternating group $A_4$ considered as a subgroup of the
+	    symmetric group $S_4$. The conjugacy classes are
+	    represented by the identity, and the permutations
+	    $(12)(34)$, $(123)$, and $(132)$, in cycle notation.
+	    These conjugacy classes have cardinalities: 1, 3, 4, 4.
+	    The irreducible characters can be constructed over the
+	    field $\mathbb{Q}[w]$, where $w$ is a primitive third
+	    root of unity. Complex conjugation restricts to
+	    $\mathbb{Q}[w]$ by sending $w$ to $w^2$.
+    	Example
+	    F = toField(QQ[w]/ideal(1+w+w^2))
+	    s = {1,3,4,4}
+	    M = matrix{{1,1,1,1},{1,1,w,w^2},{1,1,w^2,w},{3,-1,0,0}}
+	    R = F[x_1..x_4]
+	    conj = map(F,F,{w^2})
+	    T = characterTable(s,M,R,conj)
+    	Text	    
 	    By default, irreducible characters in a character table
 	    are labeled as @TT "X0, X1, ..."@, etc.
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@.
 	    
-	    More generally, the fourth argument is a list containing a
-	    permutation  $\pi$ of the integers $1,\dots,r$, where
-	    $r$ is the number of conjugacy classes of the group.
-	    The permutation $\pi$ is defined as follows:
-	    if $g$ is an element of the $j$-th conjugacy class,
-	    then $g^{-1}$ is an element of the $\pi (j)$-th class.
-	    
-	    As an example, we construct the character table of the
-	    cyclic group of order 3. If $g$ is a generator of the group,
-	    then we take the conjugacy classes to be, in order, $\{1\}$,
-	    $\{g\}$, and $\{g^2\}$. The inverse of $g^2$ is $g$, so the
-	    permutation $\pi$ is $1,3,2$ in one-line notation.
-	    We let @TT "w"@ be a primitive third root of unity.
-    	Example
-	    F = toField(QQ[w]/ideal(1+w+w^2))
-	    s = {1,1,1}
-	    M = matrix{{1,1,1},{1,w,w^2},{1,w^2,w}}
-	    R = F[x_1..x_3]
-	    P = {1,3,2}
-	    T = characterTable(s,M,R,P)
-    	Text
 	    When working over a splitting field for a finite group
 	    $G$ in the non modular case, the irreducible characters
 	    of $G$ form an orthonormal basis for the space of class
@@ -2138,12 +2130,30 @@ Node
 	    $$\langle \chi_1, \chi_2 \rangle = \frac{1}{|G|}
 	    \sum_{g\in G} \chi_1 (g) \chi_2 (g^{-1}).$$
     	    Over the complex numbers, the second factor in the summation
-	    is equal to $\overline{\chi_2 (g)}$. However, to avoid
-	    defining conjugation, and to allow other fields, the
-	    scalar product is computed using the permutation @TT "P"@
-	    in the last argument of the @TO characterTable@ command
-	    to decide which conjugacy class the inverse of an
-	    element belongs to.
+	    is equal to $\overline{\chi_2 (g)}$. Thus the scalar
+	    product can be computed using the conjugation function
+	    provided by the user.
+	    
+    	    If working over coefficient fields of positive characteristic
+	    or if one wishes to avoid defining conjugation, one may replace
+	    the fourth argument by a list containing a permutation
+	    $\pi$ of the integers $1,\dots,r$, where
+	    $r$ is the number of conjugacy classes of the group.
+	    The permutation $\pi$ is defined as follows:
+	    if $g$ is an element of the $j$-th conjugacy class,
+	    then $g^{-1}$ is an element of the $\pi (j)$-th class.
+	    
+	    In the case of $A_4$, the identity and $(12)(34)$ are
+	    their own inverses, while $(123)^{-1} = (132)$.
+	    Therefore the permutation $\pi$ is the transposition
+	    exchanging 3 and 4. Hence the character table of $A_4$
+	    may also be constructed as follows, with $\pi$
+	    represented in one-line notation by a list passed
+	    as the fourth argument.
+    	Example
+	    perm = {1,2,4,3}
+	    T' = characterTable(s,M,R,perm)
+	    T' === T
     Caveat
     	This constructor checks orthonormality of the table
 	matrix under the standard scalar product of characters.
