@@ -1182,7 +1182,24 @@ Node
 	(dual,Character,List)
 	(net,Character)
 	(tensor,Character,Character)
-    	    
+
+Node
+    Key
+    	(symbol SPACE,Character,Array)
+    Headline
+    	homological shift
+    Description
+    	Text
+	    Shift the homological degrees of a character.
+    	Example
+	    R = QQ[x,y,z]
+	    I = ideal(x*y,x*z,y*z)
+	    RI = res I
+	    S3 = symmetricGroupActors R
+	    A = action(RI,S3)
+	    a = character A
+	    a[-10]
+        	    
 Node
     Key
     	CharacterTable
