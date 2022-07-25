@@ -1180,6 +1180,7 @@ Node
     Subnodes
 	(directSum,Character)
 	(net,Character)
+	(tensor,Character,Character)
     	    
 Node
     Key
@@ -2381,24 +2382,55 @@ Node
 
 Node
     Key
-    	(target,Action)
+    	Sub
+	[action, Sub]
+	[ringActors, Sub]
+	[inverseRingActors, Sub]
     Headline
-    	get object acted upon
-    Usage
-    	target(A)
-    Inputs
-    	A:Action
+    	act on ring via substitutions (rather than matrices)
     Description
     	Text
-	    This function is provided by the package
+	    This optional input is provided by the package
 	    @TO BettiCharacters@.
 	    
-	    Returns the object being acted upon.
-	    Depending on the action, this object may be a
-	    @TO ChainComplex@, a @TO PolynomialRing@, a
-	    @TO QuotientRing@, an @TO Ideal@, or a @TO Module@.
-    SeeAlso
-    	action
+	    By default, the group elements acting on a ring are
+	    passed as one-row substitution matrices as those
+	    accepted by @TO substitute@. Setting @TT "Sub=>false"@
+	    allows the user to pass these elements as square
+	    matrices.
+	    
+	    The example below sets up the action of a symmetric
+	    group on the resolution of a monomial ideal.
+	    The symmetric group acts by permuting the four
+	    variables of the ring. The conjugacy classes of
+	    permutations are determined by their cycle types,
+	    which are in bijection with partitions. In this case,
+	    we consider five permutations with cycle types,
+	    in order: 4, 31, 22, 211, 1111.
+	    For simplicity, we construct these matrices
+	    by permuting columns of the identity.
+    	Example
+	    R = QQ[x_1..x_4]
+	    I = ideal apply(subsets(gens R,2),product)
+	    RI = res I
+	    G = { (id_(R^4))_{1,2,3,0},
+    		  (id_(R^4))_{1,2,0,3},
+    		  (id_(R^4))_{1,0,3,2},
+    		  (id_(R^4))_{1,0,2,3},
+    		   id_(R^4) }
+	    A = action(RI,G,Sub=>false)
+    	Text
+	    Similarly, setting @TT "Sub=>false"@
+	    causes @TO ringActors@ and @TO inverseRingActors@
+	    to return the group elements acting on the ring as
+	    square matrices. With the default setting
+	    @TT "Sub=>true"@, the same elements are returned as
+	    one-row substitution matrices.
+    	Example
+	    ringActors(A,Sub=>false)
+	    inverseRingActors(A,Sub=>false)
+	    ringActors(A)
+	    inverseRingActors(A)
 
 
 Node
@@ -2473,55 +2505,62 @@ Node
 
 Node
     Key
-    	Sub
-	[action, Sub]
-	[ringActors, Sub]
-	[inverseRingActors, Sub]
+    	(target,Action)
     Headline
-    	act on ring via substitutions (rather than matrices)
+    	get object acted upon
+    Usage
+    	target(A)
+    Inputs
+    	A:Action
     Description
     	Text
-	    This optional input is provided by the package
+	    This function is provided by the package
 	    @TO BettiCharacters@.
 	    
-	    By default, the group elements acting on a ring are
-	    passed as one-row substitution matrices as those
-	    accepted by @TO substitute@. Setting @TT "Sub=>false"@
-	    allows the user to pass these elements as square
-	    matrices.
-	    
-	    The example below sets up the action of a symmetric
-	    group on the resolution of a monomial ideal.
-	    The symmetric group acts by permuting the four
-	    variables of the ring. The conjugacy classes of
-	    permutations are determined by their cycle types,
-	    which are in bijection with partitions. In this case,
-	    we consider five permutations with cycle types,
-	    in order: 4, 31, 22, 211, 1111.
-	    For simplicity, we construct these matrices
-	    by permuting columns of the identity.
-    	Example
-	    R = QQ[x_1..x_4]
-	    I = ideal apply(subsets(gens R,2),product)
-	    RI = res I
-	    G = { (id_(R^4))_{1,2,3,0},
-    		  (id_(R^4))_{1,2,0,3},
-    		  (id_(R^4))_{1,0,3,2},
-    		  (id_(R^4))_{1,0,2,3},
-    		   id_(R^4) }
-	    A = action(RI,G,Sub=>false)
+	    Returns the object being acted upon.
+	    Depending on the action, this object may be a
+	    @TO ChainComplex@, a @TO PolynomialRing@, a
+	    @TO QuotientRing@, an @TO Ideal@, or a @TO Module@.
+    SeeAlso
+    	action
+
+Node
+    Key
+    	(tensor,Character,Character)
+	(symbol **,Character,Character)
+    Headline
+    	tensor product of characters
+    Usage
+    	tensor(c1,c2)
+    Inputs
+    	c1:Character
+    	c2:Character
+    Outputs
+    	:Character
+    Description
     	Text
-	    Similarly, setting @TT "Sub=>false"@
-	    causes @TO ringActors@ and @TO inverseRingActors@
-	    to return the group elements acting on the ring as
-	    square matrices. With the default setting
-	    @TT "Sub=>true"@, the same elements are returned as
-	    one-row substitution matrices.
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Returns the tensor product of the input characters.
+	    The operator @TT "**"@ may be used for the same purpose.
+	    
+	    We construct the character of the coinvariant algebra
+	    of the symmetric group on 3 variables.
+	Example
+	    R = QQ[x,y,z]
+	    I = ideal(x+y+z,x*y+x*z+y*z,x*y*z)
+	    S3 = symmetricGroupActors R
+	    A = action(R/I,S3)
+	    a = character(A,0,3)
+    	Text
+	    The Gorenstein duality of this character may be
+	    observed by tensoring with the character of the
+	    sign representation concentrated in degree 3.
     	Example
-	    ringActors(A,Sub=>false)
-	    inverseRingActors(A,Sub=>false)
-	    ringActors(A)
-	    inverseRingActors(A)
+	    sign = character(R,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    dual(a,{1,2,3}) ** sign === a
+
 ///
 	    
 ----------------------------------------------------------------------
