@@ -184,6 +184,31 @@ Character Array := Character => (C,A) -> (
 	}
     )
 
+-*
+dual(Character,List) := Character => (c,perm) -> (
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol numActors) => c.numActors,
+	-- dual of raw characters
+	--(symbol characters) => applyPairs(c.characters, (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) ) )
+	}
+    )
+*-
+
+alexopts = {Strategy=>0};
+
+dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => applyPairs(c.characters,
+	    (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) )
+	    )
+	}
+    )
+
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
