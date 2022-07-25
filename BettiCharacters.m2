@@ -236,7 +236,6 @@ o -> (conjSize,charTable,R,phi) -> (
     -- check orthogonality relations
     ordG := sum conjSize;
     C := diagonalMatrix(R,conjSize);
-    P := map(R^n)_(apply(perm, i -> i-1));
     Phi := map(R,F) * phi;
     m := C*transpose(Phi charTable);
     -- if x is a character in a one-row matrix, then x*m is the one-row matrix
@@ -261,7 +260,6 @@ o -> (conjSize,charTable,R,phi) -> (
 	(symbol size) => conjSize,
 	(symbol table) => X,
 	(symbol ring) => R,
-	(symbol inverse) => perm,
 	(symbol matrix) => m,
 	(symbol labels) => l,
 	}
@@ -319,7 +317,6 @@ o -> (conjSize,charTable,R,perm) -> (
 	(symbol size) => conjSize,
 	(symbol table) => X,
 	(symbol ring) => R,
-	(symbol inverse) => perm,
 	(symbol matrix) => m,
 	(symbol labels) => l,
 	}
@@ -816,7 +813,6 @@ symmetricGroupTable PolynomialRing := R -> (
 	(symbol size) => conjSize,
 	(symbol table) => X,
 	(symbol ring) => R,
-	(symbol inverse) => toList(1..n),
 	(symbol matrix) => m,
 	(symbol labels) => P/compactPartition,
 	}
