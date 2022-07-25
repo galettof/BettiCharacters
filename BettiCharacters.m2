@@ -1179,6 +1179,7 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(directSum,Character)
+	(dual,Character,List)
 	(net,Character)
 	(tensor,Character,Character)
     	    
@@ -2163,6 +2164,49 @@ Node
 	    C = action(K,S3)
 	    c = character(C,1)
 	    a ++ b === c
+
+Node
+    Key
+    	(dual,Character,List)
+	Strategy
+	[(dual,Character,List),Strategy]
+    Headline
+    	dual character
+    Usage
+    	dual(c)
+    Inputs
+    	c:Character
+	    of a finite group action
+    	perm:List
+	    permutation of conjugacy classes
+    Outputs
+    	:Character
+    Description
+    	Text
+	    This function is provided by the package
+	    @TO BettiCharacters@.
+	    
+	    Returns the dual of a character, i.e., the character
+	    of the dual or contragredient representation.
+	    
+	    The second argument is a list containing a
+	    permutation  $\pi$ of the integers $1,\dots,r$, where
+	    $r$ is the number of conjugacy classes of the group.
+	    The permutation $\pi$ is defined as follows:
+	    if $g$ is an element of the $j$-th conjugacy class,
+	    then $g^{-1}$ is an element of the $\pi (j)$-th class.
+	    
+	    The optional argument has no effect on this function.
+	Example
+	    R = QQ[x_1..x_5]
+	    I = ideal((x_1-x_4)*(x_2-x_5),(x_1-x_3)*(x_2-x_5),(x_1-x_3)*(x_2-x_4),
+		(x_1-x_2)*(x_3-x_5),(x_1-x_2)*(x_3-x_4))
+	    RI = res I
+	    betti RI
+	    S5 = symmetricGroupActors R
+	    A = action(RI,S5)
+	    a = character(A)
+	    dual(a,{1,2,3,4,5,6,7})
 
 Node
     Key
