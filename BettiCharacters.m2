@@ -184,20 +184,10 @@ Character Array := Character => (C,A) -> (
 	}
     )
 
--*
-dual(Character,List) := Character => (c,perm) -> (
-    new Character from {
-	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol numActors) => c.numActors,
-	-- dual of raw characters
-	--(symbol characters) => applyPairs(c.characters, (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) ) )
-	}
-    )
-*-
-
+-- borrowing default options from alexander dual method
 alexopts = {Strategy=>0};
 
+-- character of dual/contragredient representation
 dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     new Character from {
 	cache => new CacheTable,
