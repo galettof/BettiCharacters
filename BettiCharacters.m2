@@ -2705,3 +2705,12 @@ assert(character(B,2) === cb2)
 ///
 
 end
+R=QQ[x_1..x_7]
+I1=ideal apply({4,5,6,7}, i -> (x_1-x_2)*(x_3-x_i))
+I2=ideal apply(subsets({3,4,5,6,7},2), s -> (x_1-x_(s#0))*(x_2-x_(s#1)))
+I=I1+I2
+RI=res I
+S7=symmetricGroupActors R
+A=action(RI,S7)
+a=character A
+dual(a,toList(1..15))[-5]
