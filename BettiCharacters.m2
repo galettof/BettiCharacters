@@ -1193,6 +1193,7 @@ Node
 	    This class is provided by the package
 	    @TO BettiCharacters@.
     Subnodes
+    	(symbol SPACE,Character,Array)
 	(directSum,Character)
 	(dual,Character,List)
 	(net,Character)
