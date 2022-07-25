@@ -189,10 +189,18 @@ alexopts = {Strategy=>0};
 
 -- character of dual/contragredient representation
 dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
+    n := c.numActors;
+    if #perm != n then (
+	error "dual: expected permutation size to match character length";
+	);
+    -- check permutation has the right entries
+    if set perm =!= set(1..n) then (
+	error "dual: expected a permutation of {1,..," | toString(n) | "}";
+	);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => c.ring,
-	(symbol numActors) => c.numActors,
+	(symbol numActors) => n,
 	(symbol characters) => applyPairs(c.characters,
 	    (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) )
 	    )
@@ -2700,7 +2708,12 @@ I1=ideal apply({4,5,6,7}, i -> (x_1-x_2)*(x_3-x_i))
 I2=ideal apply(subsets({3,4,5,6,7},2), s -> (x_1-x_(s#0))*(x_2-x_(s#1)))
 I=I1+I2
 RI=res I
+betti RI
 S7=symmetricGroupActors R
 A=action(RI,S7)
-a=character A
-dual(a,toList(1..15))[-5]
+elapsedTime a=character A
+T = symmetricGroupTable R
+decomposeCharacter(a,T)
+sign = character(R,15,hashTable {(0,{7}) => matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
+dual(a,toList(1..15))[-5] ** sign === a
+
