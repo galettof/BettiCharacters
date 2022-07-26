@@ -1113,7 +1113,6 @@ Node
 	their resolutions and Betti tables. In order to later use
 	characters, we work over the cyclotomic field obtained by
 	adjoining a primitive 7th root of unity to $\mathbb{Q}$.
-	(This example was precompiled by the package author.)
     Example
     	kk = toField(QQ[a]/ideal(sum apply(7,i->a^i)))
 	R = kk[x,y,z]
@@ -1156,6 +1155,11 @@ Node
     Text
     	We compute the action of this group
 	on the two resolutions above.
+	Notice how the group action is passed as a list of square
+	matrices (instead of one-row substitution matrices as in
+	    @TO "BettiCharacters Example 1"@ and
+	    @TO "BettiCharacters Example 2"@); to enable this,
+	we set the option @TO Sub@ to @TT "false"@.
     Example
 	A1 = action(RI,G,Sub=>false)
 	A2 = action(RI2,G,Sub=>false)
@@ -1164,7 +1168,11 @@ Node
     Text
     	Next we set up the character table of the group
 	and decompose the Betti characters of the resolutions.
-	See @TO characterTable@ for an explanation of the arguments.
+	The arguments are: a list with the cardinality of the
+	conjugacy classes, a matrix with the values of the irreducible
+	characters, the base polynomial ring, and the complex
+	conjugation map restricted to the field of coefficients.
+	See @TO characterTable@ for more details.
     Example
         s = {1,21,56,42,24,24}
 	m = matrix{{1,1,1,1,1,1},
@@ -1173,7 +1181,8 @@ Node
     	    {6,2,0,0,-1,-1},
     	    {7,-1,1,-1,0,0},
     	    {8,0,-1,0,1,1}};
-        T = characterTable(s,m,R,{1,2,3,4,6,5})
+	conj = map(kk,kk,{a^6})
+        T = characterTable(s,m,R,conj)
 	a1/T
 	a2/T
     Text
@@ -1181,12 +1190,14 @@ Node
 	this computation shows that the
 	free module in homological degree two in the resolution of the
 	defining ideal of the Klein configuration is a direct sum
-	of two trivial representations. It follows that its second
-	exterior power is also trivial. As observed in the second
+	of two trivial representations, one in degree 11 and one in
+	degree 13. It follows that its second
+	exterior power is a trivial representation concentrated in
+	degree 24. As observed in the second
 	proof of Proposition 8.1 in @HREF("https://doi.org/10.1093/imrn/rnx329",
 	"BDHHSS")@, the free module in homological degree 3 in the
     	resolution of the square of the ideal is exactly this
-	second exterior power and a trivial representation.
+	second exterior power (and a trivial representation).
 	
 	In alternative, we can compute the symbolic square of the
 	ideal modulo the ordinary square. The component of degree
