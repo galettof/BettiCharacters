@@ -211,12 +211,12 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
--- main character table constructor
+-- character table constructor using conjugation
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
 -- 3) ring over which to construct the table
--- 4) ring map, conjugation
+-- 4) ring map, conjugation of coefficients
 -- OPTIONAL: list of labels for irreducible characters
 characterTable(List,Matrix,PolynomialRing,RingMap) := CharacterTable =>
 o -> (conjSize,charTable,R,phi) -> (
@@ -229,7 +229,7 @@ o -> (conjSize,charTable,R,phi) -> (
     X := try promote(charTable,R) else (
 	error "characterTable: could not promote character table to given ring";
 	);
-    -- check conjugation may
+    -- check conjugation map
     F := coefficientRing R;
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
 	error "characterTable: expected an order 2 automorphism of the coefficient ring";
@@ -266,7 +266,7 @@ o -> (conjSize,charTable,R,phi) -> (
 	}
     )
 
--- main character table constructor
+-- character table constructor without conjugation
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
