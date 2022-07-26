@@ -188,7 +188,8 @@ Character Array := Character => (C,A) -> (
 -- borrowing default options from alexander dual method
 alexopts = {Strategy=>0};
 
--- character of dual/contragredient representation
+
+-- character of dual/contragredient representation without conjugation
 dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     n := c.numActors;
     if #perm != n then (
