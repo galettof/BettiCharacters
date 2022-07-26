@@ -198,7 +198,7 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     -- check conjugation map
     F := coefficientRing R;
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
-	error "dual: expected an order 2 automorphism of the coefficient ring";
+	error "dual: expected an order 2 automorphism of the coefficient field";
 	);
     -- error if characters cannot be lifted to coefficient field
     H := try applyValues(c.characters, v -> lift(v,F)) else (
