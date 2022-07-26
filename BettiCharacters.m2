@@ -171,9 +171,9 @@ tensor(Character,Character) := Character => (c1,c2) -> (
 
 -- shift homological degree of characters
 Character Array := Character => (C,A) -> (
-    if # A =!= 1 then error "expected array of length 1";
+    if # A =!= 1 then error "Character Array: expected array of length 1";
     n := A#0;
-    if not instance(n,ZZ) then error "expected an integer";
+    if not instance(n,ZZ) then error "Character Array: expected an integer";
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => C.ring,
