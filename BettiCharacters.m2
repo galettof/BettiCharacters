@@ -184,6 +184,7 @@ Character Array := Character => (C,A) -> (
 	}
     )
 
+-- character dual
 -- borrowing default options from alexander dual method
 alexopts = {Strategy=>0};
 
