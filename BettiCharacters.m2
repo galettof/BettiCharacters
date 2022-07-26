@@ -200,15 +200,18 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
 	error "dual: expected an order 2 automorphism of the coefficient ring";
 	);
+    -- error if characters cannot be lifted to coefficient field
+    H := try applyValues(c.characters, v -> lift(v,F)) else (
+	error "dual: could not lift characters to coefficient field";
+	);
     -- conjugation map
     Phi := map(R,F) * phi;
-    -- add error if characters cannot be lifted to F
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol numActors) => c.numActors,
-	(symbol characters) => applyPairs(c.characters,
-	    (k,v) -> ( apply(k,minus), Phi lift(v,F) )
+	(symbol characters) => applyPairs(H,
+	    (k,v) -> ( apply(k,minus), Phi v )
 	    )
 	}
     )
