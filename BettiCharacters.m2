@@ -220,6 +220,10 @@ characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 -- OPTIONAL: list of labels for irreducible characters
 characterTable(List,Matrix,PolynomialRing,RingMap) := CharacterTable =>
 o -> (conjSize,charTable,R,phi) -> (
+    -- check characteristic
+    if char(R) != 0 then (
+	error "characterTable: use permutation constructor in positive characteristic";
+	);
     n := #conjSize;
     -- check all arguments have the right size
     if numRows charTable != n or numColumns charTable != n then (
