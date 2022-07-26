@@ -944,6 +944,14 @@ Node
 		characters into irreducibles).
 	    See the menu below for using this package
 	    to compute some examples from the literature.
+	    
+	    @HEADER4 "Version history:"@
+	    
+	    @UL {(BOLD "1.0: ", "Initial version. Includes computation of
+		actions and Betti characters.") ,
+		(BOLD "2.0: ", "Introduces character tables, decompositions,
+		and other methods for characters.")
+		}@
     Subnodes
     	:Defining actions
       	action
