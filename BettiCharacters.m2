@@ -1065,6 +1065,9 @@ Node
 	The group is the symmetric group on 6 elements.
 	Its conjugacy classes are determined by cycle types,
 	which are in bijection with partitions of 6.
+	Representatives for the conjugacy classes of the symmetric
+	group acting on a polynomial ring by permuting the
+	variables can be obtained via @TO symmetricGroupActors@.
 	Once the action is set up, we compute the Betti characters.
     Example
     	S6 = symmetricGroupActors R
