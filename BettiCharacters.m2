@@ -295,8 +295,12 @@ o -> (conjSize,charTable,R,perm) -> (
     if set perm =!= set(1..n) then (
 	error "characterTable: expected a permutation of {1,..," | toString(n) | "}";
 	);
-    -- check orthogonality relations
+    -- check characteristic
     ordG := sum conjSize;
+    if ordG % char(R) == 0 then (
+	error "characterTable: characteristic divides order of the group";
+	);
+    -- check orthogonality relations
     C := diagonalMatrix(R,conjSize);
     P := map(R^n)_(apply(perm, i -> i-1));
     m := C*transpose(X*P);
