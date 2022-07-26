@@ -188,6 +188,30 @@ Character Array := Character => (C,A) -> (
 -- borrowing default options from alexander dual method
 alexopts = {Strategy=>0};
 
+-- character of dual/contragredient representation with conjugation
+dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
+    -- check characteristic
+    R := c.ring;
+    if char(R) != 0 then (
+	error "dual: use permutation constructor in positive characteristic";
+	);
+    -- check conjugation map
+    F := coefficientRing R;
+    if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
+	error "dual: expected an order 2 automorphism of the coefficient ring";
+	);
+    -- conjugation map
+    Phi := map(R,F) * phi;
+    -- add error if characters cannot be lifted to F
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => R,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => applyPairs(c.characters,
+	    (k,v) -> ( apply(k,minus), Phi lift(v,F) )
+	    )
+	}
+    )
 
 -- character of dual/contragredient representation without conjugation
 dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
@@ -1052,8 +1076,12 @@ Node
     Example
     	sign = character(R,15,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
-	dual(c,toList(1..15))[-5] ** sign === c
-    
+	dual(c,id_QQ)[-5] ** sign === c
+    Text
+    	The second argument in the @TT "dual"@ command is the
+	restriction of complex conjugation to the field of
+	definition of the characters.
+	For more information, see @TO (dual,Character,RingMap)@.
 
 Node
    Key
@@ -1283,7 +1311,7 @@ Node
     Subnodes
     	(symbol SPACE,Character,Array)
 	(directSum,Character)
-	(dual,Character,List)
+	(dual,Character,RingMap)
 	(net,Character)
 	(tensor,Character,Character)
 
@@ -2104,7 +2132,7 @@ Node
 	    over a field
     	conj:RingMap
 	    conjugation in coefficient field
-    	P:List
+    	perm:List
 	    permutation of conjugacy classes
     Outputs
     	T:CharacterTable
@@ -2298,16 +2326,22 @@ Node
 
 Node
     Key
+    	dual
+	(dual,Character,RingMap)
     	(dual,Character,List)
 	Strategy
+	[(dual,Character,RingMap),Strategy]
 	[(dual,Character,List),Strategy]
     Headline
     	dual character
     Usage
-    	dual(c)
+    	dual(c,conj)
+    	dual(c,perm)
     Inputs
     	c:Character
 	    of a finite group action
+    	conj:RingMap
+	    conjugation in coefficient field
     	perm:List
 	    permutation of conjugacy classes
     Outputs
