@@ -832,12 +832,12 @@ symmetricGroupActors = method();
 symmetricGroupActors PolynomialRing := R -> (
     -- check argument is a polynomial ring over a field
     if not isField coefficientRing R then (
-	error "symmetricGroupTable: expected polynomial ring over a field";
+	error "symmetricGroupActors: expected polynomial ring over a field";
 	);
     -- check number of variables
     n := dim R;
     if n < 1 then (
-	error "symmetricGroupTable: expected a positive number of variables";
+	error "symmetricGroupActors: expected a positive number of variables";
 	);
     for p in partitions(n) list (
 	L := gens R;
