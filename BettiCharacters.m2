@@ -204,7 +204,7 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     H := try applyValues(c.characters, v -> lift(v,F)) else (
 	error "dual: could not lift characters to coefficient field";
 	);
-    -- conjugation map
+    -- conjugation map to the polynomial ring
     Phi := map(R,F) * phi;
     new Character from {
 	cache => new CacheTable,
