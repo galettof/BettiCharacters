@@ -937,12 +937,12 @@ Node
 	    This package provides functions to
 	    compute the Betti characters and the characters of
 	    graded components of $M$
-	    based on the algorithms in @arXiv("2106.14071","F. Galetto - Finite group characters on free resolutions")@.
+	    based on the algorithms in @HREF("https://doi.org/10.1016/j.jsc.2022.02.001","F. Galetto - Finite group characters on free resolutions")@.
 	    The package is designed to
-	    be independent of the group; the user may provide the
-	    necessary information about the group action in the
-	    form of matrices and/or substitutions into the variables
-	    of the ring. See the menu below for using this package
+	    be independent of the group; the user provides matrices for
+	    the group actions and character tables (to decompose
+		characters into irreducibles).
+	    See the menu below for using this package
 	    to compute some examples from the literature.
     Subnodes
     	:Defining actions
