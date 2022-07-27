@@ -773,18 +773,6 @@ strip := (mu,r) -> (
     {mu_0-d-1} | strip(drop(mu,1),r-d-1)
     )
 
--- check if list is partition (0 allowed)
--- unexported auxiliary function for Murnaghan-Nakayama
-isPartition := mu -> (
-    -- check no negative parts
-    if any(mu, i -> i<0) then return false;
-    -- check non increasing
-    for i to #mu-2 do (
-	if mu_i < mu_(i+1) then return false;
-	);
-    true
-    )
-
 -- irreducible Sn character chi^lambda
 -- evaluated at conjugacy class of cycle type rho
 -- unexported
@@ -793,9 +781,20 @@ murnaghanNakayama := (lambda,rho) -> (
     if lambda == {} and rho == {} then return 1;
     r := rho#0;
     -- check if border strip fits ending at each row
-    borderStrips := select(for c to #lambda-1 list (
-	take(lambda,c) | strip(drop(lambda,c),r)
-	), isPartition);
+    borderStrips := select(
+	-- for all c remove first c parts, check if strip fits in the rest
+	for c to #lambda-1 list (take(lambda,c) | strip(drop(lambda,c),r)),
+	-- function that checks if list is a partition (0 allowed)
+    	mu -> (
+    	    -- check no negative parts
+    	    if any(mu, i -> i<0) then return false;
+    	    -- check non increasing
+    	    for i to #mu-2 do (
+	    	if mu_i < mu_(i+1) then return false;
+	    	);
+    	    true
+    	    )
+    	);
     -- find border strip height
     heights := apply(borderStrips,
 	bs -> number(lambda - bs, i -> i>0) - 1);
