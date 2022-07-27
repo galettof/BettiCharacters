@@ -759,16 +759,6 @@ character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
 -- Specialized functions for symmetric groups -----------------------
 ---------------------------------------------------------------------
 
-
--- compact partition notation used for symmetric group labels
--- unexported
-compactPartition := p -> (
-    t := tally toList p;
-    pows := apply(rsort keys t, k -> net Power(k,t#k));
-    commas := #pows-1:net(",");
-    net("(")|horizontalJoin mingle(pows,commas)|net(")")
-    )
-
 -- take r boxes from partition mu along border
 -- unexported auxiliary function for Murnaghan-Nakayama
 strip := (mu,r) -> (
@@ -851,7 +841,14 @@ symmetricGroupTable PolynomialRing := R -> (
 	(symbol table) => X,
 	(symbol ring) => R,
 	(symbol matrix) => m,
-	(symbol labels) => P/compactPartition,
+	-- compact partition notation used for symmetric group labels
+	(symbol labels) => apply(P, p -> (
+    	    	t := tally toList p;
+    	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
+    	    	commas := #pows-1:net(",");
+    	    	net("(")|horizontalJoin mingle(pows,commas)|net(")")
+    	    	)
+	    )
 	}
     )
 
