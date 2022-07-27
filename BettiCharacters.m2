@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "1.0.1",
-     Date => "June 30, 2021",
+     Version => "2.0",
+     Date => "July 26, 2022",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
