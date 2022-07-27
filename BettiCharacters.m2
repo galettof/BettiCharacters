@@ -2162,9 +2162,9 @@ Node
 	    the second argument must be liftable to this ring.
 	    
 	    Assuming the polynomial ring in the third argument
-	    has coefficient ring @TT "F"@ which is an extension of
-	    @TT "QQ"@, then the fourth argument is the restriction
-	    of complex conjugation to @TT "F"@.
+	    has a coefficient field @TT "F"@ which is a subfield of the
+	    complex numbers, then the fourth argument is the
+	    restriction of complex conjugation to @TT "F"@.
 	    
 	    For example, we construct the character table of the
 	    alternating group $A_4$ considered as a subgroup of the
@@ -2332,9 +2332,6 @@ Node
     	dual
 	(dual,Character,RingMap)
     	(dual,Character,List)
-	Strategy
-	[(dual,Character,RingMap),Strategy]
-	[(dual,Character,List),Strategy]
     Headline
     	dual character
     Usage
@@ -2357,25 +2354,56 @@ Node
 	    Returns the dual of a character, i.e., the character
 	    of the dual or contragredient representation.
 	    
-	    The second argument is a list containing a
-	    permutation  $\pi$ of the integers $1,\dots,r$, where
+	    The first argument is the original character.
+	    
+	    Assuming the polynomial ring over which the character
+	    is defined has a coefficient field @TT "F"@ which is a subfield
+	    of the complex numbers, then the second argument is the
+	    restriction of complex conjugation to @TT "F"@.
+	    
+	    As an example, we construct a character of the
+	    alternating group $A_4$ considered as a subgroup of the
+	    symmetric group $S_4$. The conjugacy classes are
+	    represented by the identity, and the permutations
+	    $(12)(34)$, $(123)$, and $(132)$, in cycle notation.
+	    The character is constructed over the field $\mathbb{Q}[w]$,
+	    where $w$ is a primitive third root of unity.
+	    Complex conjugation restricts to $\mathbb{Q}[w]$
+	    by sending $w$ to $w^2$. The character is concentrated
+	    in homological degree 1, and internal degree 2.
+	Example
+	    F = toField(QQ[w]/ideal(1+w+w^2))
+	    R = F[x_1..x_4]
+	    conj = map(F,F,{w^2})
+	    X = character(R,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
+	    X' = dual(X,conj)
+    	Text
+    	    If working over coefficient fields of positive characteristic
+	    or if one wishes to avoid defining conjugation, one may replace
+	    the second argument by a list containing a permutation
+	    $\pi$ of the integers $1,\dots,r$, where
 	    $r$ is the number of conjugacy classes of the group.
 	    The permutation $\pi$ is defined as follows:
 	    if $g$ is an element of the $j$-th conjugacy class,
 	    then $g^{-1}$ is an element of the $\pi (j)$-th class.
 	    
-	    The optional argument has no effect on this function.
-	Example
-	    R = QQ[x_1..x_5]
-	    I = ideal((x_1-x_4)*(x_2-x_5),(x_1-x_3)*(x_2-x_5),(x_1-x_3)*(x_2-x_4),
-		(x_1-x_2)*(x_3-x_5),(x_1-x_2)*(x_3-x_4))
-	    RI = res I
-	    betti RI
-	    S5 = symmetricGroupActors R
-	    A = action(RI,S5)
-	    a = character(A)
-	    dual(a,{1,2,3,4,5,6,7})
-
+	    In the case of $A_4$, the identity and $(12)(34)$ are
+	    their own inverses, while $(123)^{-1} = (132)$.
+	    Therefore the permutation $\pi$ is the transposition
+	    exchanging 3 and 4. Hence the dual of the character in the
+	    example above may also be constructed as follows,
+	    with $\pi$ represented in one-line notation by a list passed
+	    as the second argument.
+    	Example
+    	    perm = {1,2,4,3}
+	    dual(X,perm) === X'
+    	Text
+	    The page @TO characterTable@ contains some motivation
+	    for using conjugation or permutations of conjugacy
+	    classes when dealing with characters.
+    SeeAlso
+    	characterTable
+	    
 Node
     Key
     	inverseRingActors
