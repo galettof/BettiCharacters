@@ -1119,28 +1119,28 @@ Node
 	and belongs to the larger class of symmetric shifted
 	ideals.
 	
-	We start by constructing the ideal,
-	and compute a minimal free resolution and its Betti table.
+	First, we construct the ideal
+	and compute its minimal free resolution and Betti table.
     Example
 	R=QQ[x_1..x_6]
 	I=intersect(apply(subsets(gens R,4),x->(ideal x)^3))
 	RI=res I
 	betti RI
     Text
-    	Next we set up the group action on the resolution.
+    	Next, we set up the group action on the resolution.
 	The group is the symmetric group on 6 elements.
 	Its conjugacy classes are determined by cycle types,
 	which are in bijection with partitions of 6.
 	Representatives for the conjugacy classes of the symmetric
 	group acting on a polynomial ring by permuting the
 	variables can be obtained via @TO symmetricGroupActors@.
-	Once the action is set up, we compute the Betti characters.
+	After setting up the action, we compute the Betti characters.
     Example
     	S6 = symmetricGroupActors R
 	A=action(RI,S6)
 	elapsedTime c=character A
     Text
-    	To make sense of these characters we decompose them
+    	Next, we decompose the characters
 	against	the character table of the symmetric group,
 	which can be computed using the function
 	@TO "symmetricGroupTable"@. The irreducible characters
@@ -1155,8 +1155,8 @@ Node
 	@HREF("https://doi.org/10.1016/j.jalgebra.2020.04.037",
 	    "J. Biermann, H. De Alba, F. Galetto, S. Murai, U. Nagel, A. O'Keefe, T. Römer, A. Seceleanu - Betti numbers of symmetric shifted ideals")@
 	uses representations induced from products of smaller
-	symmetric groups. In order, to compare with the results
-	obtained here one may use the Littlewood-Richardson rule
+	symmetric groups. To compare that description with the results
+	obtained here, one may use the Littlewood-Richardson rule
 	to decompose induced representations into a direct sum
 	of irreducibles.
 
