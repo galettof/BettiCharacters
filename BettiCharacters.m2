@@ -990,12 +990,13 @@ Node
 		and other methods for characters.")
 		}@
     Subnodes
-    	:Defining actions
+    	:Defining and computing actions
       	action
-      	:Computing actions and characters
 	actors
+      	:Characters and related operations
         character
-	:Decomposing characters
+	"Character operations"
+	:Character tables and decompositions
 	characterTable
 	decomposeCharacter
 	:Symmetric group actions
@@ -1006,7 +1007,23 @@ Node
       	"BettiCharacters Example 2"
       	"BettiCharacters Example 3"
 
-	    
+Node
+    Key
+    	"Character operations"
+    Headline
+    	shift, direct sum, dual, and tensor product
+    Description
+    	Text
+	    The @TO BettiCharacters@ package contains
+	    several functions for working with characters.
+	    See links below for more details.
+    SeeAlso
+	(symbol SPACE,Character,Array)
+	(directSum,Character)
+	(dual,Character,RingMap)
+	(tensor,Character,Character)
+    	
+
 Node
    Key
        "BettiCharacters Example 1"
