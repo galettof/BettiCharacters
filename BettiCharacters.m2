@@ -1430,9 +1430,9 @@ Node
 	    acting on the vector space spanned by the variables
 	    of the ring @TT "R"@. By default, these elements are
 	    passed as one-row substitution matrices as those
-	    accepted by @TO substitute@. The optional input
-	    @TO Sub@ may be used to pass these elements as square
-	    matrices. For the function to work, @TT "G"@ can be an
+	    accepted by @TO substitute@. One may pass these elements
+	    as square matrices by setting the optional input @TO Sub@
+	    to @TT "false"@. For the function to work, @TT "G"@ can be an
 	    arbitrary list of group elements however, in order to
 	    obtain a complete representation theoretic description
 	    of the characters, @TT "G"@ should be a list of
@@ -1567,9 +1567,9 @@ Node
 	    acting on the vector space spanned by the variables
 	    of the ring @TT "R"@. By default, these elements are
 	    passed as one-row substitution matrices as those
-	    accepted by @TO substitute@. The optional input
-	    @TO Sub@ may be used to pass these elements as square
-	    matrices. For the function to work, @TT "G"@ can be an
+	    accepted by @TO substitute@. One may pass these elements
+	    as square matrices by setting the optional input @TO Sub@
+	    to @TT "false"@. For the function to work, @TT "G"@ can be an
 	    arbitrary list of group elements however, in order to
 	    obtain a complete representation theoretic description
 	    of the characters, @TT "G"@ should be a list of
@@ -2447,9 +2447,9 @@ Node
 	    defined by the user when constructing the action.
 	    By default, these elements are
 	    expressed as one-row substitution matrices as those
-	    accepted by @TO substitute@. The optional input
-	    @TO Sub@ may be used to return these elements as square
-	    matrices.
+	    accepted by @TO substitute@. One may obtain these elements
+	    as square matrices by setting the optional input @TO Sub@
+	    to @TT "false"@.
     SeeAlso
     	action
 
@@ -2630,9 +2630,9 @@ Node
 	    the user when constructing the action.
 	    By default, these elements are
 	    expressed as one-row substitution matrices as those
-	    accepted by @TO substitute@. The optional input
-	    @TO Sub@ may be used to return these elements as square
-	    matrices.
+	    accepted by @TO substitute@. One may obtain these elements
+	    as square matrices by setting the optional input @TO Sub@
+	    to @TT "false"@.
     SeeAlso
     	action
 
@@ -2644,7 +2644,7 @@ Node
 	[ringActors, Sub]
 	[inverseRingActors, Sub]
     Headline
-    	act on ring via substitutions (rather than matrices)
+    	format of ring actors
     Description
     	Text
 	    This optional input is provided by the package
