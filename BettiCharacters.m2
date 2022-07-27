@@ -1709,7 +1709,7 @@ Node
 	    the one where the user originally defined the action,
 	    then the user provided elements are returned.
 	    Otherwise, suitable elements are computed as indicated
-	    in @arXiv("2106.14071","F. Galetto - Finite group characters on free resolutions")@.
+	    in @HREF("https://doi.org/10.1016/j.jsc.2022.02.001","F. Galetto - Finite group characters on free resolutions")@.
 
 	    To illustrate, we compute the action of a
 	    symmetric group on the resolution of a monomial ideal.
@@ -1915,7 +1915,7 @@ Node
 	    the $i$-th {\bf Betti character} of $M$ (or a minimal free
 	    resolution of $M$).
 	    Betti characters are computed using Algorithm 1 in
-	    @arXiv("2106.14071","F. Galetto - Finite group characters on free resolutions")@.
+	    @HREF("https://doi.org/10.1016/j.jsc.2022.02.001","F. Galetto - Finite group characters on free resolutions")@.
 
 	    To illustrate, we compute the Betti characters of a
 	    symmetric group on the resolution of a monomial ideal.
@@ -2644,7 +2644,7 @@ Node
 	[ringActors, Sub]
 	[inverseRingActors, Sub]
     Headline
-    	format of ring actors
+    	format ring actors as one-row substitution matrices
     Description
     	Text
 	    This optional input is provided by the package
