@@ -1265,7 +1265,7 @@ Node
     	resolution of the square of the ideal is exactly this
 	second exterior power (and a trivial representation).
 	
-	In alternative, we can compute the symbolic square of the
+	Alternatively, we can compute the symbolic square of the
 	ideal modulo the ordinary square. The component of degree
 	21 of this quotient matches the generators of the last
 	module in the resolution of the ordinary square in degree
