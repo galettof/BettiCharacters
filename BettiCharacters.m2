@@ -1432,8 +1432,8 @@ Node
 	    passed as one-row substitution matrices as those
 	    accepted by @TO substitute@. One may pass these elements
 	    as square matrices by setting the optional input @TO Sub@
-	    to @TT "false"@. For the function to work, @TT "G"@ can be an
-	    arbitrary list of group elements however, in order to
+	    to @TT "false"@. The list @TT "G"@ can contain
+	    arbitrary group elements however, to
 	    obtain a complete representation theoretic description
 	    of the characters, @TT "G"@ should be a list of
 	    representatives of the conjugacy classes of the group.
@@ -1569,8 +1569,8 @@ Node
 	    passed as one-row substitution matrices as those
 	    accepted by @TO substitute@. One may pass these elements
 	    as square matrices by setting the optional input @TO Sub@
-	    to @TT "false"@. For the function to work, @TT "G"@ can be an
-	    arbitrary list of group elements however, in order to
+	    to @TT "false"@. The list @TT "G"@ can contain
+	    arbitrary group elements however, to
 	    obtain a complete representation theoretic description
 	    of the characters, @TT "G"@ should be a list of
 	    representatives of the conjugacy classes of the group.
