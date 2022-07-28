@@ -827,6 +827,8 @@ symmetricGroupTable PolynomialRing := R -> (
     -- list partitions
     P := apply(partitions n, toList);
     -- compute table using Murnaghan-Nakayama
+    -- uses murnaghanNakayama unexported function with
+    -- code in BettiCharacters.m2 immediately before this method
     X := matrix(R, table(P,P,murnaghanNakayama));
     -- compute size of conjugacy classes
     conjSize := apply(P/tally,
