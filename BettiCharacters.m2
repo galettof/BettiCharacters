@@ -150,7 +150,7 @@ multiplyCharacters = (c1,c2) -> (
 -- tensor product of characters
 -- modeled after directSum, but only works for two characters
 Character ** Character := Character => tensor
-tensor(Character,Character) := Character => (c1,c2) -> (
+tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     -- check ring is the same for all factors
     R := c1.ring;
     if (c2.ring =!= R)
@@ -2082,7 +2082,7 @@ Node
 	    A = action(Q,S3)
 	    character(A,0,3) === regRep
     Caveat
-    	This constructor implements basic consistency checks but
+    	This constructor implements basic consistency checks, but
 	it is still be possible to construct objects that are not
 	actually characters (not even virtual).
     SeeAlso
