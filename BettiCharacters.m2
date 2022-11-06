@@ -96,7 +96,7 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
     -- check character vectors are allowed
     v := values H;
     if any(v, i -> numColumns i != cl or class i =!= Matrix) then (
-	error "character: expceted characters to be one-row matrices with "
+	error "character: expected characters to be one-row matrices with "
 	| toString(cl) | " columns";
 	);
     -- move character values into given ring
@@ -1043,7 +1043,7 @@ Node
 	where the action of the symmetric group on the resolution
 	is also described.
 	
-	We begin by constructing the ideal explictly.
+	We begin by constructing the ideal explicitly.
 	As an alternative, the ideal can be obtained using the
 	function @TT "spechtPolynomials"@
 	provided by the package @TT "SpechtModule"@.
@@ -2295,7 +2295,7 @@ Node
 	    columns are labeled by the irreducible characters.
 	    By default, irreducible characters in a character table
 	    are labeled as @TT "X0, X1, ..."@, etc, and the same
-	    labeling is inherited by the character decompsoition.
+	    labeling is inherited by the character decomposition.
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@ when constructing the character
 	    table.
