@@ -438,11 +438,13 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	error "action: complex is not homogeneous";
 	);
     --if user passes handcrafted complex give warning message
+    -*
     if not C.?Resolution then (
 	print "";
 	print "Warning: complex is not a resolution computed by M2.";
 	print "This could lead to errors or meaningless results.";
 	);
+    *-
     --check the matrix of the action on the variables has right size
     n := dim R;
     if not all(l,g->numColumns(g)==n) then (
@@ -1516,11 +1518,10 @@ Node
 	    G'' = toList(5:id_(R^1))
 	    action(RE,G,G'',3)
     Caveat
-    	This function determines if the complex @TT "C"@ is a free
-	resolution computed by Macaulay2. If this is not the case,
-	then the function produces a warning to inform the user that
-	later computations (i.e., Betti characters) may fail or
-	return meaningless results.
+    	This function does not check if the complex @TT "C"@ is a
+	free resolution. If the user passes a complex that is not a
+	free resolution, then later computations (i.e., Betti characters)
+	may fail or return meaningless results.
 
 
 Node
