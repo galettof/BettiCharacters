@@ -89,8 +89,7 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
     dl := degreeLength R;
     degs := apply(k,last);
     if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
-	error "character: expected integer degree vectors of length "
-	| toString(dl);
+	error ("character: expected integer degree vectors of length " | toString(dl));
 	);
     -- check character vectors are allowed
     v := values H;
@@ -98,8 +97,7 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	error "character: expected characters to be matrices";
 	);
     if any(v, i -> numColumns i != cl) then (
-	error "character: expected characters to be one-row matrices with "
-	| toString(cl) | " columns";
+	error ("character: expected characters to be one-row matrices with " | toString(cl) | " columns");
 	);
     -- move character values into given ring
     H2 := try applyValues(H, v -> promote(v,R)) else (
@@ -226,7 +224,7 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 	);
     -- check permutation has the right entries
     if set perm =!= set(1..n) then (
-	error "dual: expected a permutation of {1,..," | toString(n) | "}";
+	error ("dual: expected a permutation of {1,..," | toString(n) | "}");
 	);
     new Character from {
 	cache => new CacheTable,
@@ -283,7 +281,7 @@ o -> (conjSize,charTable,R,phi) -> (
     	l := for i to n-1 list "X"|toString(i);
 	) else (
 	if #o.Labels != n then (
-	    error "characterTable: expected " | toString(n) | " labels";
+	    error ("characterTable: expected " | toString(n) | " labels");
 	    );
 	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
 	    error "characterTable: expected labels to be strings (or nets)";	    
@@ -323,7 +321,7 @@ o -> (conjSize,charTable,R,perm) -> (
 	);
     -- check permutation has the right entries
     if set perm =!= set(1..n) then (
-	error "characterTable: expected a permutation of {1,..," | toString(n) | "}";
+	error ("characterTable: expected a permutation of {1,..," | toString(n) | "}");
 	);
     -- check characteristic
     ordG := sum conjSize;
@@ -344,7 +342,7 @@ o -> (conjSize,charTable,R,perm) -> (
     	l := for i to n-1 list "X"|toString(i);
 	) else (
 	if #o.Labels != n then (
-	    error "characterTable: expected " | toString(n) | " labels";
+	    error ("characterTable: expected " | toString(n) | " labels");
 	    );
 	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
 	    error "characterTable: expected labels to be strings (or nets)";	    
