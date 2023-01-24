@@ -25,7 +25,6 @@ newPackage(
      	       Email => "galetto.federico@gmail.com",
 	       HomePage => "http://math.galetto.org"}},
      Headline => "finite group characters on free resolutions and graded modules",
-     PackageImports => {"SimpleDoc"},
      DebuggingMode => false
      )
 
