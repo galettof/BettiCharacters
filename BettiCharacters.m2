@@ -94,7 +94,10 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	);
     -- check character vectors are allowed
     v := values H;
-    if any(v, i -> numColumns i != cl or class i =!= Matrix) then (
+    if any(v, i -> class i =!= Matrix) then (
+	error "character: expected characters to be matrices";
+	);
+    if any(v, i -> numColumns i != cl) then (
 	error "character: expected characters to be one-row matrices with "
 	| toString(cl) | " columns";
 	);
