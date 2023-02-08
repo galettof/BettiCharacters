@@ -496,6 +496,11 @@ action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
     action(C,l,l0,min C,Sub=>op.Sub)
     )
 
+--equality check for actions on complexes
+ActionOnComplex == ActionOnComplex := (A,B) -> (
+    
+    )
+
 -- returns number of actors
 numActors = method(TypicalValue=>ZZ)
 numActors(Action) := ZZ => A -> A.numActors
