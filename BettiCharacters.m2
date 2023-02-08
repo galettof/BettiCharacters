@@ -484,7 +484,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
-	(symbol actors) => apply(l0,g->map(C_i,C_i,g)),
+	--(symbol actors) => apply(l0,g->map(C_i,C_i,g)),
 	}
     )
 
@@ -498,7 +498,11 @@ action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
 
 --equality check for actions on complexes
 ActionOnComplex == ActionOnComplex := (A,B) -> (
-    
+    -- first compare raw hash tables
+    if A =!= B then return false;
+    -- if same, compare action which is stored in cache
+    C := A.target;
+    all(min C .. max C, i -> actors(A, i) == actors(B, i))
     )
 
 -- returns number of actors
@@ -1676,9 +1680,9 @@ Node
     		   (id_(R^6))_{0,2,1,4,3,5},
     		    id_(R^6) }
 	    A = action(RM,G,G',0)
-	    actors(A)
+	    --actors(A)
 	    B = action(M,G)
-	    actors(B)
+	    --actors(B)
     SeeAlso
     	action	    
     Subnodes
