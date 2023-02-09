@@ -2071,7 +2071,7 @@ Node
 	    character(A,0,3) === regRep
     Caveat
     	This constructor implements basic consistency checks, but
-	it is still be possible to construct objects that are not
+	it is still possible to construct objects that are not
 	actually characters (not even virtual).
     SeeAlso
     	character
