@@ -441,14 +441,6 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     if not isHomogeneous C then (
 	error "action: complex is not homogeneous";
 	);
-    --if user passes handcrafted complex give warning message
-    -*
-    if not C.?Resolution then (
-	print "";
-	print "Warning: complex is not a resolution computed by M2.";
-	print "This could lead to errors or meaningless results.";
-	);
-    *-
     --check the matrix of the action on the variables has right size
     n := dim R;
     if not all(l,g->numColumns(g)==n) then (
