@@ -1403,9 +1403,6 @@ Node
     	define finite group action
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to set up a finite group action on
 	    a minimal free resolution or graded module.
 	    See the specific use cases for more details.
@@ -1437,9 +1434,6 @@ Node
     	A:ActionOnComplex
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to define the action of a finite group
 	    on the minimal free resolution of a module over a
 	    polynomial ring with coefficients in a field.
@@ -1570,9 +1564,6 @@ Node
     	A:ActionOnGradedModule
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to define the action of a finite group
 	    on a graded module over a polynomial ring
 	    with coefficients in a field. This includes also an
@@ -1699,9 +1690,6 @@ Node
     	group elements of an action
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    This method is used to return lists of matrices
 	    representing the action of group elements on the
 	    graded components of a module or on the terms of
@@ -1732,9 +1720,6 @@ Node
 	    of group elements acting in homological degree @TT "i"@
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
     	    This function returns matrices describing elements of a
 	    finite group acting on a minimal free resolution in a
 	    given homological degree. If the homological degree is
@@ -1797,9 +1782,6 @@ Node
 	    of group elements acting in the given (multi)degree
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
     	    This function returns matrices describing elements of a
 	    finite group acting on the graded component of
 	    (multi)degree @TT "d"@ of a module.
@@ -1838,9 +1820,6 @@ Node
     	compute characters of finite group action
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this method to compute the Betti characters
 	    of a finite group action on a minimal free resolution
 	    or the characters of a finite group action on the
@@ -1877,9 +1856,6 @@ Node
 	    Betti characters of the resolution
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to compute all nonzero Betti
 	    characters of a finite group action on a minimal free
 	    resolution.
@@ -1932,9 +1908,6 @@ Node
 	    the @TT "i"@-th Betti character of the resolution
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to compute the Betti characters of a
 	    finite group action on a minimal free resolution
 	    in a given homological degree.
@@ -2024,9 +1997,6 @@ Node
 	    the character of the components of a module in given degrees
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to compute the characters of the
 	    finite group action on the graded components of a
 	    module. The second argument is the (multi)degree of
@@ -2078,9 +2048,6 @@ Node
     	:Character
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    The @TO character@ method is mainly designed to compute
 	    characters of finite group actions defined via @TO action@.
 	    The user who wishes to define characters by hand
@@ -2138,9 +2105,6 @@ Node
     	:Character
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use this function to recover a character from its decomposition
 	    into a linear combination of the irreducible characters
 	    in a character table. The shortcut @TT "d*T"@
@@ -2190,9 +2154,6 @@ Node
     	T:CharacterTable
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use the @TO characterTable@ method to construct
 	    the character table of a finite group.
 	    
@@ -2301,9 +2262,6 @@ Node
     	:CharacterDecomposition
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Use the @TO decomposeCharacter@ method to decompose
 	    a character into a linear combination of irreducible
 	    characters in a character table. The shortcut @TT "c/T"@
@@ -2354,9 +2312,6 @@ Node
     	:Character
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the direct sum of the input characters.
 	    The operator @TT "++"@ may be used for the same purpose.
 	Example
@@ -2397,9 +2352,6 @@ Node
     	:Character
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the dual of a character, i.e., the character
 	    of the dual or contragredient representation.
 	    
@@ -2468,9 +2420,6 @@ Node
 	    of group elements
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns a @TO List@ of group elements
 	    acting on the vector space spanned by the variables
 	    of the polynomial ring associated with the object
@@ -2599,9 +2548,6 @@ Node
     	:ZZ
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the number of group elements passed by the user
 	    when defining the given action.
 	    This number is not necessarily the order of the acting
@@ -2626,9 +2572,6 @@ Node
 	    associated with the object acted upon
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the polynomial ring associated with the object
 	    being acted upon.
     SeeAlso
@@ -2650,9 +2593,6 @@ Node
 	    of group elements
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns a @TO List@ of group elements
 	    acting on the vector space spanned by the variables
 	    of the polynomial ring associated with the object
@@ -2678,9 +2618,6 @@ Node
     	format ring actors as one-row substitution matrices
     Description
     	Text
-	    This optional input is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    By default, the group elements acting on a ring are
 	    passed as one-row substitution matrices as those
 	    accepted by @TO substitute@. Setting @TT "Sub=>false"@
@@ -2735,9 +2672,6 @@ Node
     	:List
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns a list of of matrices, each representing an
 	    element of the symmetric group permuting the variables
 	    of the polynomial ring in the input. This simplifies
@@ -2774,9 +2708,6 @@ Node
     	:CharacterTable
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the character table of the symmetric group
 	    $S_n$, where $n$ is the number of variables of the
 	    polynomial ring in the input. The irreducible
@@ -2802,9 +2733,6 @@ Node
     	A:Action
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the object being acted upon.
 	    Depending on the action, this object may be a
 	    @TO ChainComplex@, a @TO PolynomialRing@, a
@@ -2827,9 +2755,6 @@ Node
     	:Character
     Description
     	Text
-	    This function is provided by the package
-	    @TO BettiCharacters@.
-	    
 	    Returns the tensor product of the input characters.
 	    The operator @TT "**"@ may be used for the same purpose.
 	    
