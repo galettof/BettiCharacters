@@ -62,6 +62,11 @@ Action = new Type of HashTable
 ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
 
+-- equality check for actions
+-- subtype specific checks are implemented below
+Action == Action := (A,B) -> A == B
+
+
 ----------------------------------------------------------------------
 -- Characters and character tables -----------------------------------
 ----------------------------------------------------------------------
@@ -1307,6 +1312,7 @@ Node
     Subnodes
     	ActionOnComplex
 	ActionOnGradedModule
+    	(symbol ==,Action,Action)
 	(net,Action)
 	(ring,Action)
 	ringActors
@@ -1645,6 +1651,37 @@ Node
 	    G' = actors(B,0)
 	    action(E,G,G')
 
+
+Node
+    Key
+    	(symbol ==,Action,Action)
+    	(symbol ==,ActionOnComplex,ActionOnComplex)
+    	(symbol ==,ActionOnGradedModule,ActionOnGradedModule)
+    Headline
+    	equality check for actions
+    Description
+    	Text
+	    Check if two actions are equal. Note that the
+	    underlying ring and object (complex or module) must
+	    be the same. The group elements used to set up the
+	    two actions must be the same and in the same order.
+	    In the case of actions on complexes, this operator
+	    compares the group action in all homological degrees.
+	    In the case of actions on modules, this operator
+	    compares the group action on the module generators.
+    	Example
+	    R = QQ[x_1..x_4]
+	    I = ideal apply(subsets(gens R, 2), product)
+	    RI = res I
+	    S4 = symmetricGroupActors(R)
+	    A = action(RI,S4)
+	    G = {map(RI_3, RI_3, {{0, -1, 1}, {1, 1, 0}, {0, 1, 0}}),
+		 map(RI_3, RI_3, {{0, 1, 0}, {-1, -1, 0}, {0, -1, 1}}),
+		 map(RI_3, RI_3, {{0, -1, 1}, {-1, 0, -1}, {0, 0, -1}}),
+		 map(RI_3, RI_3, {{0, 1, 0}, {1, 0, 0}, {0, 0, -1}}),
+		 map(RI_3, RI_3, {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}) }
+	    B = action(RI,S4,G,3)
+	    A == B
 
 Node
     Key
