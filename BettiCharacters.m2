@@ -714,7 +714,7 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
     b := ambient basis(d,M);
     if zero b then return toList(numActors(A):map(source b));
     -- function for actors of A in degree d
-    f := A -> apply(ringActors A,actors A, (g,g0) -> (
+    f := A -> apply(ringActors A, A.actors, (g,g0) -> (
     	    --g0*b acts on the basis of the ambient module
 	    --sub(-,g) acts on the polynomial coefficients
 	    --result must be reduced against module relations
