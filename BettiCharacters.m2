@@ -41,7 +41,6 @@ export {
     "CharacterTable",
     "decomposeCharacter",
     "inverseRingActors",
-    "labels",
     "Labels",
     "numActors",
     "ringActors",
@@ -299,7 +298,7 @@ o -> (conjSize,charTable,R,phi) -> (
 	(symbol table) => X,
 	(symbol ring) => R,
 	(symbol matrix) => m,
-	(symbol labels) => l,
+	(symbol Labels) => l,
 	}
     )
 
@@ -360,7 +359,7 @@ o -> (conjSize,charTable,R,perm) -> (
 	(symbol table) => X,
 	(symbol ring) => R,
 	(symbol matrix) => m,
-	(symbol labels) => l,
+	(symbol Labels) => l,
 	}
     )
 
@@ -388,7 +387,7 @@ CharacterDecomposition => (C,T) -> (
     new CharacterDecomposition from {
 	(symbol numActors) => C.numActors,
 	(symbol ring) => R,
-	(symbol labels) => T.labels,
+	(symbol Labels) => T.Labels,
 	(symbol decompose) => D,
 	(symbol positions) => p
 	}
@@ -864,7 +863,7 @@ symmetricGroupTable PolynomialRing := R -> (
 	(symbol ring) => R,
 	(symbol matrix) => m,
 	-- compact partition notation used for symmetric group labels
-	(symbol labels) => apply(P, p -> (
+	(symbol Labels) => apply(P, p -> (
     	    	t := tally toList p;
     	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
     	    	commas := #pows-1:net(",");
@@ -929,7 +928,7 @@ net CharacterTable := T -> (
     -- top row of character table
     a := {{""} | T.size};
     -- body of character table
-    b := apply(pack(1,T.labels),entries T.table,(i,j)->i|j);
+    b := apply(pack(1,T.Labels),entries T.table,(i,j)->i|j);
     stack("Character table over "|(net T.ring)," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
@@ -939,7 +938,7 @@ net CharacterTable := T -> (
 net CharacterDecomposition := D -> (
     p := D.positions;
     -- top row of decomposition table
-    a := {{""} | D.labels_p };
+    a := {{""} | D.Labels_p };
     -- body of decomposition table
     b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
@@ -2281,7 +2280,7 @@ Node
     	decomposeCharacter
     Subnodes
     	CharacterTable
-	labels
+	Labels
 
 Node
     Key
@@ -2490,7 +2489,6 @@ Node
 Node
     Key
     	Labels
-    	labels
 	[characterTable, Labels]
     Headline
     	custom labels for irreducible characters
@@ -2540,7 +2538,7 @@ Node
 	    decomposeCharacter(c,T)
     	Text
 	    The labels are stored in the character table under the
-	    key @TT "labels"@.
+	    key @TT "Labels"@.
     SeeAlso
     	characterTable
 	decomposeCharacter
