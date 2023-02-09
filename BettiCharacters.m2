@@ -1652,37 +1652,11 @@ Node
 	    This function is provided by the package
 	    @TO BettiCharacters@.
 	    
-	    When called (without additional arguments) on an object
-	    of type @TO Action@,
-	    this function returns the list of group elements
-	    originally provided by the user to act on
-	    a module or in a given homological
-	    degree of a resolution. Note that these group elements
-	    are assumed to trivial, unless otherwise indicated
-	    when constructing the action.
-
-	    The user may specify additional arguments to obtain
-	    elements of the group acting in other degrees.
+	    This method is used to return lists of matrices
+	    representing the action of group elements on the
+	    graded components of a module or on the terms of
+	    a minimal free resolution.
 	    See the specific use cases for more details.
-    	Example	    
-	    R = QQ[x_1..x_4]
-	    I = ideal apply(subsets(gens R,2),product)
-	    M = module I
-	    RM = res M
-	    G = {matrix{{x_2,x_3,x_4,x_1}},
-    		 matrix{{x_2,x_3,x_1,x_4}},
-    		 matrix{{x_2,x_1,x_4,x_3}},
-    		 matrix{{x_2,x_1,x_3,x_4}},
-    		 matrix{{x_1,x_2,x_3,x_4}} }
-	    G' = { (id_(R^6))_{2,4,5,0,1,3},
-    		   (id_(R^6))_{2,0,1,4,5,3},
-    		   (id_(R^6))_{0,4,3,2,1,5},
-    		   (id_(R^6))_{0,2,1,4,3,5},
-    		    id_(R^6) }
-	    A = action(RM,G,G',0)
-	    --actors(A)
-	    B = action(M,G)
-	    --actors(B)
     SeeAlso
     	action	    
     Subnodes
