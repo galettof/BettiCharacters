@@ -496,7 +496,11 @@ action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
     action(C,l,l0,min C,Sub=>op.Sub)
     )
 
---equality check for actions on complexes
+-- equality check for actions on complexes
+-- user provided action is stored in cache because user
+-- may provide initial action in different homological degrees
+-- then it is not enough to compare as raw hash tables
+-- so we compare actors in all homological degrees
 ActionOnComplex == ActionOnComplex := (A,B) -> (
     -- first compare raw hash tables
     if A =!= B then return false;
@@ -704,6 +708,11 @@ action(Module,List) := ActionOnGradedModule => op -> (M,l) -> (
 	);
     action(M,l,l0,Sub=>op.Sub)
     )
+
+-- equality check for actions on graded modules
+-- since the user provided action on generators is stored
+-- it is enough to compare as raw hash tables
+ActionOnGradedModule == ActionOnGradedModule := (A,B) -> A === B
 
 -- returns actors on component of given multidegree
 -- the actors are computed and stored
