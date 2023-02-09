@@ -62,10 +62,10 @@ Action = new Type of HashTable
 ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
 
--- equality check for actions
--- subtype specific checks are implemented below
-Action == Action := (A,B) -> A == B
+-- equality check for actions implemented below
 
+-- equality for characters as raw hash tables
+Character == Character := (A,B) -> A === B
 
 ----------------------------------------------------------------------
 -- Characters and character tables -----------------------------------
@@ -1018,7 +1018,8 @@ Node
 	:Character tables and decompositions
 	characterTable
 	decomposeCharacter
-	:Symmetric group actions
+	:Additional methods
+	"Equality checks"
 	symmetricGroupActors
 	symmetricGroupTable
     	:Examples from the literature
@@ -1199,7 +1200,8 @@ Node
 	characters, we work over the cyclotomic field obtained by
 	adjoining a primitive 7th root of unity to $\mathbb{Q}$.
     Example
-    	kk = toField(QQ[a]/ideal(sum apply(7,i->a^i)))
+    	needsPackage "Cyclotomic"
+	kk = toField(QQ[a] / cyclotomicPoly(7, a))
 	R = kk[x,y,z]
 	f4 = x^3*y+y^3*z+z^3*x
 	H = jacobian transpose jacobian f4
@@ -1312,7 +1314,6 @@ Node
     Subnodes
     	ActionOnComplex
 	ActionOnGradedModule
-    	(symbol ==,Action,Action)
 	(net,Action)
 	(ring,Action)
 	ringActors
@@ -1654,21 +1655,29 @@ Node
 
 Node
     Key
-    	(symbol ==,Action,Action)
+    	"Equality checks"
     	(symbol ==,ActionOnComplex,ActionOnComplex)
     	(symbol ==,ActionOnGradedModule,ActionOnGradedModule)
+    	(symbol ==,Character,Character)
     Headline
-    	equality check for actions
+    	compare actions and characters
     Description
     	Text
-	    Check if two actions are equal. Note that the
-	    underlying ring and object (complex or module) must
-	    be the same. The group elements used to set up the
-	    two actions must be the same and in the same order.
-	    In the case of actions on complexes, this operator
+	    Use @TT "=="@ to check if two actions or characters are equal.
+	    
+	    For actions, the underlying ring and object (complex or
+	    module) must be the same.   
+	    The group elements used to set up the actions being
+	    compared must be the same and in the same order.
+	    In the case of actions on complexes, the @TT "=="@ operator
 	    compares the group action in all homological degrees.
-	    In the case of actions on modules, this operator
+	    In the case of actions on modules, the @TT "=="@ operator
 	    compares the group action on the module generators.
+	    
+	    For characters, the underlying ring must be the same,
+	    as well as the number of entries in each character.
+	    Characters are compared across all homological and
+	    internal degrees.
     	Example
 	    R = QQ[x_1..x_4]
 	    I = ideal apply(subsets(gens R, 2), product)
@@ -1682,6 +1691,7 @@ Node
 		 map(RI_3, RI_3, {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}) }
 	    B = action(RI,S4,G,3)
 	    A == B
+	    character A == character B
 
 Node
     Key
