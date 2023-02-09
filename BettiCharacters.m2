@@ -484,7 +484,6 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
-	--(symbol actors) => apply(l0,g->map(C_i,C_i,g)),
 	}
     )
 
@@ -534,7 +533,7 @@ inverseRingActors(Action) := List => op -> A -> (
 actors = method(TypicalValue=>List)
 
 -- returns actors passed by user when constructing the action
-actors(Action) := List => A -> A.actors
+-- actors(Action) := List => A -> A.actors
 
 -- returns actors on resolution in a given homological degree
 -- if homological degree is not the one passed by user,
@@ -1653,7 +1652,6 @@ Node
 Node
     Key
     	actors
-	(actors,Action)
     Headline
     	group elements of an action
     Description
