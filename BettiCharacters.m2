@@ -532,9 +532,6 @@ inverseRingActors(Action) := List => op -> A -> (
 -- returns various group actors
 actors = method(TypicalValue=>List)
 
--- returns actors passed by user when constructing the action
--- actors(Action) := List => A -> A.actors
-
 -- returns actors on resolution in a given homological degree
 -- if homological degree is not the one passed by user,
 -- the actors are computed and stored
