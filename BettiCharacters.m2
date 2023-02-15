@@ -1978,7 +1978,6 @@ Node
     	compute characters of graded components of a module
     Usage
     	character(A,d)
-    	character(A,lo,hi)
     Inputs
     	A:ActionOnGradedModule
 	    a finite group action on a graded module
@@ -1991,14 +1990,11 @@ Node
     	Text
 	    Use this function to compute the characters of the
 	    finite group action on the graded components of a
-	    module. The second argument is the (multi)degree of
-	    the desired component. For $\mathbb{Z}$-graded rings,
-	    one may compute characters in a range of degrees by
-	    providing the lowest and highest degrees in the range.
+	    module. The second argument is the multidegree (as a list)
+	    or the degree (as an integer) of the desired component.
 
 	    To illustrate, we compute the Betti characters of a
-	    symmetric group on the graded components of a polynomial
-	    ring, a monomial ideal, and their quotient.
+	    symmetric group on the graded components of a quotient ring.
 	    The characters are determined
 	    by five permutations with cycle types,
 	    in order: 4, 31, 22, 211, 1111.
@@ -2011,13 +2007,30 @@ Node
           	 matrix{{x_2,x_1,x_3,x_4}},
           	 matrix{{x_1,x_2,x_3,x_4}} }
 	    Q = R/I
-	    A = action(R,G)
-	    B = action(I,G)
-	    C = action(Q,G)
-	    character(A,0,5)
-	    character(B,0,5)
-	    character(C,0,5)
-	    character(C,6)
+	    A = action(Q,G)
+	    character(A,0)
+	    character(A,1)
+    Synopsis
+    	Usage
+	    character(A,lo,hi)
+    	Inputs
+	    A:ActionOnGradedModule
+	    	a finite group action on a graded module
+    	    lo:ZZ
+	    	the low degree
+    	    hi:ZZ
+	    	the high degree
+    	Outputs
+	    :Character
+	    	the character of the components of a module in the given range of degrees
+    Description
+    	Text
+	    For $\mathbb{Z}$-graded modules,
+	    one may compute characters in a range of degrees by
+	    providing the lowest and highest degrees in the range
+	    as the second and third argument.
+	Example
+	    character(A,0,4)
     SeeAlso
     	action
 
