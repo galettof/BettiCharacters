@@ -1013,10 +1013,11 @@ Node
 	"Equality checks"
 	symmetricGroupActors
 	symmetricGroupTable
-    	:Examples from the literature
+    	:Examples
       	"BettiCharacters Example 1"
       	"BettiCharacters Example 2"
       	"BettiCharacters Example 3"
+      	"BettiCharacters Example 4"
 
 Node
     Key
@@ -1291,6 +1292,55 @@ Node
 	B = action(M,G,Sub=>false)
 	elapsedTime b = character(B,21)
 	b/T
+
+Node
+    Key
+    	"BettiCharacters Example 4"
+    Headline
+    	a multigraded example
+    Description
+    	Text
+	    Consider the polynomial ring $\mathbb{Q} [x_1,x_2,y_1,y_2,y_3]$
+       	    with the variables $x_i$ of bidegree @TT "{1,0}"@ and the
+       	    variables $y_j$ of bidegree @TT "{0,1}"@.
+	    We consider the action of a product of two symmetric
+	    groups, the first permuting the $x_i$ variables and the
+	    second permuting the $y_j$ variables.
+	    The bigraded irrelevant ideal
+	    $\langle x_1,x_2\rangle \cap \langle y_1,y_2,y_3\rangle$
+	    is stable under this group action. We compute the Betti
+	    characters of the group action on the resolution of the
+	    irrelevant ideal.
+    	Example
+    	    R = QQ[x_1,x_2,y_1,y_2,y_3,Degrees=>{2:{1,0},3:{0,1}}]
+	    I = intersect(ideal(x_1,x_2),ideal(y_1,y_2,y_3))
+	    RI = res I
+    	    G = {
+	    	matrix{{x_1,x_2,y_2,y_3,y_1}},
+	    	matrix{{x_1,x_2,y_2,y_1,y_3}},
+	    	matrix{{x_1,x_2,y_1,y_2,y_3}},
+	    	matrix{{x_2,x_1,y_2,y_3,y_1}},
+	    	matrix{{x_2,x_1,y_2,y_1,y_3}},
+	    	matrix{{x_2,x_1,y_1,y_2,y_3}}
+	    	}
+    	    A = action(RI,G)
+    	    character A
+    	Text
+    	    We can also compute the characters of some graded
+	    components of the quotient by the bigraded irrelevant ideal.
+    	Example
+    	    Q = R/I
+       	    B = action(Q,G)
+       	    character(B,{1,0})
+       	    character(B,{0,1})
+       	    character(B,{4,0})
+       	    character(B,{0,5})
+    	Text
+	    Note that all mixed degree components are zero.
+    	Example
+       	    character(B,{1,1})
+       	    character(B,{2,1})
+       	    character(B,{1,2})
 
 
 Node
