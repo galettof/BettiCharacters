@@ -1305,12 +1305,12 @@ Node
        	    variables $y_j$ of bidegree @TT "{0,1}"@.
 	    We consider the action of a product of two symmetric
 	    groups, the first permuting the $x_i$ variables and the
-	    second permuting the $y_j$ variables.
-	    The bigraded irrelevant ideal
-	    $\langle x_1,x_2\rangle \cap \langle y_1,y_2,y_3\rangle$
-	    is stable under this group action. We compute the Betti
-	    characters of the group action on the resolution of the
-	    irrelevant ideal.
+	    second permuting the $y_j$ variables. We compute the
+	    Betti characters of this group on the resolution of
+	    the bigraded irrelevant ideal
+	    $\langle x_1,x_2\rangle \cap \langle y_1,y_2,y_3\rangle$.
+	    This is also the edge ideal of the complete bipartite graph
+	    $K_{2,3}$.
     	Example
     	    R = QQ[x_1,x_2,y_1,y_2,y_3,Degrees=>{2:{1,0},3:{0,1}}]
 	    I = intersect(ideal(x_1,x_2),ideal(y_1,y_2,y_3))
@@ -1327,7 +1327,7 @@ Node
     	    character A
     	Text
     	    We can also compute the characters of some graded
-	    components of the quotient by the bigraded irrelevant ideal.
+	    components of the quotient by this ideal.
     	Example
     	    Q = R/I
        	    B = action(Q,G)
