@@ -2970,7 +2970,7 @@ assert( ddec.decompose#(0,{2}) == matrix{{2_R,2,0,0,0,0,0}})
 assert( ddec.decompose#(0,{3}) == matrix{{3_R,3,0,0,0,0,0}})
 ///
 
--- Test 3 (non symmetric group, tests actors)
+-- Test 2 (non symmetric group, tests actors)
 TEST ///
 clearAll
 kk = toField(QQ[w]/ideal(sum apply(5,i->w^i)))
@@ -3009,7 +3009,7 @@ cb2 = character(R,4, hashTable {((2,{4}), matrix{apply(b,trace)})})
 assert(character(B,2) === cb2)
 ///
 
--- Test 4 (multigraded ideal, product of symmetric groups)
+-- Test 3 (multigraded ideal, product of symmetric groups)
 TEST ///
 clearAll
 R = QQ[x_1,x_2,y_1,y_2,Degrees=>{2:{1,0},2:{0,1}}]
