@@ -3009,4 +3009,35 @@ cb2 = character(R,4, hashTable {((2,{4}), matrix{apply(b,trace)})})
 assert(character(B,2) === cb2)
 ///
 
+-- Test 4 (multigraded ideal, product of symmetric groups)
+TEST ///
+clearAll
+R = QQ[x_1,x_2,y_1,y_2,Degrees=>{2:{1,0},2:{0,1}}]
+I = intersect(ideal(x_1,x_2),ideal(y_1,y_2))
+RI = res I
+G = {
+    matrix{{x_2,x_1,y_2,y_1}},
+    matrix{{x_2,x_1,y_1,y_2}},
+    matrix{{x_1,x_2,y_2,y_1}},
+    matrix{{x_1,x_2,y_1,y_2}}
+    }
+A = action(RI,G)
+a = character(R,4,hashTable {
+    ((0,{0,0}), matrix{{1,1,1,1}}),
+    ((1,{1,1}), matrix{{0,0,0,4}}),
+    ((2,{1,2}), matrix{{0,0,-2,2}}),
+    ((2,{2,1}), matrix{{0,-2,0,2}}),
+    ((3,{2,2}), matrix{{1,-1,-1,1}})
+    })
+assert((character A) == a)
+B = action(R,G)
+b = character(R,4,hashTable {
+    ((0,{0,2}), matrix{{1,3,1,3}}),
+    ((0,{2,0}), matrix{{1,1,3,3}})
+    })
+assert(character(B,{0,2}) ++ character(B,{2,0}) == b)
+C = action(R/I,G)
+assert(character(C,{0,2}) ++ character(C,{2,0}) == b)
+///
+
 end
