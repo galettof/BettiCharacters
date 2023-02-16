@@ -287,7 +287,7 @@ o -> (conjSize,charTable,R,phi) -> (
 	if #o.Labels != n then (
 	    error ("characterTable: expected " | toString(n) | " labels");
 	    );
-	if any(o.Labels, i -> instance(i, Net)) then (
+	if not all(o.Labels, i -> instance(i, Net)) then (
 	    error "characterTable: expected labels to be strings (or nets)";	    
 	    );
 	l = o.Labels;
