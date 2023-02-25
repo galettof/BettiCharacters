@@ -3040,4 +3040,18 @@ C = action(R/I,G)
 assert(character(C,{0,2}) ++ character(C,{2,0}) == b)
 ///
 
+-- Test 4 (dual and tensor, symmetric group)
+TEST ///
+clearAll
+R = QQ[x_1..x_4]
+K = res ideal vars R
+S4 = symmetricGroupActors(R)
+A = action(K,S4)
+c = character A
+sign = character(R,5, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
+-- check duality of representations in Koszul complex
+-- which is true up to a twist by a sign representation
+assert(dual(c,id_QQ) == c ** sign)
+///
+
 end
