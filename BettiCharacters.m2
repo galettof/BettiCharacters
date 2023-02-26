@@ -997,7 +997,11 @@ Node
 	    @UL {(BOLD "1.0: ", "Initial version. Includes computation of
 		actions and Betti characters.") ,
 		(BOLD "2.0: ", "Introduces character tables, decompositions,
-		and other methods for characters.")
+		and other methods for characters."),
+		(BOLD "2.1: ", "Adds equality checks for actions and
+		    characters. Contains several small improvements to the
+		    code and documentation, including a new multigraded
+		    example.")
 		}@
     Subnodes
     	:Defining and computing actions
