@@ -209,27 +209,26 @@ alexopts = {Strategy=>0};
 -- character of dual/contragredient representation with conjugation
 dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     -- check characteristic
-    R := c.ring;
-    if char(R) != 0 then (
+    F := c.ring;
+    if char(F) != 0 then (
 	error "dual: use permutation constructor in positive characteristic";
 	);
     -- check conjugation map
-    F := coefficientRing R;
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
-	error "dual: expected an order 2 automorphism of the coefficient field";
+	error "dual: expected an order 2 automorphism of the base field";
 	);
     -- error if characters cannot be lifted to coefficient field
     H := try applyValues(c.characters, v -> lift(v,F)) else (
-	error "dual: could not lift characters to coefficient field";
+	error "dual: could not lift characters to base field";
 	);
     -- conjugation map to the polynomial ring
-    Phi := map(R,F) * phi;
+    -- Phi := map(R,F) * phi;
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => applyPairs(H,
-	    (k,v) -> ( apply(k,minus), Phi v )
+	    (k,v) -> ( apply(k,minus), phi v )
 	    )
 	}
     )
