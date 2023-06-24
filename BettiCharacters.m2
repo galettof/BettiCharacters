@@ -577,11 +577,12 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
+    F := coefficientRing ring A;
     -- if complex is zero in hom degree i, return empty character
     if zero (target A)_i then (
 	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => coefficientRing ring A,
+	    (symbol ring) => F,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -595,12 +596,12 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	-- create raw character from actors
 	H := applyPairs(degs,
 	    (d,indx) -> ((i,d),
-		matrix{apply(actors(A,i), g -> trace g_indx^indx)}
+		lift(matrix{apply(actors(A,i), g -> trace g_indx^indx)},F)
 		)
 	    );
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => coefficientRing ring A,
+	    (symbol ring) => F,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
 	    }
@@ -745,11 +746,12 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
 character(ActionOnGradedModule,List) := Character => (A,d) -> (
+    F := coefficientRing ring A;
     acts := actors(A,d);
     if all(acts,zero) then (
 	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => coefficientRing ring A,
+	    (symbol ring) => F,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -760,7 +762,7 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 	    cache => new CacheTable,
 	    (symbol ring) => coefficientRing ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {(0,d) => matrix{apply(acts, trace)}},
+	    (symbol characters) => hashTable {(0,d) => lift(matrix{apply(acts, trace)},F)},
 	    }
 	);
     -- make cache function from f and run it on A
