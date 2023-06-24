@@ -1124,7 +1124,7 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(R,15,hashTable {(0,{7}) =>
+    	sign = character(QQ,1,15,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
 	dual(c,id_QQ)[-5] ** sign === c
     Text
@@ -2449,7 +2449,7 @@ Node
 	    F = toField(QQ[w]/ideal(1+w+w^2))
 	    R = F[x_1..x_4]
 	    conj = map(F,F,{w^2})
-	    X = character(R,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
+	    X = character(F,1,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
 	    X' = dual(X,conj)
     	Text
     	    If working over coefficient fields of positive characteristic
@@ -2844,7 +2844,7 @@ Node
 	    observed by tensoring with the character of the
 	    sign representation concentrated in degree 3.
     	Example
-	    sign = character(R,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    sign = character(QQ,1,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
 	    dual(a,{1,2,3}) ** sign === a
 
 ///
