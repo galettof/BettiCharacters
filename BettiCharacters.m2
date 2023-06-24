@@ -74,14 +74,23 @@ Character == Character := (A,B) -> A === B
 character = method(TypicalValue=>Character)
 
 -- construct a finite dimensional character by hand
+-- this constructor is new after v2.1
+-- it is inteded to make characters be independent of a
+-- particular polynomial ring, relying instead on the
+-- field of definition and degree length of the grading
 -- INPUT:
--- 1) polynomial ring (dictates coefficients and degrees)
--- 2) integer: character length (or number of actors)
--- 3) hash table for raw character: (homdeg,deg) => character matrix
-character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
-    -- check first argument is a polynomial ring over a field
-    if not isField coefficientRing R then (
-	error "character: expected polynomial ring over a field";
+-- 1) coefficient ring (must be a field)
+-- 2) degree length (must be a positive integer)
+-- 3) integer: character length (or number of actors)
+-- 4) hash table for raw character: (homdeg,deg) => character matrix
+character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
+    -- check first argument is a field
+    if not isField F then (
+	error "character: expected first argument to be a field";
+	);
+    -- check degree length is a positive integer
+    if (class dl =!= ZZ or dl <= 0) then (
+	error "character: second argument must be a positive integer";
 	);
     -- check keys are in the right format
     k := keys H;
@@ -90,7 +99,6 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	error "character: expected keys of the form (ZZ,List)";
 	);
     -- check degree vectors are allowed
-    dl := degreeLength R;
     degs := apply(k,last);
     if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
 	error ("character: expected integer degree vectors of length " | toString(dl));
@@ -104,15 +112,21 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	error ("character: expected characters to be one-row matrices with " | toString(cl) | " columns");
 	);
     -- move character values into given ring
-    H2 := try applyValues(H, v -> promote(v,R)) else (
+    H2 := try applyValues(H, v -> promote(v,F)) else (
 	error "character: could not promote characters to given ring";
 	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol numActors) => cl,
 	(symbol characters) => H2,
 	}
+    )
+
+-- constructor over polynomial rings
+-- (used to be default in v2.1)
+character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
+    character(coefficientRing R,degreeLength R,cl,H)
     )
 
 
