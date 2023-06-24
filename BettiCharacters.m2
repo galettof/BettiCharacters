@@ -75,7 +75,7 @@ character = method(TypicalValue=>Character)
 
 -- construct a finite dimensional character by hand
 -- this constructor is new after v2.1
--- it is inteded to make characters be independent of a
+-- it is intended to make characters independent of a
 -- particular polynomial ring, relying instead on the
 -- field of definition and degree length of the grading
 -- INPUT:
@@ -118,13 +118,14 @@ character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => F,
+	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	(symbol characters) => H2,
 	}
     )
 
 -- constructor over polynomial rings
--- (used to be default in v2.1)
+-- (default before v2.1, kept for compatibility)
 character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
     character(coefficientRing R,degreeLength R,cl,H)
     )
@@ -139,6 +140,10 @@ Character.directSum = args -> (
     R := (args#0).ring;
     if any(args, c -> c.ring =!= R)
     then error "directSum: expected characters all over the same ring";
+    -- check degree length is the same for all summands
+    dl := (args#0).degreeLength;
+    if any(args, c -> c.degreeLength != dl)
+    then error "directSum: expected characters all with the same degree length";
     -- check character length is the same for all summands
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
@@ -146,6 +151,7 @@ Character.directSum = args -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
+	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
@@ -173,6 +179,10 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     R := c1.ring;
     if (c2.ring =!= R)
     then error "tensor: expected characters all over the same ring";
+    -- check degree length is the same for all summands
+    dl := c1.degreeLength;
+    if (c2.degreeLength != dl)
+    then error "tensor: expected characters all with the same degree length";
     -- check character length is the same for all summands
     cl := c1.numActors;
     if (c2.numActors != cl)
@@ -180,6 +190,7 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
+	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- multiply raw characters
 	(symbol characters) => combine(c1.characters,c2.characters,
@@ -195,6 +206,7 @@ Character Array := Character => (C,A) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => C.ring,
+	(symbol degreeLength) => C.degreeLength,
 	(symbol numActors) => C.numActors,
 	-- homological shift raw characters
 	(symbol characters) => applyKeys(C.characters,
@@ -221,11 +233,10 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     H := try applyValues(c.characters, v -> lift(v,F)) else (
 	error "dual: could not lift characters to base field";
 	);
-    -- conjugation map to the polynomial ring
-    -- Phi := map(R,F) * phi;
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => F,
+	(symbol degreeLength) => c.degreeLength,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => applyPairs(H,
 	    (k,v) -> ( apply(k,minus), phi v )
@@ -246,6 +257,7 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
 	(symbol numActors) => n,
 	(symbol characters) => applyPairs(c.characters,
 	    (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) )
@@ -583,6 +595,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	return new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -602,6 +615,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
 	    }
@@ -752,6 +766,7 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 	return new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -760,7 +775,8 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     f := A -> (
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => coefficientRing ring A,
+	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {(0,d) => lift(matrix{apply(acts, trace)},F)},
 	    }
