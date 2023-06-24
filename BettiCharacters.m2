@@ -581,7 +581,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
     if zero (target A)_i then (
 	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => coefficientRing ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -600,7 +600,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	    );
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => coefficientRing ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
 	    }
@@ -749,7 +749,7 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     if all(acts,zero) then (
 	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => coefficientRing ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -758,7 +758,7 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     f := A -> (
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => coefficientRing ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {(0,d) => matrix{apply(acts, trace)}},
 	    }
