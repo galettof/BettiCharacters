@@ -1292,7 +1292,7 @@ Node
 	and decompose the Betti characters of the resolutions.
 	The arguments are: a list with the cardinality of the
 	conjugacy classes, a matrix with the values of the irreducible
-	characters, the base polynomial ring, and the complex
+	characters, the base field, and the complex
 	conjugation map restricted to the field of coefficients.
 	See @TO characterTable@ for more details.
     Example
