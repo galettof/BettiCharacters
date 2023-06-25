@@ -1132,7 +1132,7 @@ Node
 	using a compact notation (the exponents indicate how
 	    many times a part is repeated).
     Example
-    	T = symmetricGroupTable R
+    	T = symmetricGroupTable(7,QQ)
 	decomposeCharacter(c,T)
     Text
     	As expected from the general theory, we find a single
@@ -1201,7 +1201,7 @@ Node
 	using a compact notation (the exponents indicate how
 	    many times a part is repeated).
     Example
-    	T = symmetricGroupTable R
+    	T = symmetricGroupTable(6,QQ)
 	decomposeCharacter(c,T)
     Text
     	The description provided in
@@ -1302,7 +1302,7 @@ Node
     	    {7,-1,1,-1,0,0},
     	    {8,0,-1,0,1,1}};
 	conj = map(kk,kk,{a^6})
-        T = characterTable(s,m,R,conj)
+        T = characterTable(s,m,kk,conj)
 	a1/T
 	a2/T
     Text
@@ -2791,27 +2791,28 @@ Node
 Node
     Key
     	symmetricGroupTable
-    	(symmetricGroupTable,PolynomialRing)
+    	(symmetricGroupTable,ZZ,Ring)
     Headline
     	character table of the symmetric group
     Usage
-    	symmetricGroupTable(R)
+    	symmetricGroupTable(n,F)
     Inputs
-    	R:PolynomialRing
+    	n:ZZ
+	    positive
+    	F:Ring
+	    a field
     Outputs
     	:CharacterTable
     Description
     	Text
 	    Returns the character table of the symmetric group
-	    $S_n$, where $n$ is the number of variables of the
-	    polynomial ring in the input. The irreducible
+	    $S_n$ over the field @TT "F"@. The irreducible
 	    characters are indexed by the partitions of $n$ written
 	    using a compact notation where an exponent indicates
 	    how many times a part is repeated. The computation uses
 	    the recursive Murnaghan-Nakayama formula.
     	Example
-	    R=QQ[x_1..x_4]
-	    symmetricGroupTable(R)
+	    symmetricGroupTable(4,QQ)
     SeeAlso
 	"BettiCharacters Example 1"
 	"BettiCharacters Example 2"
@@ -2912,7 +2913,7 @@ d = character(R,3,hashTable {
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
-cS3 = symmetricGroupTable(R)
+cS3 = symmetricGroupTable(3,QQ)
 assert( cS3.table ==
     matrix{{1_R,1,1},{-1,0,2},{1,-1,1}})
 adec = a/cS3
@@ -2983,7 +2984,7 @@ d = character(R,7,hashTable {
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
-cS5 = symmetricGroupTable(R)
+cS5 = symmetricGroupTable(5,QQ)
 assert( cS5.table ==
     matrix{{1_R,1,1,1,1,1,1},
 	{-1,0,-1,1,0,2,4},
