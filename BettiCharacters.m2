@@ -2234,15 +2234,15 @@ Node
     Headline
     	construct a character table
     Usage
-    	T = characterTable(s,M,R,conj)
-    	T = characterTable(s,M,R,perm)
+    	T = characterTable(s,M,F,conj)
+    	T = characterTable(s,M,F,perm)
     Inputs
     	s:List
 	    of conjugacy class sizes
     	M:Matrix
 	    with character table entries
-    	R:PolynomialRing
-	    over a field
+    	F:Ring
+	    a field
     	conj:RingMap
 	    conjugation in coefficient field
     	perm:List
@@ -2262,15 +2262,14 @@ Node
 	    irreducible character of the group at an element
 	    of the $j$-th conjugacy class.
 	    
-	    The third argument is a polynomial ring over a field,
-	    the same ring over which the modules and resolutions
-	    are defined whose characters are to be decomposed
-	    against the character table. Note that the matrix in
-	    the second argument must be liftable to this ring.
+	    The third argument is a field, the field of definition
+	    of the characters to be decomposed against the character
+	    table. Note that the matrix in the second argument must
+	    be liftable to this field. (In version 2.1 and earlier,
+		this argument used to be a polynomial ring.)
 	    
-	    Assuming the polynomial ring in the third argument
-	    has a coefficient field @TT "F"@ which is a subfield of the
-	    complex numbers, then the fourth argument is the
+	    Assuming the field in the third argument is a subfield
+	    of the complex numbers, then the fourth argument is the
 	    restriction of complex conjugation to @TT "F"@.
 	    
 	    For example, we construct the character table of the
@@ -2287,9 +2286,8 @@ Node
 	    F = toField(QQ[w]/ideal(1+w+w^2))
 	    s = {1,3,4,4}
 	    M = matrix{{1,1,1,1},{1,1,w,w^2},{1,1,w^2,w},{3,-1,0,0}}
-	    R = F[x_1..x_4]
 	    conj = map(F,F,{w^2})
-	    T = characterTable(s,M,R,conj)
+	    T = characterTable(s,M,F,conj)
     	Text	    
 	    By default, irreducible characters in a character table
 	    are labeled as @TT "X0, X1, ..."@, etc.
@@ -2325,7 +2323,7 @@ Node
 	    as the fourth argument.
     	Example
 	    perm = {1,2,4,3}
-	    T' = characterTable(s,M,R,perm)
+	    T' = characterTable(s,M,F,perm)
 	    T' === T
     Caveat
     	This constructor checks orthonormality of the table
