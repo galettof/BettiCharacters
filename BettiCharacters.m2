@@ -2571,7 +2571,7 @@ Node
 		{1,1,-1,1,-1},
 		{1,1,-1,-1,1},
 		{2,-2,0,0,0}};
-	    T = characterTable({1,1,2,2,2},M,R,{1,2,3,4,5},
+	    T = characterTable({1,1,2,2,2},M,QQ,{1,2,3,4,5},
 		Labels=>{"triv","rho1","rho2","rho3","dim2"})
     	Text
 	    The same labels are automatically used when decomposing
