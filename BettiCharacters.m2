@@ -1915,13 +1915,13 @@ Node
 	    be concentrated in homological degree zero.
 	    
 	    Characters may also be constructed by hand using
-	    @TO (character,PolynomialRing,ZZ,HashTable)@.
+	    @TO (character,Ring,ZZ,ZZ,HashTable)@.
     Subnodes
     	Character
     	(character,ActionOnComplex)
     	(character,ActionOnComplex,ZZ)
      	(character,ActionOnGradedModule,List)
-	(character,PolynomialRing,ZZ,HashTable)
+	(character,Ring,ZZ,ZZ,HashTable)
 	(character,CharacterDecomposition,CharacterTable)
 	    
 Node
@@ -2128,15 +2128,18 @@ Node
 	    
 Node
     Key
+    	(character,Ring,ZZ,ZZ,HashTable)
     	(character,PolynomialRing,ZZ,HashTable)
     Headline
     	construct a character
     Usage
-    	character(R,l,H)
+    	character(F,dl,cl,H)
     Inputs
-    	R:PolynomialRing
-	    over a field
-    	l:ZZ
+    	F:Ring
+	    a field
+    	dl:ZZ
+	    degree length
+    	cl:ZZ
 	    character length
     	H:HashTable
 	    raw character data
@@ -2149,23 +2152,25 @@ Node
 	    The user who wishes to define characters by hand
 	    may do so with this particular application of the method.
 	    
-	    The first argument is the polynomial ring the character
+	    The first argument is the field the character
 	    values will live in; this makes it possible to compare or
 	    combine the hand-constructed character with other
-	    characters over the same ring. The second argument is
+	    characters over the same field. The second argument is
+	    the length of the degrees used for the internal (multi)grading
+	    of the characters. The third argument is
 	    the length of the character, i.e., the number of conjugacy
 	    classes of the group whose representations the character
-	    is coming from. The third argument is a hash table
+	    is coming from. The fourth argument is a hash table
 	    containing the "raw" character data. The hash table
 	    entries are in the format @TT "(i,d) => c"@, where @TT "i"@
 	    is an integer representing homological degree, @TT "d"@
 	    is a list representing the internal (multi)degree, and
 	    @TT "c"@ is a list containing the values of the character
 	    in the given degrees. Note that the values of the character
-	    are elements in the ring given as the first argument.
+	    are elements in the field given as the first argument.
 	Example
 	    R = QQ[x_1..x_3]
-	    regRep = character(R,3, hashTable {
+	    regRep = character(QQ,1,3, hashTable {
 		    (0,{0}) => matrix{{1,1,1}},
 		    (0,{1}) => matrix{{-1,0,2}},
 		    (0,{2}) => matrix{{-1,0,2}},
@@ -2178,6 +2183,19 @@ Node
 	    Q = R/I
 	    A = action(Q,S3)
 	    character(A,0,3) === regRep
+    	Text
+	    The other version of this command replaces the first two
+	    arguments with a polynomial ring from which the field
+	    of coefficients and the degree length are inherited.
+	    This was the only construction available in version 2.1
+	    and earlier, and is maintained for backward compatibility.
+	Example
+	    character(R,3, hashTable {
+		    (0,{0}) => matrix{{1,1,1}},
+		    (0,{1}) => matrix{{-1,0,2}},
+		    (0,{2}) => matrix{{-1,0,2}},
+		    (0,{3}) => matrix{{1,-1,1}},
+		    })
     Caveat
     	This constructor implements basic consistency checks, but
 	it is still possible to construct objects that are not
