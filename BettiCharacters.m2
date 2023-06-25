@@ -860,37 +860,36 @@ murnaghanNakayama = memoize murnaghanNakayama
 
 -- symmetric group character table
 symmetricGroupTable = method(TypicalValue=>CharacterTable);
-symmetricGroupTable PolynomialRing := R -> (
-    -- check argument is a polynomial ring over a field
-    if not isField coefficientRing R then (
-	error "symmetricGroupTable: expected polynomial ring over a field";
-	);
-    -- check number of variables
-    n := dim R;
+symmetricGroupTable(ZZ,Ring) := (n,F) -> (
+    -- check n is at least one
     if n < 1 then (
-	error "symmetricGroupTable: expected a positive number of variables";
+	error "symmetricGroupTable: expected first argument to be a positive integer";
+	);
+    -- check second argument is a field
+    if not isField F then (
+	error "symmetricGroupTable: expected second argument to be a field";
 	);
     -- check characteristic
-    if n! % (char R) == 0 then (
-	error ("symmetricGroupTable: expected characteristic not dividing " | toString(n) | "!");
+    if n! % (char F) == 0 then (
+	error ("symmetricGroupTable: expected field characteristic not dividing " | toString(n) | "!");
 	);
     -- list partitions
     P := apply(partitions n, toList);
     -- compute table using Murnaghan-Nakayama
     -- uses murnaghanNakayama unexported function with
     -- code in BettiCharacters.m2 immediately before this method
-    X := matrix(R, table(P,P,murnaghanNakayama));
+    X := matrix(F, table(P,P,murnaghanNakayama));
     -- compute size of conjugacy classes
     conjSize := apply(P/tally,
 	t -> n! / product apply(pairs t, (k,v) -> k^v*v! )
 	);
     -- matrix for inner product
-    m := diagonalMatrix(R,conjSize)*transpose(X);
+    m := diagonalMatrix(F,conjSize)*transpose(X);
     new CharacterTable from {
 	(symbol numActors) => #P,
 	(symbol size) => conjSize,
 	(symbol table) => X,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol matrix) => m,
 	-- compact partition notation used for symmetric group labels
 	(symbol Labels) => apply(P, p -> (
