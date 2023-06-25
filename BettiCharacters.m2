@@ -419,6 +419,7 @@ CharacterDecomposition => (C,T) -> (
     new CharacterDecomposition from {
 	(symbol numActors) => C.numActors,
 	(symbol ring) => R,
+	(symbol degreeLength) => C.degreeLength,
 	(symbol Labels) => T.Labels,
 	(symbol decompose) => D,
 	(symbol positions) => p
@@ -434,6 +435,7 @@ Character => (D,T) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => D.ring,
+	(symbol degreeLength) => D.degreeLength,
 	(symbol numActors) => D.numActors,
 	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
 	}
