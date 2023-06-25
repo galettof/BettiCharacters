@@ -2213,9 +2213,9 @@ Node
 	Example
 	    s = {2,3,1}
 	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
-	    R = QQ[x_1..x_3]
 	    P = {1,2,3}
-	    T = characterTable(s,M,R,P)
+	    T = characterTable(s,M,QQ,P)
+	    R = QQ[x_1..x_3]
 	    acts = {matrix{{x_2,x_3,x_1}},matrix{{x_2,x_1,x_3}},matrix{{x_1,x_2,x_3}}}
 	    A = action(R,acts)
 	    c = character(A,0,10)
@@ -2368,9 +2368,9 @@ Node
 	Example
 	    s = {2,3,1}
 	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
-	    R = QQ[x_1..x_3]
 	    P = {1,2,3}
-	    T = characterTable(s,M,R,P)
+	    T = characterTable(s,M,QQ,P)
+	    R = QQ[x_1..x_3]
 	    acts = {matrix{{x_2,x_3,x_1}},matrix{{x_2,x_1,x_3}},matrix{{x_1,x_2,x_3}}}
 	    A = action(R,acts)
 	    c = character(A,0,10)
