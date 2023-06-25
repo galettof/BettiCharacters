@@ -139,7 +139,7 @@ Character.directSum = args -> (
     -- check ring is the same for all summands
     R := (args#0).ring;
     if any(args, c -> c.ring =!= R)
-    then error "directSum: expected characters all over the same ring";
+    then error "directSum: expected characters all over the same field";
     -- check degree length is the same for all summands
     dl := (args#0).degreeLength;
     if any(args, c -> c.degreeLength != dl)
@@ -178,7 +178,7 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     -- check ring is the same for all factors
     R := c1.ring;
     if (c2.ring =!= R)
-    then error "tensor: expected characters all over the same ring";
+    then error "tensor: expected characters all over the same field";
     -- check degree length is the same for all summands
     dl := c1.degreeLength;
     if (c2.degreeLength != dl)
@@ -404,7 +404,7 @@ CharacterDecomposition => (C,T) -> (
     -- check character and table are over same ring
     R := C.ring;
     if T.ring =!= R then (
-	error "decomposeCharacter: expected character and table over the same ring";
+	error "decomposeCharacter: expected character and table over the same field";
 	);
     -- check number of actors is the same
     if C.numActors != T.numActors then (
