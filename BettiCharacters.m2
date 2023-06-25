@@ -269,16 +269,21 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
 -- character table constructor using conjugation
+-- modified after v2.1 to be defined over a field
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
--- 3) ring over which to construct the table
+-- 3) field over which to construct the table
 -- 4) ring map, conjugation of coefficients
 -- OPTIONAL: list of labels for irreducible characters
-characterTable(List,Matrix,PolynomialRing,RingMap) := CharacterTable =>
-o -> (conjSize,charTable,R,phi) -> (
+characterTable(List,Matrix,Ring,RingMap) := CharacterTable =>
+o -> (conjSize,charTable,F,phi) -> (
+    -- check third argument is a field
+    if not isField F then (
+	error "characterTable: expected third argument to be a field";
+	);
     -- check characteristic
-    if char(R) != 0 then (
+    if char(F) != 0 then (
 	error "characterTable: use permutation constructor in positive characteristic";
 	);
     n := #conjSize;
@@ -286,23 +291,20 @@ o -> (conjSize,charTable,R,phi) -> (
     if numRows charTable != n or numColumns charTable != n then (
 	error "characterTable: expected matrix size to match number of conjugacy classes";
 	);
-    -- promote character matrix to R
-    X := try promote(charTable,R) else (
-	error "characterTable: could not promote character table to given ring";
+    -- promote character matrix to F
+    X := try promote(charTable,F) else (
+	error "characterTable: could not promote character table to given field";
 	);
-    -- check conjugation map
-    F := coefficientRing R;
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
 	error "characterTable: expected an order 2 automorphism of the coefficient ring";
 	);
     -- check orthogonality relations
     ordG := sum conjSize;
-    C := diagonalMatrix(R,conjSize);
-    Phi := map(R,F) * phi;
-    m := C*transpose(Phi charTable);
+    C := diagonalMatrix(F,conjSize);
+    m := C*transpose(phi charTable);
     -- if x is a character in a one-row matrix, then x*m is the one-row matrix
     -- containing the inner products of x with the irreducible characters
-    if X*m != ordG*map(R^n) then (
+    if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
     -- check user labels or create default ones
@@ -321,21 +323,26 @@ o -> (conjSize,charTable,R,phi) -> (
 	(symbol numActors) => #conjSize,
 	(symbol size) => conjSize,
 	(symbol table) => X,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol matrix) => m,
 	(symbol Labels) => l,
 	}
     )
 
 -- character table constructor without conjugation
+-- modified after v2.1 to be defined over a field
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
--- 3) ring over which to construct the table
+-- 3) field over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
 -- OPTIONAL: list of labels for irreducible characters
-characterTable(List,Matrix,PolynomialRing,List) := CharacterTable =>
-o -> (conjSize,charTable,R,perm) -> (
+characterTable(List,Matrix,Ring,List) := CharacterTable =>
+o -> (conjSize,charTable,F,perm) -> (
+    -- check third argument is a field
+    if not isField F then (
+	error "characterTable: expected third argument to be a field";
+	);
     n := #conjSize;
     -- check all arguments have the right size
     if numRows charTable != n or numColumns charTable != n then (
@@ -344,9 +351,9 @@ o -> (conjSize,charTable,R,perm) -> (
     if #perm != n then (
 	error "characterTable: expected permutation size to match number of conjugacy classes";
 	);
-    -- promote character matrix to R
-    X := try promote(charTable,R) else (
-	error "characterTable: could not promote character table to given ring";
+    -- promote character matrix to F
+    X := try promote(charTable,F) else (
+	error "characterTable: could not promote character table to given field";
 	);
     -- check permutation has the right entries
     if set perm =!= set(1..n) then (
@@ -354,16 +361,16 @@ o -> (conjSize,charTable,R,perm) -> (
 	);
     -- check characteristic
     ordG := sum conjSize;
-    if ordG % char(R) == 0 then (
+    if ordG % char(F) == 0 then (
 	error "characterTable: characteristic divides order of the group";
 	);
     -- check orthogonality relations
-    C := diagonalMatrix(R,conjSize);
-    P := map(R^n)_(apply(perm, i -> i-1));
+    C := diagonalMatrix(F,conjSize);
+    P := map(F^n)_(apply(perm, i -> i-1));
     m := C*transpose(X*P);
     -- if x is a character in a one-row matrix, then x*m is the one-row matrix
     -- containing the inner products of x with the irreducible characters
-    if X*m != ordG*map(R^n) then (
+    if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
     -- check user labels or create default ones
@@ -382,7 +389,7 @@ o -> (conjSize,charTable,R,perm) -> (
 	(symbol numActors) => #conjSize,
 	(symbol size) => conjSize,
 	(symbol table) => X,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol matrix) => m,
 	(symbol Labels) => l,
 	}
@@ -2222,8 +2229,8 @@ Node
 Node
     Key
     	characterTable
-    	(characterTable,List,Matrix,PolynomialRing,RingMap)
-    	(characterTable,List,Matrix,PolynomialRing,List)
+    	(characterTable,List,Matrix,Ring,RingMap)
+    	(characterTable,List,Matrix,Ring,List)
     Headline
     	construct a character table
     Usage
