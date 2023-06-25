@@ -89,7 +89,7 @@ character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
 	error "character: expected first argument to be a field";
 	);
     -- check degree length is a positive integer
-    if (class dl =!= ZZ or dl <= 0) then (
+    if dl <= 0 then (
 	error "character: second argument must be a positive integer";
 	);
     -- check keys are in the right format
