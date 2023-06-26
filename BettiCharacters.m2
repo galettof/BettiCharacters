@@ -3105,14 +3105,14 @@ a = {
     map(R^{4:-3},R^{4:-3},{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}})
     }
 assert(actors(A,3) === a)
-ca = character(kk,1,4, hashTable {((0,{3}), matrix{apply(a,trace)})})
+ca = character(kk,1,4, hashTable {((0,{3}), lift(matrix{apply(a,trace)},kk))})
 assert(character(A,3) === ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
 Rm=chainComplex(d1,d2)
 B = action(Rm,D5)
 assert(actors(B,1) === a)
-cb1 = character(R,4, hashTable {((1,{3}), matrix{apply(a,trace)})})
+cb1 = character(R,4, hashTable {((1,{3}), lift(matrix{apply(a,trace)},kk))})
 assert(character(B,1) === cb1)
 b = {
     map(R^{3:-4},R^{3:-4},{{1,0,0},{0,1,0},{0,0,1}}),
@@ -3121,7 +3121,7 @@ b = {
     map(R^{3:-4},R^{3:-4},{{0,0,-1},{0,-1,0},{-1,0,0}})
     }
 assert(actors(B,2) === b)
-cb2 = character(R,4, hashTable {((2,{4}), matrix{apply(b,trace)})})
+cb2 = character(R,4, hashTable {((2,{4}), lift(matrix{apply(b,trace)},kk))})
 assert(character(B,2) === cb2)
 ///
 
