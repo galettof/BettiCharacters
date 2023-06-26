@@ -2991,20 +2991,20 @@ assert(character(D,0,3) === d)
 assert(b === c++d)
 cS3 = symmetricGroupTable(3,QQ)
 assert( cS3.table ==
-    matrix{{1_R,1,1},{-1,0,2},{1,-1,1}})
+    matrix{{1_QQ,1,1},{-1,0,2},{1,-1,1}})
 adec = a/cS3
 assert( set keys adec.decompose ===
     set {(0,{0}),(1,{2}),(2,{3})})
-assert( adec.decompose#(0,{0}) == matrix{{1_R,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{1_R,1,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,1_R,0}})
+assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
+assert( adec.decompose#(1,{2}) == matrix{{1_QQ,1,0}})
+assert( adec.decompose#(2,{3}) == matrix{{0,1_QQ,0}})
 ddec = d/cS3
 assert( set keys ddec.decompose ===
     set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_R,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_R,1,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{1_R,1,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{1_R,1,0}})
+assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
+assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0}})
+assert( ddec.decompose#(0,{2}) == matrix{{1_QQ,1,0}})
+assert( ddec.decompose#(0,{3}) == matrix{{1_QQ,1,0}})
 ///
 
 -- Test 1 (non-monomial ideal, symmetric group)
@@ -3062,7 +3062,7 @@ assert(character(D,0,3) === d)
 assert(b === c++d)
 cS5 = symmetricGroupTable(5,QQ)
 assert( cS5.table ==
-    matrix{{1_R,1,1,1,1,1,1},
+    matrix{{1_QQ,1,1,1,1,1,1},
 	{-1,0,-1,1,0,2,4},
 	{0,-1,1,-1,1,1,5},
 	{1,0,0,0,-2,0,6},
@@ -3073,17 +3073,17 @@ assert( cS5.table ==
 adec = a/cS5
 assert( set keys adec.decompose ===
     set {(0,{0}),(1,{2}),(2,{3}),(3,{5})})
-assert( adec.decompose#(0,{0}) == matrix{{1_R,0,0,0,0,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{0,0,1_R,0,0,0,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_R,0,0}})
-assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_R}})
+assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
+assert( adec.decompose#(1,{2}) == matrix{{0,0,1_QQ,0,0,0,0}})
+assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_QQ,0,0}})
+assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_QQ}})
 ddec = d/cS5
 assert( set keys ddec.decompose ===
     set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_R,0,0,0,0,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_R,1,0,0,0,0,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{2_R,2,0,0,0,0,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{3_R,3,0,0,0,0,0}})
+assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
+assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0,0,0,0,0}})
+assert( ddec.decompose#(0,{2}) == matrix{{2_QQ,2,0,0,0,0,0}})
+assert( ddec.decompose#(0,{3}) == matrix{{3_QQ,3,0,0,0,0,0}})
 ///
 
 -- Test 2 (non symmetric group, tests actors)
@@ -3105,7 +3105,7 @@ a = {
     map(R^{4:-3},R^{4:-3},{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}})
     }
 assert(actors(A,3) === a)
-ca = character(R,4, hashTable {((0,{3}), matrix{apply(a,trace)})})
+ca = character(kk,1,4, hashTable {((0,{3}), matrix{apply(a,trace)})})
 assert(character(A,3) === ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
