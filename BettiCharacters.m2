@@ -74,14 +74,23 @@ Character == Character := (A,B) -> A === B
 character = method(TypicalValue=>Character)
 
 -- construct a finite dimensional character by hand
+-- this constructor is new after v2.1
+-- it is intended to make characters independent of a
+-- particular polynomial ring, relying instead on the
+-- field of definition and degree length of the grading
 -- INPUT:
--- 1) polynomial ring (dictates coefficients and degrees)
--- 2) integer: character length (or number of actors)
--- 3) hash table for raw character: (homdeg,deg) => character matrix
-character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
-    -- check first argument is a polynomial ring over a field
-    if not isField coefficientRing R then (
-	error "character: expected polynomial ring over a field";
+-- 1) coefficient ring (must be a field)
+-- 2) degree length (must be a positive integer)
+-- 3) integer: character length (or number of actors)
+-- 4) hash table for raw character: (homdeg,deg) => character matrix
+character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
+    -- check first argument is a field
+    if not isField F then (
+	error "character: expected first argument to be a field";
+	);
+    -- check degree length is a positive integer
+    if dl <= 0 then (
+	error "character: second argument must be a positive integer";
 	);
     -- check keys are in the right format
     k := keys H;
@@ -90,7 +99,6 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	error "character: expected keys of the form (ZZ,List)";
 	);
     -- check degree vectors are allowed
-    dl := degreeLength R;
     degs := apply(k,last);
     if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
 	error ("character: expected integer degree vectors of length " | toString(dl));
@@ -104,15 +112,22 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 	error ("character: expected characters to be one-row matrices with " | toString(cl) | " columns");
 	);
     -- move character values into given ring
-    H2 := try applyValues(H, v -> promote(v,R)) else (
+    H2 := try applyValues(H, v -> promote(v,F)) else (
 	error "character: could not promote characters to given ring";
 	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
+	(symbol ring) => F,
+	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	(symbol characters) => H2,
 	}
+    )
+
+-- constructor over polynomial rings
+-- (default before v2.1, kept for compatibility)
+character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
+    character(coefficientRing R,degreeLength R,cl,H)
     )
 
 
@@ -124,7 +139,11 @@ Character.directSum = args -> (
     -- check ring is the same for all summands
     R := (args#0).ring;
     if any(args, c -> c.ring =!= R)
-    then error "directSum: expected characters all over the same ring";
+    then error "directSum: expected characters all over the same field";
+    -- check degree length is the same for all summands
+    dl := (args#0).degreeLength;
+    if any(args, c -> c.degreeLength != dl)
+    then error "directSum: expected characters all with the same degree length";
     -- check character length is the same for all summands
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
@@ -132,6 +151,7 @@ Character.directSum = args -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
+	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
@@ -158,7 +178,11 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     -- check ring is the same for all factors
     R := c1.ring;
     if (c2.ring =!= R)
-    then error "tensor: expected characters all over the same ring";
+    then error "tensor: expected characters all over the same field";
+    -- check degree length is the same for all summands
+    dl := c1.degreeLength;
+    if (c2.degreeLength != dl)
+    then error "tensor: expected characters all with the same degree length";
     -- check character length is the same for all summands
     cl := c1.numActors;
     if (c2.numActors != cl)
@@ -166,6 +190,7 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
+	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- multiply raw characters
 	(symbol characters) => combine(c1.characters,c2.characters,
@@ -181,6 +206,7 @@ Character Array := Character => (C,A) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => C.ring,
+	(symbol degreeLength) => C.degreeLength,
 	(symbol numActors) => C.numActors,
 	-- homological shift raw characters
 	(symbol characters) => applyKeys(C.characters,
@@ -195,27 +221,25 @@ alexopts = {Strategy=>0};
 -- character of dual/contragredient representation with conjugation
 dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     -- check characteristic
-    R := c.ring;
-    if char(R) != 0 then (
+    F := c.ring;
+    if char(F) != 0 then (
 	error "dual: use permutation constructor in positive characteristic";
 	);
     -- check conjugation map
-    F := coefficientRing R;
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
-	error "dual: expected an order 2 automorphism of the coefficient field";
+	error "dual: expected an order 2 automorphism of the base field";
 	);
     -- error if characters cannot be lifted to coefficient field
     H := try applyValues(c.characters, v -> lift(v,F)) else (
-	error "dual: could not lift characters to coefficient field";
+	error "dual: could not lift characters to base field";
 	);
-    -- conjugation map to the polynomial ring
-    Phi := map(R,F) * phi;
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
+	(symbol ring) => F,
+	(symbol degreeLength) => c.degreeLength,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => applyPairs(H,
-	    (k,v) -> ( apply(k,minus), Phi v )
+	    (k,v) -> ( apply(k,minus), phi v )
 	    )
 	}
     )
@@ -233,6 +257,7 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
 	(symbol numActors) => n,
 	(symbol characters) => applyPairs(c.characters,
 	    (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) )
@@ -244,16 +269,21 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
 -- character table constructor using conjugation
+-- modified after v2.1 to be defined over a field
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
--- 3) ring over which to construct the table
+-- 3) field over which to construct the table
 -- 4) ring map, conjugation of coefficients
 -- OPTIONAL: list of labels for irreducible characters
-characterTable(List,Matrix,PolynomialRing,RingMap) := CharacterTable =>
-o -> (conjSize,charTable,R,phi) -> (
+characterTable(List,Matrix,Ring,RingMap) := CharacterTable =>
+o -> (conjSize,charTable,F,phi) -> (
+    -- check third argument is a field
+    if not isField F then (
+	error "characterTable: expected third argument to be a field";
+	);
     -- check characteristic
-    if char(R) != 0 then (
+    if char(F) != 0 then (
 	error "characterTable: use permutation constructor in positive characteristic";
 	);
     n := #conjSize;
@@ -261,23 +291,20 @@ o -> (conjSize,charTable,R,phi) -> (
     if numRows charTable != n or numColumns charTable != n then (
 	error "characterTable: expected matrix size to match number of conjugacy classes";
 	);
-    -- promote character matrix to R
-    X := try promote(charTable,R) else (
-	error "characterTable: could not promote character table to given ring";
+    -- promote character matrix to F
+    X := try promote(charTable,F) else (
+	error "characterTable: could not promote character table to given field";
 	);
-    -- check conjugation map
-    F := coefficientRing R;
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
 	error "characterTable: expected an order 2 automorphism of the coefficient ring";
 	);
     -- check orthogonality relations
     ordG := sum conjSize;
-    C := diagonalMatrix(R,conjSize);
-    Phi := map(R,F) * phi;
-    m := C*transpose(Phi charTable);
+    C := diagonalMatrix(F,conjSize);
+    m := C*transpose(phi charTable);
     -- if x is a character in a one-row matrix, then x*m is the one-row matrix
     -- containing the inner products of x with the irreducible characters
-    if X*m != ordG*map(R^n) then (
+    if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
     -- check user labels or create default ones
@@ -296,21 +323,26 @@ o -> (conjSize,charTable,R,phi) -> (
 	(symbol numActors) => #conjSize,
 	(symbol size) => conjSize,
 	(symbol table) => X,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol matrix) => m,
 	(symbol Labels) => l,
 	}
     )
 
 -- character table constructor without conjugation
+-- modified after v2.1 to be defined over a field
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
--- 3) ring over which to construct the table
+-- 3) field over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
 -- OPTIONAL: list of labels for irreducible characters
-characterTable(List,Matrix,PolynomialRing,List) := CharacterTable =>
-o -> (conjSize,charTable,R,perm) -> (
+characterTable(List,Matrix,Ring,List) := CharacterTable =>
+o -> (conjSize,charTable,F,perm) -> (
+    -- check third argument is a field
+    if not isField F then (
+	error "characterTable: expected third argument to be a field";
+	);
     n := #conjSize;
     -- check all arguments have the right size
     if numRows charTable != n or numColumns charTable != n then (
@@ -319,9 +351,9 @@ o -> (conjSize,charTable,R,perm) -> (
     if #perm != n then (
 	error "characterTable: expected permutation size to match number of conjugacy classes";
 	);
-    -- promote character matrix to R
-    X := try promote(charTable,R) else (
-	error "characterTable: could not promote character table to given ring";
+    -- promote character matrix to F
+    X := try promote(charTable,F) else (
+	error "characterTable: could not promote character table to given field";
 	);
     -- check permutation has the right entries
     if set perm =!= set(1..n) then (
@@ -329,16 +361,16 @@ o -> (conjSize,charTable,R,perm) -> (
 	);
     -- check characteristic
     ordG := sum conjSize;
-    if ordG % char(R) == 0 then (
+    if ordG % char(F) == 0 then (
 	error "characterTable: characteristic divides order of the group";
 	);
     -- check orthogonality relations
-    C := diagonalMatrix(R,conjSize);
-    P := map(R^n)_(apply(perm, i -> i-1));
+    C := diagonalMatrix(F,conjSize);
+    P := map(F^n)_(apply(perm, i -> i-1));
     m := C*transpose(X*P);
     -- if x is a character in a one-row matrix, then x*m is the one-row matrix
     -- containing the inner products of x with the irreducible characters
-    if X*m != ordG*map(R^n) then (
+    if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
     -- check user labels or create default ones
@@ -357,7 +389,7 @@ o -> (conjSize,charTable,R,perm) -> (
 	(symbol numActors) => #conjSize,
 	(symbol size) => conjSize,
 	(symbol table) => X,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol matrix) => m,
 	(symbol Labels) => l,
 	}
@@ -372,7 +404,7 @@ CharacterDecomposition => (C,T) -> (
     -- check character and table are over same ring
     R := C.ring;
     if T.ring =!= R then (
-	error "decomposeCharacter: expected character and table over the same ring";
+	error "decomposeCharacter: expected character and table over the same field";
 	);
     -- check number of actors is the same
     if C.numActors != T.numActors then (
@@ -387,6 +419,7 @@ CharacterDecomposition => (C,T) -> (
     new CharacterDecomposition from {
 	(symbol numActors) => C.numActors,
 	(symbol ring) => R,
+	(symbol degreeLength) => C.degreeLength,
 	(symbol Labels) => T.Labels,
 	(symbol decompose) => D,
 	(symbol positions) => p
@@ -402,6 +435,7 @@ Character => (D,T) -> (
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => D.ring,
+	(symbol degreeLength) => D.degreeLength,
 	(symbol numActors) => D.numActors,
 	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
 	}
@@ -564,11 +598,13 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
+    F := coefficientRing ring A;
     -- if complex is zero in hom degree i, return empty character
     if zero (target A)_i then (
 	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -582,12 +618,13 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	-- create raw character from actors
 	H := applyPairs(degs,
 	    (d,indx) -> ((i,d),
-		matrix{apply(actors(A,i), g -> trace g_indx^indx)}
+		lift(matrix{apply(actors(A,i), g -> trace g_indx^indx)},F)
 		)
 	    );
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
 	    }
@@ -732,11 +769,13 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
 character(ActionOnGradedModule,List) := Character => (A,d) -> (
+    F := coefficientRing ring A;
     acts := actors(A,d);
     if all(acts,zero) then (
 	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {},
 	    };
@@ -745,9 +784,10 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     f := A -> (
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => ring A,
+	    (symbol ring) => F,
+	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {(0,d) => matrix{apply(acts, trace)}},
+	    (symbol characters) => hashTable {(0,d) => lift(matrix{apply(acts, trace)},F)},
 	    }
 	);
     -- make cache function from f and run it on A
@@ -822,37 +862,36 @@ murnaghanNakayama = memoize murnaghanNakayama
 
 -- symmetric group character table
 symmetricGroupTable = method(TypicalValue=>CharacterTable);
-symmetricGroupTable PolynomialRing := R -> (
-    -- check argument is a polynomial ring over a field
-    if not isField coefficientRing R then (
-	error "symmetricGroupTable: expected polynomial ring over a field";
-	);
-    -- check number of variables
-    n := dim R;
+symmetricGroupTable(ZZ,Ring) := (n,F) -> (
+    -- check n is at least one
     if n < 1 then (
-	error "symmetricGroupTable: expected a positive number of variables";
+	error "symmetricGroupTable: expected first argument to be a positive integer";
+	);
+    -- check second argument is a field
+    if not isField F then (
+	error "symmetricGroupTable: expected second argument to be a field";
 	);
     -- check characteristic
-    if n! % (char R) == 0 then (
-	error ("symmetricGroupTable: expected characteristic not dividing " | toString(n) | "!");
+    if n! % (char F) == 0 then (
+	error ("symmetricGroupTable: expected field characteristic not dividing " | toString(n) | "!");
 	);
     -- list partitions
     P := apply(partitions n, toList);
     -- compute table using Murnaghan-Nakayama
     -- uses murnaghanNakayama unexported function with
     -- code in BettiCharacters.m2 immediately before this method
-    X := matrix(R, table(P,P,murnaghanNakayama));
+    X := matrix(F, table(P,P,murnaghanNakayama));
     -- compute size of conjugacy classes
     conjSize := apply(P/tally,
 	t -> n! / product apply(pairs t, (k,v) -> k^v*v! )
 	);
     -- matrix for inner product
-    m := diagonalMatrix(R,conjSize)*transpose(X);
+    m := diagonalMatrix(F,conjSize)*transpose(X);
     new CharacterTable from {
 	(symbol numActors) => #P,
 	(symbol size) => conjSize,
 	(symbol table) => X,
-	(symbol ring) => R,
+	(symbol ring) => F,
 	(symbol matrix) => m,
 	-- compact partition notation used for symmetric group labels
 	(symbol Labels) => apply(P, p -> (
@@ -898,6 +937,17 @@ target(Action) := A -> A.target
 
 -- get polynomial ring acted upon
 ring Action := PolynomialRing => A -> A.ring
+
+-- get field of a character (or table or decomposition)
+ring Character :=
+ring CharacterTable :=
+ring CharacterDecomposition :=
+Ring => X -> X.ring
+
+-- get degree length of a character (or decomposition)
+degreeLength Character :=
+degreeLength CharacterDecomposition :=
+ZZ => X -> X.degreeLength
 
 
 ---------------------------------------------------------------------
@@ -1095,7 +1145,7 @@ Node
 	using a compact notation (the exponents indicate how
 	    many times a part is repeated).
     Example
-    	T = symmetricGroupTable R
+    	T = symmetricGroupTable(7,QQ)
 	decomposeCharacter(c,T)
     Text
     	As expected from the general theory, we find a single
@@ -1110,7 +1160,7 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(R,15,hashTable {(0,{7}) =>
+    	sign = character(QQ,1,15,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
 	dual(c,id_QQ)[-5] ** sign === c
     Text
@@ -1164,7 +1214,7 @@ Node
 	using a compact notation (the exponents indicate how
 	    many times a part is repeated).
     Example
-    	T = symmetricGroupTable R
+    	T = symmetricGroupTable(6,QQ)
 	decomposeCharacter(c,T)
     Text
     	The description provided in
@@ -1253,7 +1303,7 @@ Node
 	and decompose the Betti characters of the resolutions.
 	The arguments are: a list with the cardinality of the
 	conjugacy classes, a matrix with the values of the irreducible
-	characters, the base polynomial ring, and the complex
+	characters, the base field, and the complex
 	conjugation map restricted to the field of coefficients.
 	See @TO characterTable@ for more details.
     Example
@@ -1265,7 +1315,7 @@ Node
     	    {7,-1,1,-1,0,0},
     	    {8,0,-1,0,1,1}};
 	conj = map(kk,kk,{a^6})
-        T = characterTable(s,m,R,conj)
+        T = characterTable(s,m,kk,conj)
 	a1/T
 	a2/T
     Text
@@ -1395,6 +1445,8 @@ Node
 	    This class is provided by the package
 	    @TO BettiCharacters@.
     Subnodes
+    	(ring,Character)
+    	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
 	(directSum,Character)
 	(dual,Character,RingMap)
@@ -1441,6 +1493,49 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(net,CharacterDecomposition)
+
+Node
+    Key
+    	(ring,Character)
+    	(ring,CharacterTable)
+    	(ring,CharacterDecomposition)
+    Headline
+    	get field of a character
+    Usage
+    	ring(X)
+    Inputs
+    	X:
+    Outputs
+    	:Ring
+	    associated with the object acted upon
+    Description
+    	Text
+	    Returns the field over which a character
+	    (or character table) is defined.
+    SeeAlso
+    	character
+	characterTable
+	decomposeCharacter
+
+Node
+    Key
+    	(degreeLength,Character)
+    	(degreeLength,CharacterDecomposition)
+    Headline
+    	get the degree length of a character
+    Usage
+    	degreeLength(X)
+    Inputs
+    	X:
+    Outputs
+    	:ZZ
+	    degree length
+    Description
+    	Text
+	    Returns the degree length of a character.
+    SeeAlso
+    	character
+	decomposeCharacter
     	    
 Node
     Key
@@ -1878,13 +1973,13 @@ Node
 	    be concentrated in homological degree zero.
 	    
 	    Characters may also be constructed by hand using
-	    @TO (character,PolynomialRing,ZZ,HashTable)@.
+	    @TO (character,Ring,ZZ,ZZ,HashTable)@.
     Subnodes
     	Character
     	(character,ActionOnComplex)
     	(character,ActionOnComplex,ZZ)
      	(character,ActionOnGradedModule,List)
-	(character,PolynomialRing,ZZ,HashTable)
+	(character,Ring,ZZ,ZZ,HashTable)
 	(character,CharacterDecomposition,CharacterTable)
 	    
 Node
@@ -2091,15 +2186,18 @@ Node
 	    
 Node
     Key
+    	(character,Ring,ZZ,ZZ,HashTable)
     	(character,PolynomialRing,ZZ,HashTable)
     Headline
     	construct a character
     Usage
-    	character(R,l,H)
+    	character(F,dl,cl,H)
     Inputs
-    	R:PolynomialRing
-	    over a field
-    	l:ZZ
+    	F:Ring
+	    a field
+    	dl:ZZ
+	    degree length
+    	cl:ZZ
 	    character length
     	H:HashTable
 	    raw character data
@@ -2112,23 +2210,25 @@ Node
 	    The user who wishes to define characters by hand
 	    may do so with this particular application of the method.
 	    
-	    The first argument is the polynomial ring the character
+	    The first argument is the field the character
 	    values will live in; this makes it possible to compare or
 	    combine the hand-constructed character with other
-	    characters over the same ring. The second argument is
+	    characters over the same field. The second argument is
+	    the length of the degrees used for the internal (multi)grading
+	    of the characters. The third argument is
 	    the length of the character, i.e., the number of conjugacy
 	    classes of the group whose representations the character
-	    is coming from. The third argument is a hash table
+	    is coming from. The fourth argument is a hash table
 	    containing the "raw" character data. The hash table
 	    entries are in the format @TT "(i,d) => c"@, where @TT "i"@
 	    is an integer representing homological degree, @TT "d"@
 	    is a list representing the internal (multi)degree, and
 	    @TT "c"@ is a list containing the values of the character
 	    in the given degrees. Note that the values of the character
-	    are elements in the ring given as the first argument.
+	    are elements in the field given as the first argument.
 	Example
 	    R = QQ[x_1..x_3]
-	    regRep = character(R,3, hashTable {
+	    regRep = character(QQ,1,3, hashTable {
 		    (0,{0}) => matrix{{1,1,1}},
 		    (0,{1}) => matrix{{-1,0,2}},
 		    (0,{2}) => matrix{{-1,0,2}},
@@ -2141,6 +2241,19 @@ Node
 	    Q = R/I
 	    A = action(Q,S3)
 	    character(A,0,3) === regRep
+    	Text
+	    The other version of this command replaces the first two
+	    arguments with a polynomial ring from which the field
+	    of coefficients and the degree length are inherited.
+	    This was the only construction available in version 2.1
+	    and earlier, and is maintained for backward compatibility.
+	Example
+	    character(R,3, hashTable {
+		    (0,{0}) => matrix{{1,1,1}},
+		    (0,{1}) => matrix{{-1,0,2}},
+		    (0,{2}) => matrix{{-1,0,2}},
+		    (0,{3}) => matrix{{1,-1,1}},
+		    })
     Caveat
     	This constructor implements basic consistency checks, but
 	it is still possible to construct objects that are not
@@ -2176,9 +2289,9 @@ Node
 	Example
 	    s = {2,3,1}
 	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
-	    R = QQ[x_1..x_3]
 	    P = {1,2,3}
-	    T = characterTable(s,M,R,P)
+	    T = characterTable(s,M,QQ,P)
+	    R = QQ[x_1..x_3]
 	    acts = {matrix{{x_2,x_3,x_1}},matrix{{x_2,x_1,x_3}},matrix{{x_1,x_2,x_3}}}
 	    A = action(R,acts)
 	    c = character(A,0,10)
@@ -2191,20 +2304,20 @@ Node
 Node
     Key
     	characterTable
-    	(characterTable,List,Matrix,PolynomialRing,RingMap)
-    	(characterTable,List,Matrix,PolynomialRing,List)
+    	(characterTable,List,Matrix,Ring,RingMap)
+    	(characterTable,List,Matrix,Ring,List)
     Headline
     	construct a character table
     Usage
-    	T = characterTable(s,M,R,conj)
-    	T = characterTable(s,M,R,perm)
+    	T = characterTable(s,M,F,conj)
+    	T = characterTable(s,M,F,perm)
     Inputs
     	s:List
 	    of conjugacy class sizes
     	M:Matrix
 	    with character table entries
-    	R:PolynomialRing
-	    over a field
+    	F:Ring
+	    a field
     	conj:RingMap
 	    conjugation in coefficient field
     	perm:List
@@ -2224,15 +2337,14 @@ Node
 	    irreducible character of the group at an element
 	    of the $j$-th conjugacy class.
 	    
-	    The third argument is a polynomial ring over a field,
-	    the same ring over which the modules and resolutions
-	    are defined whose characters are to be decomposed
-	    against the character table. Note that the matrix in
-	    the second argument must be liftable to this ring.
+	    The third argument is a field, the field of definition
+	    of the characters to be decomposed against the character
+	    table. Note that the matrix in the second argument must
+	    be liftable to this field. (In version 2.1 and earlier,
+		this argument used to be a polynomial ring.)
 	    
-	    Assuming the polynomial ring in the third argument
-	    has a coefficient field @TT "F"@ which is a subfield of the
-	    complex numbers, then the fourth argument is the
+	    Assuming the field in the third argument is a subfield
+	    of the complex numbers, then the fourth argument is the
 	    restriction of complex conjugation to @TT "F"@.
 	    
 	    For example, we construct the character table of the
@@ -2249,9 +2361,8 @@ Node
 	    F = toField(QQ[w]/ideal(1+w+w^2))
 	    s = {1,3,4,4}
 	    M = matrix{{1,1,1,1},{1,1,w,w^2},{1,1,w^2,w},{3,-1,0,0}}
-	    R = F[x_1..x_4]
 	    conj = map(F,F,{w^2})
-	    T = characterTable(s,M,R,conj)
+	    T = characterTable(s,M,F,conj)
     	Text	    
 	    By default, irreducible characters in a character table
 	    are labeled as @TT "X0, X1, ..."@, etc.
@@ -2287,7 +2398,7 @@ Node
 	    as the fourth argument.
     	Example
 	    perm = {1,2,4,3}
-	    T' = characterTable(s,M,R,perm)
+	    T' = characterTable(s,M,F,perm)
 	    T' === T
     Caveat
     	This constructor checks orthonormality of the table
@@ -2333,9 +2444,9 @@ Node
 	Example
 	    s = {2,3,1}
 	    M = matrix{{1,1,1},{-1,0,2},{1,-1,1}}
-	    R = QQ[x_1..x_3]
 	    P = {1,2,3}
-	    T = characterTable(s,M,R,P)
+	    T = characterTable(s,M,QQ,P)
+	    R = QQ[x_1..x_3]
 	    acts = {matrix{{x_2,x_3,x_1}},matrix{{x_2,x_1,x_3}},matrix{{x_1,x_2,x_3}}}
 	    A = action(R,acts)
 	    c = character(A,0,10)
@@ -2435,7 +2546,7 @@ Node
 	    F = toField(QQ[w]/ideal(1+w+w^2))
 	    R = F[x_1..x_4]
 	    conj = map(F,F,{w^2})
-	    X = character(R,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
+	    X = character(F,1,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
 	    X' = dual(X,conj)
     	Text
     	    If working over coefficient fields of positive characteristic
@@ -2535,7 +2646,7 @@ Node
 		{1,1,-1,1,-1},
 		{1,1,-1,-1,1},
 		{2,-2,0,0,0}};
-	    T = characterTable({1,1,2,2,2},M,R,{1,2,3,4,5},
+	    T = characterTable({1,1,2,2,2},M,QQ,{1,2,3,4,5},
 		Labels=>{"triv","rho1","rho2","rho3","dim2"})
     	Text
 	    The same labels are automatically used when decomposing
@@ -2756,27 +2867,28 @@ Node
 Node
     Key
     	symmetricGroupTable
-    	(symmetricGroupTable,PolynomialRing)
+    	(symmetricGroupTable,ZZ,Ring)
     Headline
     	character table of the symmetric group
     Usage
-    	symmetricGroupTable(R)
+    	symmetricGroupTable(n,F)
     Inputs
-    	R:PolynomialRing
+    	n:ZZ
+	    positive
+    	F:Ring
+	    a field
     Outputs
     	:CharacterTable
     Description
     	Text
 	    Returns the character table of the symmetric group
-	    $S_n$, where $n$ is the number of variables of the
-	    polynomial ring in the input. The irreducible
+	    $S_n$ over the field @TT "F"@. The irreducible
 	    characters are indexed by the partitions of $n$ written
 	    using a compact notation where an exponent indicates
 	    how many times a part is repeated. The computation uses
 	    the recursive Murnaghan-Nakayama formula.
     	Example
-	    R=QQ[x_1..x_4]
-	    symmetricGroupTable(R)
+	    symmetricGroupTable(4,QQ)
     SeeAlso
 	"BettiCharacters Example 1"
 	"BettiCharacters Example 2"
@@ -2830,7 +2942,7 @@ Node
 	    observed by tensoring with the character of the
 	    sign representation concentrated in degree 3.
     	Example
-	    sign = character(R,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    sign = character(QQ,1,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
 	    dual(a,{1,2,3}) ** sign === a
 
 ///
@@ -2877,22 +2989,22 @@ d = character(R,3,hashTable {
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
-cS3 = symmetricGroupTable(R)
+cS3 = symmetricGroupTable(3,QQ)
 assert( cS3.table ==
-    matrix{{1_R,1,1},{-1,0,2},{1,-1,1}})
+    matrix{{1_QQ,1,1},{-1,0,2},{1,-1,1}})
 adec = a/cS3
 assert( set keys adec.decompose ===
     set {(0,{0}),(1,{2}),(2,{3})})
-assert( adec.decompose#(0,{0}) == matrix{{1_R,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{1_R,1,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,1_R,0}})
+assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
+assert( adec.decompose#(1,{2}) == matrix{{1_QQ,1,0}})
+assert( adec.decompose#(2,{3}) == matrix{{0,1_QQ,0}})
 ddec = d/cS3
 assert( set keys ddec.decompose ===
     set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_R,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_R,1,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{1_R,1,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{1_R,1,0}})
+assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
+assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0}})
+assert( ddec.decompose#(0,{2}) == matrix{{1_QQ,1,0}})
+assert( ddec.decompose#(0,{3}) == matrix{{1_QQ,1,0}})
 ///
 
 -- Test 1 (non-monomial ideal, symmetric group)
@@ -2948,9 +3060,9 @@ d = character(R,7,hashTable {
     })
 assert(character(D,0,3) === d)
 assert(b === c++d)
-cS5 = symmetricGroupTable(R)
+cS5 = symmetricGroupTable(5,QQ)
 assert( cS5.table ==
-    matrix{{1_R,1,1,1,1,1,1},
+    matrix{{1_QQ,1,1,1,1,1,1},
 	{-1,0,-1,1,0,2,4},
 	{0,-1,1,-1,1,1,5},
 	{1,0,0,0,-2,0,6},
@@ -2961,17 +3073,17 @@ assert( cS5.table ==
 adec = a/cS5
 assert( set keys adec.decompose ===
     set {(0,{0}),(1,{2}),(2,{3}),(3,{5})})
-assert( adec.decompose#(0,{0}) == matrix{{1_R,0,0,0,0,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{0,0,1_R,0,0,0,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_R,0,0}})
-assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_R}})
+assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
+assert( adec.decompose#(1,{2}) == matrix{{0,0,1_QQ,0,0,0,0}})
+assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_QQ,0,0}})
+assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_QQ}})
 ddec = d/cS5
 assert( set keys ddec.decompose ===
     set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_R,0,0,0,0,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_R,1,0,0,0,0,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{2_R,2,0,0,0,0,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{3_R,3,0,0,0,0,0}})
+assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
+assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0,0,0,0,0}})
+assert( ddec.decompose#(0,{2}) == matrix{{2_QQ,2,0,0,0,0,0}})
+assert( ddec.decompose#(0,{3}) == matrix{{3_QQ,3,0,0,0,0,0}})
 ///
 
 -- Test 2 (non symmetric group, tests actors)
@@ -2993,14 +3105,14 @@ a = {
     map(R^{4:-3},R^{4:-3},{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}})
     }
 assert(actors(A,3) === a)
-ca = character(R,4, hashTable {((0,{3}), matrix{apply(a,trace)})})
+ca = character(kk,1,4, hashTable {((0,{3}), lift(matrix{apply(a,trace)},kk))})
 assert(character(A,3) === ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
 Rm=chainComplex(d1,d2)
 B = action(Rm,D5)
 assert(actors(B,1) === a)
-cb1 = character(R,4, hashTable {((1,{3}), matrix{apply(a,trace)})})
+cb1 = character(R,4, hashTable {((1,{3}), lift(matrix{apply(a,trace)},kk))})
 assert(character(B,1) === cb1)
 b = {
     map(R^{3:-4},R^{3:-4},{{1,0,0},{0,1,0},{0,0,1}}),
@@ -3009,7 +3121,7 @@ b = {
     map(R^{3:-4},R^{3:-4},{{0,0,-1},{0,-1,0},{-1,0,0}})
     }
 assert(actors(B,2) === b)
-cb2 = character(R,4, hashTable {((2,{4}), matrix{apply(b,trace)})})
+cb2 = character(R,4, hashTable {((2,{4}), lift(matrix{apply(b,trace)},kk))})
 assert(character(B,2) === cb2)
 ///
 
