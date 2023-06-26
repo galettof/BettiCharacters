@@ -938,6 +938,17 @@ target(Action) := A -> A.target
 -- get polynomial ring acted upon
 ring Action := PolynomialRing => A -> A.ring
 
+-- get field of a character (or table or decomposition)
+ring Character :=
+ring CharacterTable :=
+ring CharacterDecomposition :=
+Ring => X -> X.ring
+
+-- get degree length of a character (or decomposition)
+degreeLength Character :=
+degreeLength CharacterDecomposition :=
+ZZ => X -> X.degreeLength
+
 
 ---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
@@ -1434,6 +1445,8 @@ Node
 	    This class is provided by the package
 	    @TO BettiCharacters@.
     Subnodes
+    	(ring,Character)
+    	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
 	(directSum,Character)
 	(dual,Character,RingMap)
@@ -1480,6 +1493,49 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(net,CharacterDecomposition)
+
+Node
+    Key
+    	(ring,Character)
+    	(ring,CharacterTable)
+    	(ring,CharacterDecomposition)
+    Headline
+    	get field of a character
+    Usage
+    	ring(X)
+    Inputs
+    	X:
+    Outputs
+    	:Ring
+	    associated with the object acted upon
+    Description
+    	Text
+	    Returns the field over which a character
+	    (or character table) is defined.
+    SeeAlso
+    	character
+	characterTable
+	decomposeCharacter
+
+Node
+    Key
+    	(degreeLength,Character)
+    	(degreeLength,CharacterDecomposition)
+    Headline
+    	get the degree length of a character
+    Usage
+    	degreeLength(X)
+    Inputs
+    	X:
+    Outputs
+    	:ZZ
+	    degree length
+    Description
+    	Text
+	    Returns the degree length of a character.
+    SeeAlso
+    	character
+	decomposeCharacter
     	    
 Node
     Key
