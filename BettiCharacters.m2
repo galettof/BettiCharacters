@@ -896,6 +896,8 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	-- compact partition notation used for symmetric group labels
 	(symbol Labels) => apply(P, p -> (
     	    	t := tally toList p;
+    	    	-- consider removing net for tex strings
+		-- then output a sequence of powers
     	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
     	    	commas := #pows-1:net(",");
     	    	net("(")|horizontalJoin mingle(pows,commas)|net(")")
@@ -974,6 +976,17 @@ net CharacterTable := T -> (
     stack("Character table over "|(net T.ring)," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
+    )
+
+-- tex string for character tables
+tex CharacterTable := T -> (
+    s := "\\begin{array}{c|";
+    s = s | concatenate(T.numActors:"r");
+    s = s | "}\n &";
+    s = s | "&" | (lines(texMath matrix{T.size}))#1 | "\\\\ \\hline\n";
+    M := take(lines(texMath T.table),{1,numRows T.table});
+    -- apply(T.Labels,M,(l,r)->l|r)
+    -- UNFINISHED!
     )
 
 -- printing character decompositions
