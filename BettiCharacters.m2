@@ -898,9 +898,10 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
     	    	t := tally toList p;
     	    	-- consider removing net for tex strings
 		-- then output a sequence of powers
-    	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
-    	    	commas := #pows-1:net(",");
-    	    	net("(")|horizontalJoin mingle(pows,commas)|net(")")
+--    	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
+    	    	toSequence apply(rsort keys t, k -> Power(k,t#k))
+--    	    	commas := #pows-1:net(",");
+--    	    	net("(")|horizontalJoin mingle(pows,commas)|net(")")
     	    	)
 	    )
 	}
