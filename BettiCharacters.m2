@@ -979,14 +979,21 @@ net CharacterTable := T -> (
     )
 
 -- tex string for character tables
-tex CharacterTable := T -> (
+texMath CharacterTable := T -> (
+    -- make table headers
     s := "\\begin{array}{c|";
+    -- one column per actor
     s = s | concatenate(T.numActors:"r");
-    s = s | "}\n &";
+    s = s | "}\n";
+    -- print size of "conjugacy" classes
     s = s | "&" | (lines(texMath matrix{T.size}))#1 | "\\\\ \\hline\n";
+    -- get matrix of table entries and convert to strings
     M := take(lines(texMath T.table),{1,numRows T.table});
-    -- apply(T.Labels,M,(l,r)->l|r)
-    -- UNFINISHED!
+    -- put character label in front of its row
+    M = apply(T.Labels,M,(l,r)->texMath(l)|"&"|r);
+    -- feed into the tex string and close the array
+    for r in M do s = s | r | "\n";
+    s | "\\end{array}"
     )
 
 -- printing character decompositions
