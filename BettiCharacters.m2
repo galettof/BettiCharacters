@@ -896,8 +896,7 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	-- compact partition notation used for symmetric group labels
 	(symbol Labels) => apply(P, p -> (
     	    	t := tally toList p;
-    	    	-- consider removing net for tex strings
-		-- then output a sequence of powers
+    	    	-- removed net for tex strings
 --    	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
     	    	toSequence apply(rsort keys t, k -> Power(k,t#k))
 --    	    	commas := #pows-1:net(",");
