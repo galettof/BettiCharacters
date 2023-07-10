@@ -995,8 +995,14 @@ texMath CharacterTable := T -> (
     s = s | "&" | (lines(texMath matrix{T.size}))#1 | "\\\\ \\hline\n";
     -- get matrix of table entries and convert to strings
     M := take(lines(texMath T.table),{1,numRows T.table});
+    -- process labels
+    if T.Labels == {} then (
+	labels := for i to (T.numActors-1) list ("\\chi_" | toString(i));
+	) else (
+	labels = apply(T.Labels,texMath);
+	);
     -- put character label in front of its row
-    M = apply(T.Labels,M,(l,r)->texMath(l)|"&"|r);
+    M = apply(labels,M,(l,r)->l|"&"|r);
     -- feed into the tex string and close the array
     for r in M do s = s | r | "\n";
     s | "\\end{array}"
