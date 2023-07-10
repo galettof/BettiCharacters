@@ -971,8 +971,14 @@ net Character := c -> (
 net CharacterTable := T -> (
     -- top row of character table
     a := {{""} | T.size};
+    -- process labels
+    if T.Labels == {} then (
+	labels := for i to (T.numActors-1) list (expression("ꭓ")_(expression i));
+	) else (
+	labels = T.Labels;
+	);
     -- body of character table
-    b := apply(pack(1,T.Labels),entries T.table,(i,j)->i|j);
+    b := apply(pack(1,labels),entries T.table,(i,j)->i|j);
     stack("Character table over "|(net T.ring)," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
@@ -999,8 +1005,14 @@ texMath CharacterTable := T -> (
 -- printing character decompositions
 net CharacterDecomposition := D -> (
     p := D.positions;
+    -- process labels
+    if D.Labels == {} then (
+	labels := for i in p list (expression("ꭓ")_(expression p));
+	) else (
+	labels = D.Labels_p;
+	);
     -- top row of decomposition table
-    a := {{""} | D.Labels_p };
+    a := {{""} | labels };
     -- body of decomposition table
     b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
