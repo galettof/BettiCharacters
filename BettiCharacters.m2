@@ -309,7 +309,7 @@ o -> (conjSize,charTable,F,phi) -> (
 	);
     -- check user labels or create default ones
     if o.Labels == {} then (
-    	l := for i to n-1 list "X"|toString(i);
+    	l := for i to n-1 list (expression("ꭓ")_(expression i));
 	) else (
 	if #o.Labels != n then (
 	    error ("characterTable: expected " | toString(n) | " labels");
