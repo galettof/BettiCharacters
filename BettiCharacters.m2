@@ -308,16 +308,16 @@ o -> (conjSize,charTable,F,phi) -> (
 	error "characterTable: orthogonality relations not satisfied";
 	);
     -- check user labels or create default ones
-    if o.Labels == {} then (
-    	l := for i to n-1 list (expression("ꭓ")_(expression i));
-	) else (
+    if o.Labels != {} then (
+--    	l := for i to n-1 list (expression("ꭓ")_(expression i));
+--	) else (
 	if #o.Labels != n then (
 	    error ("characterTable: expected " | toString(n) | " labels");
 	    );
 	if not all(o.Labels, i -> instance(i, Net)) then (
 	    error "characterTable: expected labels to be strings (or nets)";	    
 	    );
-	l = o.Labels;
+--	l = o.Labels;
 	);
     new CharacterTable from {
 	(symbol numActors) => #conjSize,
@@ -325,7 +325,7 @@ o -> (conjSize,charTable,F,phi) -> (
 	(symbol table) => X,
 	(symbol ring) => F,
 	(symbol matrix) => m,
-	(symbol Labels) => l,
+	(symbol Labels) => o.Labels,
 	}
     )
 
@@ -374,16 +374,16 @@ o -> (conjSize,charTable,F,perm) -> (
 	error "characterTable: orthogonality relations not satisfied";
 	);
     -- check user labels or create default ones
-    if o.Labels == {} then (
-    	l := for i to n-1 list "X"|toString(i);
-	) else (
+    if o.Labels != {} then (
+--    	l := for i to n-1 list "X"|toString(i);
+--	) else (
 	if #o.Labels != n then (
 	    error ("characterTable: expected " | toString(n) | " labels");
 	    );
 	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
 	    error "characterTable: expected labels to be strings (or nets)";	    
 	    );
-	l = o.Labels;
+--	l = o.Labels;
 	);
     new CharacterTable from {
 	(symbol numActors) => #conjSize,
@@ -391,7 +391,7 @@ o -> (conjSize,charTable,F,perm) -> (
 	(symbol table) => X,
 	(symbol ring) => F,
 	(symbol matrix) => m,
-	(symbol Labels) => l,
+	(symbol Labels) => o.Labels,
 	}
     )
 
@@ -1013,7 +1013,7 @@ net CharacterDecomposition := D -> (
     p := D.positions;
     -- process labels
     if D.Labels == {} then (
-	labels := for i in p list (expression("ꭓ")_(expression p));
+	labels := for i in p list (expression("ꭓ")_(expression i));
 	) else (
 	labels = D.Labels_p;
 	);
