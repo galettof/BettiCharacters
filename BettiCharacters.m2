@@ -270,6 +270,7 @@ characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
 -- character table constructor using conjugation
 -- modified after v2.1 to be defined over a field
+-- modified after v2.1 to allow TeX labels
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
@@ -307,17 +308,28 @@ o -> (conjSize,charTable,F,phi) -> (
     if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
-    -- check user labels or create default ones
-    if o.Labels != {} then (
---    	l := for i to n-1 list (expression("ꭓ")_(expression i));
---	) else (
-	if #o.Labels != n then (
-	    error ("characterTable: expected " | toString(n) | " labels");
-	    );
-	if not all(o.Labels, i -> instance(i, Net)) then (
-	    error "characterTable: expected labels to be strings (or nets)";	    
-	    );
---	l = o.Labels;
+    -- get user labels or create default ones
+    if o.Labels == {} then (
+    	netLabels := for i to n-1 list (expression("ꭓ")_(expression i));
+	texLabels := for i to n-1 list ("\\chi_{" | toString(i) | "}");
+	)
+    else if (#o.Labels == 2 and all(o.Labels,x -> class x === List)) then (
+	netLabels = first o.Labels;
+	texLabels = last o.Labels;
+	)
+    else (
+	netLabels = o.Labels;
+	texLabels = o.Labels;
+	);
+    -- check labels have the right format
+    if (#netLabels != n or #texLabels != n) then (
+	error ("characterTable: expected " | toString(n) | " labels");
+	);
+    if not all(netLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
+	);
+    if not all(texLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
 	);
     new CharacterTable from {
 	(symbol numActors) => #conjSize,
@@ -325,12 +337,13 @@ o -> (conjSize,charTable,F,phi) -> (
 	(symbol table) => X,
 	(symbol ring) => F,
 	(symbol matrix) => m,
-	(symbol Labels) => o.Labels,
+	(symbol Labels) => {netLabels,texLabels},
 	}
     )
 
 -- character table constructor without conjugation
 -- modified after v2.1 to be defined over a field
+-- modified after v2.1 to allow TeX labels
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
@@ -373,17 +386,28 @@ o -> (conjSize,charTable,F,perm) -> (
     if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
-    -- check user labels or create default ones
-    if o.Labels != {} then (
---    	l := for i to n-1 list "X"|toString(i);
---	) else (
-	if #o.Labels != n then (
-	    error ("characterTable: expected " | toString(n) | " labels");
-	    );
-	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
-	    error "characterTable: expected labels to be strings (or nets)";	    
-	    );
---	l = o.Labels;
+    -- get user labels or create default ones
+    if o.Labels == {} then (
+    	netLabels := for i to n-1 list (expression("ꭓ")_(expression i));
+	texLabels := for i to n-1 list ("\\chi_{" | toString(i) | "}");
+	)
+    else if (#o.Labels == 2 and all(o.Labels,x -> class x === List)) then (
+	netLabels = first o.Labels;
+	texLabels = last o.Labels;
+	)
+    else (
+	netLabels = o.Labels;
+	texLabels = o.Labels;
+	);
+    -- check labels have the right format
+    if (#netLabels != n or #texLabels != n) then (
+	error ("characterTable: expected " | toString(n) | " labels");
+	);
+    if not all(netLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
+	);
+    if not all(texLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
 	);
     new CharacterTable from {
 	(symbol numActors) => #conjSize,
@@ -391,7 +415,7 @@ o -> (conjSize,charTable,F,perm) -> (
 	(symbol table) => X,
 	(symbol ring) => F,
 	(symbol matrix) => m,
-	(symbol Labels) => o.Labels,
+	(symbol Labels) => {netLabels,texLabels},
 	}
     )
 
@@ -887,6 +911,10 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	);
     -- matrix for inner product
     m := diagonalMatrix(F,conjSize)*transpose(X);
+    -- prepare labels
+    pows := apply(P/tally,t -> apply(rsort keys t, k -> Power(k,t#k)));
+    netLabels := apply(pows,p -> "(" | horizontalJoin between(",",p/net) | ")");
+    texLabels := apply(pows,p -> texMath toSequence p);
     new CharacterTable from {
 	(symbol numActors) => #P,
 	(symbol size) => conjSize,
@@ -894,15 +922,7 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	(symbol ring) => F,
 	(symbol matrix) => m,
 	-- compact partition notation used for symmetric group labels
-	(symbol Labels) => apply(P, p -> (
-    	    	t := tally toList p;
-    	    	-- removed net for tex strings
---    	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
-    	    	toSequence apply(rsort keys t, k -> Power(k,t#k))
---    	    	commas := #pows-1:net(",");
---    	    	net("(")|horizontalJoin mingle(pows,commas)|net(")")
-    	    	)
-	    )
+	(symbol Labels) => {netLabels,texLabels}
 	}
     )
 
@@ -971,14 +991,8 @@ net Character := c -> (
 net CharacterTable := T -> (
     -- top row of character table
     a := {{""} | T.size};
-    -- process labels
-    if T.Labels == {} then (
-	labels := for i to (T.numActors-1) list (expression("ꭓ")_(expression i));
-	) else (
-	labels = T.Labels;
-	);
     -- body of character table
-    b := apply(pack(1,labels),entries T.table,(i,j)->i|j);
+    b := apply(pack(1,first T.Labels),entries T.table,(i,j)->i|j);
     stack("Character table over "|(net T.ring)," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
@@ -994,14 +1008,8 @@ texMath CharacterTable := T -> (
     M := for row in entries(T.table) list (
 	concatenate(between("&",apply(row,texMath)))
 	);
-    -- process labels
-    if T.Labels == {} then (
-	labels := for i to (T.numActors-1) list ("\\chi_" | toString(i));
-	) else (
-	labels = apply(T.Labels,texMath);
-	);
     -- put character label in front of its row
-    M = apply(labels,M,(l,r)->l|"&"|r);
+    M = apply(last T.Labels,M,(l,r)->l|"&"|r);
     -- feed into the tex string and close the array
     s | concatenate(between("\\\\ \n",M),"\n\\end{array}")
     )
