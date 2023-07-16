@@ -276,7 +276,7 @@ characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 -- 2) matrix of irreducible character values
 -- 3) field over which to construct the table
 -- 4) ring map, conjugation of coefficients
--- OPTIONAL: list of labels for irreducible characters
+-- OPTIONAL: lists of labels for irreducible characters
 characterTable(List,Matrix,Ring,RingMap) := CharacterTable =>
 o -> (conjSize,charTable,F,phi) -> (
     -- check third argument is a field
@@ -349,7 +349,7 @@ o -> (conjSize,charTable,F,phi) -> (
 -- 2) matrix of irreducible character values
 -- 3) field over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
--- OPTIONAL: list of labels for irreducible characters
+-- OPTIONAL: lists of labels for irreducible characters
 characterTable(List,Matrix,Ring,List) := CharacterTable =>
 o -> (conjSize,charTable,F,perm) -> (
     -- check third argument is a field
