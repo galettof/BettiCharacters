@@ -310,7 +310,7 @@ o -> (conjSize,charTable,F,phi) -> (
 	);
     -- get user labels or create default ones
     if o.Labels == {} then (
-    	netLabels := for i to n-1 list (expression("ꭓ")_(expression i));
+    	netLabels := for i to n-1 list net(expression("ꭓ")_(expression i));
 	texLabels := for i to n-1 list ("\\chi_{" | toString(i) | "}");
 	)
     else if (#o.Labels == 2 and all(o.Labels,x -> class x === List)) then (
@@ -388,7 +388,7 @@ o -> (conjSize,charTable,F,perm) -> (
 	);
     -- get user labels or create default ones
     if o.Labels == {} then (
-    	netLabels := for i to n-1 list (expression("ꭓ")_(expression i));
+    	netLabels := for i to n-1 list net(expression("ꭓ")_(expression i));
 	texLabels := for i to n-1 list ("\\chi_{" | toString(i) | "}");
 	)
     else if (#o.Labels == 2 and all(o.Labels,x -> class x === List)) then (
@@ -1017,14 +1017,8 @@ texMath CharacterTable := T -> (
 -- printing character decompositions
 net CharacterDecomposition := D -> (
     p := D.positions;
-    -- process labels
-    if D.Labels == {} then (
-	labels := for i in p list (expression("ꭓ")_(expression i));
-	) else (
-	labels = D.Labels_p;
-	);
     -- top row of decomposition table
-    a := {{""} | labels };
+    a := {{""} | (first D.Labels)_p };
     -- body of decomposition table
     b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
