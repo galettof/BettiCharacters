@@ -1010,7 +1010,7 @@ texMath CharacterTable := T -> (
 	);
     -- put character label in front of its row
     M = apply(last T.Labels,M,(l,r)->l|"&"|r);
-    -- feed into the tex string and close the array
+    -- close the array
     s | concatenate(between("\\\\ \n",M),"\n\\end{array}")
     )
 
@@ -1024,6 +1024,23 @@ net CharacterDecomposition := D -> (
     stack("Decomposition table"," ",
     	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
+    )
+
+-- tex string for character decompositions
+texMath CharacterDecomposition := D -> (
+    p := D.positions;
+    -- make table headers, one column per nonzero irrrep
+    s := concatenate("\\begin{array}{c|",#p:"r","}\n");
+    -- top row with labels of characters appearing in decomposition
+    s = s | concatenate("&",between("&",(last D.Labels)_p),"\\\\ \\hline\n");
+    -- decomposition table entries
+    rows := apply(sort pairs D.decompose,
+	(k,v) -> concatenate(texMath k,"&",
+	    between("&",apply((flatten entries v)_p,texMath))
+	    )
+	);
+    -- assemble and close array
+    s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
     )
 
 -- printing for Action type
