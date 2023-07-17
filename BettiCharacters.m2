@@ -984,6 +984,20 @@ net Character := c -> (
 	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
     )
 
+-- tex string for characters
+texMath Character := c -> (
+    -- make table headers, one column per actor
+    s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
+    -- character entries
+    rows := apply(sort pairs c.characters,
+	(k,v) -> concatenate(texMath k,"&",
+	    between("&",apply(flatten entries v,texMath))
+	    )
+	);
+    -- assemble and close array
+    s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
+    )
+
 -- printing for character tables
 net CharacterTable := T -> (
     -- top row of character table
@@ -1504,6 +1518,7 @@ Node
 	(dual,Character,RingMap)
 	(net,Character)
 	(tensor,Character,Character)
+	(texMath,Character)
 
 Node
     Key
@@ -1533,6 +1548,7 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(net,CharacterTable)
+    	(texMath,CharacterTable)
     	    
 Node
     Key
@@ -1545,6 +1561,7 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(net,CharacterDecomposition)
+    	(texMath,CharacterDecomposition)
 
 Node
     Key
@@ -2757,13 +2774,35 @@ Node
 
 Node
     Key
-    	(texMath,CharacterDecomposition)
+    	(texMath,Character)
+    Headline
+    	convert to TeX math format
+    Description
+    	Text
+	    Format objects of type @TO Character@
+	    for printing in TeX format.
+	    See @TO texMath@ for more information.
+
+Node
+    Key
     	(texMath,CharacterTable)
     Headline
     	convert to TeX math format
     Description
     	Text
-	    Convert for printing in TeX format.
+	    Format objects of type @TO CharacterTable@
+	    for printing in TeX format.
+	    See @TO texMath@ for more information.
+
+Node
+    Key
+    	(texMath,CharacterDecomposition)
+    Headline
+    	convert to TeX math format
+    Description
+    	Text
+	    Format objects of type @TO CharacterDecomposition@
+	    for printing in TeX format.
 	    See @TO texMath@ for more information.
 
 
