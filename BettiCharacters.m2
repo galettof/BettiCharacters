@@ -2755,6 +2755,17 @@ Node
 	    Format objects of type @TO CharacterDecomposition@ for printing.
 	    See @TO net@ for more information.
 
+Node
+    Key
+    	(texMath,CharacterDecomposition)
+    	(texMath,CharacterTable)
+    Headline
+    	convert to TeX math format
+    Description
+    	Text
+	    Convert for printing in TeX format.
+	    See @TO texMath@ for more information.
+
 
 Node
     Key
