@@ -1385,7 +1385,7 @@ Node
 	a1/T
 	a2/T
     Text
-    	Since @TT "X0"@ is the trivial character,
+    	Since $\chi_0$ is the trivial character,
 	this computation shows that the
 	free module in homological degree two in the resolution of the
 	defining ideal of the Klein configuration is a direct sum
@@ -2434,7 +2434,7 @@ Node
 	    T = characterTable(s,M,F,conj)
     	Text	    
 	    By default, irreducible characters in a character table
-	    are labeled as @TT "X0, X1, ..."@, etc.
+	    are labeled as $\chi_0, \chi_1, \dots$, etc.
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@.
 	    
@@ -2525,7 +2525,7 @@ Node
 	    by pairs of homological and internal degrees, and whose
 	    columns are labeled by the irreducible characters.
 	    By default, irreducible characters in a character table
-	    are labeled as @TT "X0, X1, ..."@, etc, and the same
+	    are labeled as $\chi_0, \chi_1, \dots$, etc, and the same
 	    labeling is inherited by the character decomposition.
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@ when constructing the character
@@ -2687,7 +2687,7 @@ Node
 	    @TO BettiCharacters@.
 	    
 	    By default, irreducible characters in a character table
-	    are labeled as @TT "X0, X1, ..."@, etc.
+	    are labeled as $\chi_0, \chi_1, \dots$, etc.
 	    The user may pass custom labels in a list using
 	    this option.
 	    
