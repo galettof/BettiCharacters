@@ -978,13 +978,10 @@ ZZ => X -> X.degreeLength
 
 -- printing for characters
 net Character := c -> (
-    if c.characters =!= hashTable {} then (
-    	bottom := stack(" ",
-    	    stack (horizontalJoin \ apply(sort pairs c.characters,
-		    (k,v) -> (net k, " => ", net v)))
-    	    )
-	) else bottom = null;
-    stack("Character over "|(net c.ring), bottom)
+    bottom := apply(sort pairs c.characters,
+	(k,v) -> {net k} | apply(flatten entries v,net));
+    stack("Character over "|(net c.ring)," ",
+	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
     )
 
 -- printing for character tables
