@@ -270,12 +270,13 @@ characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
 -- character table constructor using conjugation
 -- modified after v2.1 to be defined over a field
+-- modified after v2.1 to allow TeX labels
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
 -- 3) field over which to construct the table
 -- 4) ring map, conjugation of coefficients
--- OPTIONAL: list of labels for irreducible characters
+-- OPTIONAL: lists of labels for irreducible characters
 characterTable(List,Matrix,Ring,RingMap) := CharacterTable =>
 o -> (conjSize,charTable,F,phi) -> (
     -- check third argument is a field
@@ -307,17 +308,28 @@ o -> (conjSize,charTable,F,phi) -> (
     if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
-    -- check user labels or create default ones
+    -- get user labels or create default ones
     if o.Labels == {} then (
-    	l := for i to n-1 list "X"|toString(i);
-	) else (
-	if #o.Labels != n then (
-	    error ("characterTable: expected " | toString(n) | " labels");
-	    );
-	if not all(o.Labels, i -> instance(i, Net)) then (
-	    error "characterTable: expected labels to be strings (or nets)";	    
-	    );
-	l = o.Labels;
+    	netLabels := for i to n-1 list net(expression("ꭓ")_(expression i));
+	texLabels := for i to n-1 list ("\\chi_{" | toString(i) | "}");
+	)
+    else if (#o.Labels == 2 and all(o.Labels,x -> class x === List)) then (
+	netLabels = first o.Labels;
+	texLabels = last o.Labels;
+	)
+    else (
+	netLabels = o.Labels;
+	texLabels = o.Labels;
+	);
+    -- check labels have the right format
+    if (#netLabels != n or #texLabels != n) then (
+	error ("characterTable: expected " | toString(n) | " labels");
+	);
+    if not all(netLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
+	);
+    if not all(texLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
 	);
     new CharacterTable from {
 	(symbol numActors) => #conjSize,
@@ -325,18 +337,19 @@ o -> (conjSize,charTable,F,phi) -> (
 	(symbol table) => X,
 	(symbol ring) => F,
 	(symbol matrix) => m,
-	(symbol Labels) => l,
+	(symbol Labels) => {netLabels,texLabels},
 	}
     )
 
 -- character table constructor without conjugation
 -- modified after v2.1 to be defined over a field
+-- modified after v2.1 to allow TeX labels
 -- INPUT:
 -- 1) list of conjugacy class sizes
 -- 2) matrix of irreducible character values
 -- 3) field over which to construct the table
 -- 4) list, permutation of conjugacy class inverses
--- OPTIONAL: list of labels for irreducible characters
+-- OPTIONAL: lists of labels for irreducible characters
 characterTable(List,Matrix,Ring,List) := CharacterTable =>
 o -> (conjSize,charTable,F,perm) -> (
     -- check third argument is a field
@@ -373,17 +386,28 @@ o -> (conjSize,charTable,F,perm) -> (
     if X*m != ordG*map(F^n) then (
 	error "characterTable: orthogonality relations not satisfied";
 	);
-    -- check user labels or create default ones
+    -- get user labels or create default ones
     if o.Labels == {} then (
-    	l := for i to n-1 list "X"|toString(i);
-	) else (
-	if #o.Labels != n then (
-	    error ("characterTable: expected " | toString(n) | " labels");
-	    );
-	if any(o.Labels, i -> class i =!= String and class i =!= Net) then (
-	    error "characterTable: expected labels to be strings (or nets)";	    
-	    );
-	l = o.Labels;
+    	netLabels := for i to n-1 list net(expression("ꭓ")_(expression i));
+	texLabels := for i to n-1 list ("\\chi_{" | toString(i) | "}");
+	)
+    else if (#o.Labels == 2 and all(o.Labels,x -> class x === List)) then (
+	netLabels = first o.Labels;
+	texLabels = last o.Labels;
+	)
+    else (
+	netLabels = o.Labels;
+	texLabels = o.Labels;
+	);
+    -- check labels have the right format
+    if (#netLabels != n or #texLabels != n) then (
+	error ("characterTable: expected " | toString(n) | " labels");
+	);
+    if not all(netLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
+	);
+    if not all(texLabels, i -> instance(i, Net)) then (
+	error "characterTable: expected labels to be strings (or nets)";	    
 	);
     new CharacterTable from {
 	(symbol numActors) => #conjSize,
@@ -391,7 +415,7 @@ o -> (conjSize,charTable,F,perm) -> (
 	(symbol table) => X,
 	(symbol ring) => F,
 	(symbol matrix) => m,
-	(symbol Labels) => l,
+	(symbol Labels) => {netLabels,texLabels},
 	}
     )
 
@@ -887,6 +911,10 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	);
     -- matrix for inner product
     m := diagonalMatrix(F,conjSize)*transpose(X);
+    -- prepare labels
+    pows := apply(P/tally,t -> apply(rsort keys t, k -> Power(k,t#k)));
+    netLabels := apply(pows,p -> "(" | horizontalJoin between(",",p/net) | ")");
+    texLabels := apply(pows,p -> texMath toSequence p);
     new CharacterTable from {
 	(symbol numActors) => #P,
 	(symbol size) => conjSize,
@@ -894,13 +922,7 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	(symbol ring) => F,
 	(symbol matrix) => m,
 	-- compact partition notation used for symmetric group labels
-	(symbol Labels) => apply(P, p -> (
-    	    	t := tally toList p;
-    	    	pows := apply(rsort keys t, k -> net Power(k,t#k));
-    	    	commas := #pows-1:net(",");
-    	    	net("(")|horizontalJoin mingle(pows,commas)|net(")")
-    	    	)
-	    )
+	(symbol Labels) => {netLabels,texLabels}
 	}
     )
 
@@ -956,13 +978,24 @@ ZZ => X -> X.degreeLength
 
 -- printing for characters
 net Character := c -> (
-    if c.characters =!= hashTable {} then (
-    	bottom := stack(" ",
-    	    stack (horizontalJoin \ apply(sort pairs c.characters,
-		    (k,v) -> (net k, " => ", net v)))
-    	    )
-	) else bottom = null;
-    stack("Character over "|(net c.ring), bottom)
+    bottom := apply(sort pairs c.characters,
+	(k,v) -> {net k} | apply(flatten entries v,net));
+    stack("Character over "|(net c.ring)," ",
+	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
+    )
+
+-- tex string for characters
+texMath Character := c -> (
+    -- make table headers, one column per actor
+    s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
+    -- character entries
+    rows := apply(sort pairs c.characters,
+	(k,v) -> concatenate(texMath k,"&",
+	    between("&",apply(flatten entries v,texMath))
+	    )
+	);
+    -- assemble and close array
+    s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
     )
 
 -- printing for character tables
@@ -970,22 +1003,55 @@ net CharacterTable := T -> (
     -- top row of character table
     a := {{""} | T.size};
     -- body of character table
-    b := apply(pack(1,T.Labels),entries T.table,(i,j)->i|j);
+    b := apply(pack(1,first T.Labels),entries T.table,(i,j)->i|j);
     stack("Character table over "|(net T.ring)," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
+    )
+
+-- tex string for character tables
+texMath CharacterTable := T -> (
+    -- make table headers, one column per actor
+    s := concatenate("\\begin{array}{c|",T.numActors:"r","}\n");
+    -- print size of "conjugacy" classes
+    s = s | concatenate("&",between("&",apply(T.size,texMath)),"\\\\ \\hline\n");
+    -- get matrix of table entries and convert to strings
+    M := for row in entries(T.table) list (
+	concatenate(between("&",apply(row,texMath)))
+	);
+    -- put character label in front of its row
+    M = apply(last T.Labels,M,(l,r)->l|"&"|r);
+    -- close the array
+    s | concatenate(between("\\\\ \n",M),"\n\\end{array}")
     )
 
 -- printing character decompositions
 net CharacterDecomposition := D -> (
     p := D.positions;
     -- top row of decomposition table
-    a := {{""} | D.Labels_p };
+    a := {{""} | (first D.Labels)_p };
     -- body of decomposition table
     b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
     	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
+    )
+
+-- tex string for character decompositions
+texMath CharacterDecomposition := D -> (
+    p := D.positions;
+    -- make table headers, one column per nonzero irrrep
+    s := concatenate("\\begin{array}{c|",#p:"r","}\n");
+    -- top row with labels of characters appearing in decomposition
+    s = s | concatenate("&",between("&",(last D.Labels)_p),"\\\\ \\hline\n");
+    -- decomposition table entries
+    rows := apply(sort pairs D.decompose,
+	(k,v) -> concatenate(texMath k,"&",
+	    between("&",apply((flatten entries v)_p,texMath))
+	    )
+	);
+    -- assemble and close array
+    s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
     )
 
 -- printing for Action type
@@ -1319,7 +1385,7 @@ Node
 	a1/T
 	a2/T
     Text
-    	Since @TT "X0"@ is the trivial character,
+    	Since $\chi_0$ is the trivial character,
 	this computation shows that the
 	free module in homological degree two in the resolution of the
 	defining ideal of the Klein configuration is a direct sum
@@ -1452,6 +1518,7 @@ Node
 	(dual,Character,RingMap)
 	(net,Character)
 	(tensor,Character,Character)
+	(texMath,Character)
 
 Node
     Key
@@ -1481,6 +1548,7 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(net,CharacterTable)
+    	(texMath,CharacterTable)
     	    
 Node
     Key
@@ -1493,6 +1561,7 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
 	(net,CharacterDecomposition)
+    	(texMath,CharacterDecomposition)
 
 Node
     Key
@@ -2365,7 +2434,7 @@ Node
 	    T = characterTable(s,M,F,conj)
     	Text	    
 	    By default, irreducible characters in a character table
-	    are labeled as @TT "X0, X1, ..."@, etc.
+	    are labeled as $\chi_0, \chi_1, \dots$, etc.
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@.
 	    
@@ -2456,7 +2525,7 @@ Node
 	    by pairs of homological and internal degrees, and whose
 	    columns are labeled by the irreducible characters.
 	    By default, irreducible characters in a character table
-	    are labeled as @TT "X0, X1, ..."@, etc, and the same
+	    are labeled as $\chi_0, \chi_1, \dots$, etc, and the same
 	    labeling is inherited by the character decomposition.
 	    The user may pass custom labels in a list using
 	    the option @TO Labels@ when constructing the character
@@ -2618,9 +2687,16 @@ Node
 	    @TO BettiCharacters@.
 	    
 	    By default, irreducible characters in a character table
-	    are labeled as @TT "X0, X1, ..."@, etc.
+	    are labeled as $\chi_0, \chi_1, \dots$, etc.
 	    The user may pass custom labels in a list using
-	    this option.
+	    this option. Labels can be passed as a list containing two lists:
+	    the first list should contain strings or nets to label
+	    characters in a M2 interactive session, while the second list
+	    should contain TeX strings to label characters when outputting
+	    to TeX format (remember to escape backslashes as needed).
+	    Up to version 2.1, a single list of net labels
+	    was accepted; this option is maintained for compatibility (the same
+		labels are also used for the TeX output).
 	    
 	    The next example sets up the character table of
 	    the dihedral group $D_4$, generated by an order 4 rotation $r$
@@ -2647,14 +2723,17 @@ Node
 		{1,1,-1,-1,1},
 		{2,-2,0,0,0}};
 	    T = characterTable({1,1,2,2,2},M,QQ,{1,2,3,4,5},
-		Labels=>{"triv","rho1","rho2","rho3","dim2"})
+		Labels=>{{"triv","rho1","rho2","rho3","dim2"},
+		    {"triv","\\rho_1","\\rho_2","\\rho_3","\\chi^2"}})
+	    tex T
     	Text
 	    The same labels are automatically used when decomposing
 	    characters against a labeled character table.
     	Example
 	    A = action(R,D8)
-	    c = character(A,0,8)
-	    decomposeCharacter(c,T)
+	    c = character(A,0,5)
+	    d = decomposeCharacter(c,T)
+	    tex d
     	Text
 	    The labels are stored in the character table under the
 	    key @TT "Labels"@.
@@ -2702,6 +2781,39 @@ Node
     	Text
 	    Format objects of type @TO CharacterDecomposition@ for printing.
 	    See @TO net@ for more information.
+
+Node
+    Key
+    	(texMath,Character)
+    Headline
+    	convert to TeX math format
+    Description
+    	Text
+	    Format objects of type @TO Character@
+	    for printing in TeX format.
+	    See @TO texMath@ for more information.
+
+Node
+    Key
+    	(texMath,CharacterTable)
+    Headline
+    	convert to TeX math format
+    Description
+    	Text
+	    Format objects of type @TO CharacterTable@
+	    for printing in TeX format.
+	    See @TO texMath@ for more information.
+
+Node
+    Key
+    	(texMath,CharacterDecomposition)
+    Headline
+    	convert to TeX math format
+    Description
+    	Text
+	    Format objects of type @TO CharacterDecomposition@
+	    for printing in TeX format.
+	    See @TO texMath@ for more information.
 
 
 Node
