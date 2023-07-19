@@ -926,6 +926,11 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	}
     )
 
+-- symmetric group table for backwards compatibility
+symmetricGroupTable PolynomialRing := R -> (
+    symmetricGroupTable(dim R,coefficientRing R)
+    )
+
 -- symmetric group variable permutation action
 symmetricGroupActors = method();
 symmetricGroupActors PolynomialRing := R -> (
@@ -2980,6 +2985,7 @@ Node
     Key
     	symmetricGroupTable
     	(symmetricGroupTable,ZZ,Ring)
+    	(symmetricGroupTable,PolynomialRing)
     Headline
     	character table of the symmetric group
     Usage
@@ -3001,6 +3007,14 @@ Node
 	    the recursive Murnaghan-Nakayama formula.
     	Example
 	    symmetricGroupTable(4,QQ)
+    	Text
+	    If @TT "R"@ is a polynomial ring, then
+	    @TT "symmetricGroupTable R"@ calls
+	    @TT "symmetricGroupTable(dim R,coefficientRing R)"@.
+	    This is kept for compatibility with versions 2.1 and earlier
+	    of the package to create the character table of the symmetric
+	    group acting on the variables of @TT "R"@ over the
+	    coefficient field of @TT "R"@.
     SeeAlso
 	"BettiCharacters Example 1"
 	"BettiCharacters Example 2"
