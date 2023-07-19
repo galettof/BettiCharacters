@@ -285,6 +285,27 @@ Character _ List := Character => (c,l) -> (
     directSum(apply(l, i -> c_i))
     )
 
+-- extract characters by degree (added after v2.1)
+Character ^ List := Character => (c,degs) -> (
+    -- if single degree, repackage as list (defer checks)
+    if any(degs,i->not instance(i,List)) then (
+	degs = {degs};
+	);
+    -- check all degrees are compatible
+    if all(degs,d->all(d,i->instance(i,ZZ)) and #d==c.degreeLength) then (
+	H := select(pairs c.characters, p -> member(last first p,degs));
+    	return new Character from {
+	    cache => new CacheTable,
+	    (symbol ring) => c.ring,
+	    (symbol degreeLength) => c.degreeLength,
+	    (symbol numActors) => c.numActors,
+	    (symbol characters) => hashTable H
+	    }    
+	) else (
+	error "Character^List: expected (a list of) (multi)degrees of length " | toString(c.degreeLength);
+	);
+    )
+
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
