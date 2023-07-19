@@ -265,6 +265,18 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 	}
     )
 
+-- extract character by homological dimension (added after v2.1)
+Character _ ZZ := Character => (c,i) -> (
+    H := select(pairs c.characters, p -> first first p == i);
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => hashTable H
+	}    
+    )
+
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
