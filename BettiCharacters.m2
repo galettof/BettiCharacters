@@ -1198,6 +1198,7 @@ Node
     SeeAlso
 	(symbol SPACE,Character,Array)
 	(symbol _,Character,ZZ)
+	(symbol ^,Character,List)
 	(directSum,Character)
 	(dual,Character,RingMap)
 	(tensor,Character,Character)
@@ -1562,6 +1563,7 @@ Node
     	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
     	(symbol _,Character,ZZ)
+    	(symbol ^,Character,List)
 	(directSum,Character)
 	(dual,Character,RingMap)
 	(net,Character)
@@ -1604,6 +1606,26 @@ Node
 	    c = character A
 	    c_3
 	    c_{1,3}
+        	    
+Node
+    Key
+    	(symbol ^,Character,List)
+    Headline
+    	extract graded component
+    Description
+    	Text
+	    Extract the component(s) of a character in
+	    the given (multi)degree(s).
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    Q = R/I
+	    S3 = symmetricGroupActors R
+	    A = action(Q,S3)
+	    c = character(A,0,10)
+	    c^{1}
+	    c^{{1},{2}}
+	    c^{3}
         	    
 Node
     Key
