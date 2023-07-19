@@ -302,7 +302,7 @@ Character ^ List := Character => (c,degs) -> (
 	    (symbol characters) => hashTable H
 	    }    
 	) else (
-	error "Character^List: expected (a list of) (multi)degrees of length " | toString(c.degreeLength);
+	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(c.degreeLength));
 	);
     )
 
