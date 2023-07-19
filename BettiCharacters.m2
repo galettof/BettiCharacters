@@ -306,6 +306,33 @@ Character ^ List := Character => (c,degs) -> (
 	);
     )
 
+-- multiplication of character with a scalar (added after v2.1)
+ZZ * Character :=
+QQ * Character :=
+RingElement * Character := Character => (r,c) -> (
+    try a := promote(r,ring c) else (
+	error "RingElement*Character: could not promote scalar to field of character";
+	);
+    H := applyPairs(c.characters,(k,v)->(
+	    w := a*v;
+	    if not zero w then (k,w)
+	    )
+	);
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => H
+	}    
+    )
+
+-- for commutativity
+Character * ZZ :=
+Character * QQ :=
+Character * RingElement := Character => (c,r) -> r*c
+
+    
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
