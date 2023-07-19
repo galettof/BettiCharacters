@@ -277,6 +277,14 @@ Character _ ZZ := Character => (c,i) -> (
 	}    
     )
 
+-- extract several characters by hom dim (added after v2.1)
+Character _ List := Character => (c,l) -> (
+    if any(l, i -> not instance(i,ZZ)) then (
+	error "Character_List: expected a list of integers";
+	);
+    directSum(apply(l, i -> c_i))
+    )
+
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
@@ -1160,7 +1168,7 @@ Node
     Key
     	"Character operations"
     Headline
-    	shift, direct sum, dual, and tensor product
+    	including shift, direct sum, dual, and tensor product
     Description
     	Text
 	    The @TO BettiCharacters@ package contains
@@ -1168,6 +1176,7 @@ Node
 	    See links below for more details.
     SeeAlso
 	(symbol SPACE,Character,Array)
+	(symbol _,Character,ZZ)
 	(directSum,Character)
 	(dual,Character,RingMap)
 	(tensor,Character,Character)
@@ -1531,6 +1540,7 @@ Node
     	(ring,Character)
     	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
+    	(symbol _,Character,ZZ)
 	(directSum,Character)
 	(dual,Character,RingMap)
 	(net,Character)
@@ -1553,6 +1563,26 @@ Node
 	    A = action(RI,S3)
 	    a = character A
 	    a[-10]
+        	    
+Node
+    Key
+    	(symbol _,Character,ZZ)
+    	(symbol _,Character,List)
+    Headline
+    	extract component
+    Description
+    	Text
+	    Extract the component(s) of a character in
+	    the given homological dimension(s).
+    	Example
+	    R = QQ[x,y,z]
+	    I = ideal vars R
+	    RI = res I
+	    S3 = symmetricGroupActors R
+	    A = action(RI,S3)
+	    c = character A
+	    c_3
+	    c_{1,3}
         	    
 Node
     Key
