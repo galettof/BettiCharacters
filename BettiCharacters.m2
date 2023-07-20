@@ -1226,6 +1226,7 @@ Node
 	(symbol SPACE,Character,Array)
 	(symbol _,Character,ZZ)
 	(symbol ^,Character,List)
+    	(symbol *,RingElement,Character)
 	(directSum,Character)
 	(dual,Character,RingMap)
 	(tensor,Character,Character)
@@ -1591,6 +1592,7 @@ Node
     	(symbol SPACE,Character,Array)
     	(symbol _,Character,ZZ)
     	(symbol ^,Character,List)
+    	(symbol *,RingElement,Character)
 	(directSum,Character)
 	(dual,Character,RingMap)
 	(net,Character)
@@ -1653,6 +1655,30 @@ Node
 	    c^{1}
 	    c^{{1},{2}}
 	    c^{3}
+        	    
+Node
+    Key
+    	(symbol *,RingElement,Character)
+    	(symbol *,ZZ,Character)
+    	(symbol *,QQ,Character)
+    	(symbol *,Character,RingElement)
+    	(symbol *,Character,ZZ)
+    	(symbol *,Character,QQ)
+    Headline
+    	scalar multiple of a character
+    Description
+    	Text
+	    Multiply a character with an element in its
+	    field of definition.
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    Q = R/I
+	    S3 = symmetricGroupActors R
+	    A = action(Q,S3)
+	    c = character(A,0,10)
+	    2*c
+	    c*(1/3)
         	    
 Node
     Key
