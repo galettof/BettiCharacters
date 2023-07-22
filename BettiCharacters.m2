@@ -332,6 +332,22 @@ Character * ZZ :=
 Character * QQ :=
 Character * RingElement := Character => (c,r) -> r*c
 
+-- additive inverse of a character (added after v2.1)
+- Character :=
+minus Character := Character => c -> (
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => applyValues(c.characters,v->-v)
+	}    
+    )
+
+-- difference of characters (added after v2.1)
+Character - Character :=
+difference(Character,Character) := Character =>
+(c1,c2) -> directSum(c1,-c2)
     
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
