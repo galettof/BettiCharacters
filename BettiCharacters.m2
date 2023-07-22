@@ -148,14 +148,15 @@ Character.directSum = args -> (
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
     then error "directSum: expected characters all of the same length";
+    -- raw character of direct sum (could have zero entries)
+    H := fold( (c1,c2) -> merge(c1,c2,plus), apply(args, c -> c.characters) );
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- add raw characters
-	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
-	    apply(args, c -> c.characters) ),
+	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v)),
 	}
     )
 
