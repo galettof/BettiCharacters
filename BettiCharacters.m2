@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.1",
-     Date => "February 26, 2023",
+     Version => "2.2",
+     Date => "July 22, 2023",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -133,6 +133,9 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 
 -- direct sum of characters
 -- modeled after code in Macaulay2/Core/matrix.m2
+-- plus and + added after v2.1 to match difference
+Character + Character := Character => directSum
+plus(Character,Character) := Character => directSum
 Character ++ Character := Character => directSum
 directSum Character := c -> Character.directSum (1 : c)
 Character.directSum = args -> (
@@ -148,14 +151,15 @@ Character.directSum = args -> (
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
     then error "directSum: expected characters all of the same length";
+    -- raw character of direct sum (could have zero entries)
+    H := fold( (c1,c2) -> merge(c1,c2,plus), apply(args, c -> c.characters) );
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- add raw characters
-	(symbol characters) => fold( (c1,c2) -> merge(c1,c2,plus),
-	    apply(args, c -> c.characters) ),
+	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v)),
 	}
     )
 
@@ -187,14 +191,15 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     cl := c1.numActors;
     if (c2.numActors != cl)
     then error "tensor: expected characters all of the same length";
+    -- raw character of tensor product (may contain zeros)
+    H := combine(c1.characters,c2.characters,addDegrees,multiplyCharacters,plus);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- multiply raw characters
-	(symbol characters) => combine(c1.characters,c2.characters,
-	    addDegrees,multiplyCharacters,plus)
+	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v))
 	}
     )
 
@@ -265,6 +270,90 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 	}
     )
 
+-- extract character by homological dimension (added after v2.1)
+Character _ ZZ := Character => (c,i) -> (
+    H := select(pairs c.characters, p -> first first p == i);
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => hashTable H
+	}    
+    )
+
+-- extract several characters by hom dim (added after v2.1)
+Character _ List := Character => (c,l) -> (
+    if any(l, i -> not instance(i,ZZ)) then (
+	error "Character_List: expected a list of integers";
+	);
+    directSum(apply(l, i -> c_i))
+    )
+
+-- extract characters by degree (added after v2.1)
+Character ^ List := Character => (c,degs) -> (
+    -- if single degree, repackage as list (defer checks)
+    if any(degs,i->not instance(i,List)) then (
+	degs = {degs};
+	);
+    -- check all degrees are compatible
+    if all(degs,d->all(d,i->instance(i,ZZ)) and #d==c.degreeLength) then (
+	H := select(pairs c.characters, p -> member(last first p,degs));
+    	return new Character from {
+	    cache => new CacheTable,
+	    (symbol ring) => c.ring,
+	    (symbol degreeLength) => c.degreeLength,
+	    (symbol numActors) => c.numActors,
+	    (symbol characters) => hashTable H
+	    }    
+	) else (
+	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(c.degreeLength));
+	);
+    )
+
+-- multiplication of character with a scalar (added after v2.1)
+ZZ * Character :=
+QQ * Character :=
+RingElement * Character := Character => (r,c) -> (
+    try a := promote(r,ring c) else (
+	error "RingElement*Character: could not promote scalar to field of character";
+	);
+    H := applyPairs(c.characters,(k,v)->(
+	    w := a*v;
+	    if not zero w then (k,w)
+	    )
+	);
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => H
+	}    
+    )
+
+-- for commutativity
+Character * ZZ :=
+Character * QQ :=
+Character * RingElement := Character => (c,r) -> r*c
+
+-- additive inverse of a character (added after v2.1)
+- Character :=
+minus Character := Character => c -> (
+    new Character from {
+	cache => new CacheTable,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol characters) => applyValues(c.characters,v->-v)
+	}    
+    )
+
+-- difference of characters (added after v2.1)
+Character - Character :=
+difference(Character,Character) := Character =>
+(c1,c2) -> directSum(c1,-c2)
+    
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
 
@@ -926,6 +1015,11 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 	}
     )
 
+-- symmetric group table for backwards compatibility
+symmetricGroupTable PolynomialRing := R -> (
+    symmetricGroupTable(dim R,coefficientRing R)
+    )
+
 -- symmetric group variable permutation action
 symmetricGroupActors = method();
 symmetricGroupActors PolynomialRing := R -> (
@@ -1117,7 +1211,11 @@ Node
 		(BOLD "2.1: ", "Adds equality checks for actions and
 		    characters. Contains several small improvements to the
 		    code and documentation, including a new multigraded
-		    example.")
+		    example."),
+		(BOLD "2.2: ", "Characters and character tables are now
+		    defined over fields (instead of polynomial rings).
+		    This version also introduces new character operations
+		    and $\\TeX$ printing for characters and character tables.")
 		}@
     Subnodes
     	:Defining and computing actions
@@ -1143,7 +1241,7 @@ Node
     Key
     	"Character operations"
     Headline
-    	shift, direct sum, dual, and tensor product
+    	including shift, direct sum, dual, and tensor product
     Description
     	Text
 	    The @TO BettiCharacters@ package contains
@@ -1151,7 +1249,12 @@ Node
 	    See links below for more details.
     SeeAlso
 	(symbol SPACE,Character,Array)
+	(symbol _,Character,ZZ)
+	(symbol ^,Character,List)
+    	(symbol *,RingElement,Character)
+	(minus,Character)
 	(directSum,Character)
+	(difference,Character,Character)
 	(dual,Character,RingMap)
 	(tensor,Character,Character)
     	
@@ -1514,7 +1617,12 @@ Node
     	(ring,Character)
     	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
+    	(symbol _,Character,ZZ)
+    	(symbol ^,Character,List)
+    	(symbol *,RingElement,Character)
+    	(minus,Character)
 	(directSum,Character)
+    	(difference,Character,Character)
 	(dual,Character,RingMap)
 	(net,Character)
 	(tensor,Character,Character)
@@ -1536,6 +1644,107 @@ Node
 	    A = action(RI,S3)
 	    a = character A
 	    a[-10]
+        	    
+Node
+    Key
+    	(symbol _,Character,ZZ)
+    	(symbol _,Character,List)
+    Headline
+    	extract component
+    Description
+    	Text
+	    Extract the component(s) of a character in
+	    the given homological dimension(s).
+    	Example
+	    R = QQ[x,y,z]
+	    I = ideal vars R
+	    RI = res I
+	    S3 = symmetricGroupActors R
+	    A = action(RI,S3)
+	    c = character A
+	    c_3
+	    c_{1,3}
+        	    
+Node
+    Key
+    	(symbol ^,Character,List)
+    Headline
+    	extract graded component
+    Description
+    	Text
+	    Extract the component(s) of a character in
+	    the given (multi)degree(s).
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    Q = R/I
+	    S3 = symmetricGroupActors R
+	    A = action(Q,S3)
+	    c = character(A,0,10)
+	    c^{1}
+	    c^{{1},{2}}
+	    c^{3}
+        	    
+Node
+    Key
+    	(symbol *,RingElement,Character)
+    	(symbol *,ZZ,Character)
+    	(symbol *,QQ,Character)
+    	(symbol *,Character,RingElement)
+    	(symbol *,Character,ZZ)
+    	(symbol *,Character,QQ)
+    Headline
+    	scalar multiple of a character
+    Description
+    	Text
+	    Multiply a character with an element in its
+	    field of definition.
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    Q = R/I
+	    S3 = symmetricGroupActors R
+	    A = action(Q,S3)
+	    c = character(A,0,10)
+	    2*c
+	    c*(1/3)
+        	    
+Node
+    Key
+    	(minus,Character)
+    	(symbol -,Character)
+    Headline
+    	additive inverse of a character
+    Description
+    	Text
+	    Additive inverse of a character.
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    S3 = symmetricGroupActors R
+	    A = action(I,S3)
+	    c = character(A,0,10)
+	    -c
+        	    
+Node
+    Key
+    	(difference,Character,Character)
+    	(symbol -,Character,Character)
+    Headline
+    	difference of characters
+    Description
+    	Text
+	    Difference of two characters.
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    J = ideal(x^3,y^3,z^3)
+	    S3 = symmetricGroupActors R
+	    A1 = action(I,S3)
+	    A2 = action(J,S3)
+	    c1 = character(A1,0,10)
+	    c2 = character(A2,0,10)
+	    c1 - c2
         	    
 Node
     Key
@@ -2539,6 +2748,8 @@ Node
     Key
     	(directSum,Character)
 	(symbol ++,Character,Character)
+	(symbol +,Character,Character)
+	(plus,Character,Character)
     Headline
     	direct sum of characters
     Usage
@@ -2552,7 +2763,8 @@ Node
     Description
     	Text
 	    Returns the direct sum of the input characters.
-	    The operator @TT "++"@ may be used for the same purpose.
+	    The operators @TT "+"@ and @TT "++"@ and the function
+	    @TO (plus,Character,Character)@ may be used for the same purpose.
 	Example
 	    R = QQ[x_1..x_3]
 	    I = ideal(x_1+x_2+x_3)
@@ -2980,6 +3192,7 @@ Node
     Key
     	symmetricGroupTable
     	(symmetricGroupTable,ZZ,Ring)
+    	(symmetricGroupTable,PolynomialRing)
     Headline
     	character table of the symmetric group
     Usage
@@ -3001,6 +3214,14 @@ Node
 	    the recursive Murnaghan-Nakayama formula.
     	Example
 	    symmetricGroupTable(4,QQ)
+    	Text
+	    If @TT "R"@ is a polynomial ring, then
+	    @TT "symmetricGroupTable R"@ calls
+	    @TT "symmetricGroupTable(dim R,coefficientRing R)"@.
+	    This is kept for compatibility with versions 2.1 and earlier
+	    of the package to create the character table of the symmetric
+	    group acting on the variables of @TT "R"@ over the
+	    coefficient field of @TT "R"@.
     SeeAlso
 	"BettiCharacters Example 1"
 	"BettiCharacters Example 2"
@@ -3282,4 +3503,25 @@ sign = character(R,5, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
 assert(dual(c,id_QQ) == c ** sign)
 ///
 
+-- Test 5 (additive inverse, scalar multiplication, difference, degree selection)
+TEST ///
+clearAll
+R = QQ[x,y,z]
+I = (ideal vars R)^3
+J = ideal(x^3,y^3,z^3)
+S3 = symmetricGroupActors R
+A1 = action(I,S3)
+A2 = action(J,S3)
+c1 = character(A1,0,10)
+c2 = character(A2,0,10)
+assert(-c1 == (-1)*c1)
+assert(c1 ++ c1 == 2*c1)
+c = character(R,3, hashTable {
+	(0,{5}) => matrix{{0,1,3}},
+	(0,{6}) => matrix{{1,1,1}}
+	})
+assert( (c1 - c2)^{{5},{6}} == c)
+///
+
 end
+
