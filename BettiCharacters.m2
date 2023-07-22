@@ -3491,4 +3491,25 @@ sign = character(R,5, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
 assert(dual(c,id_QQ) == c ** sign)
 ///
 
+-- Test 5 (additive inverse, scalar multiplication, difference, degree selection)
+TEST ///
+clearAll
+R = QQ[x,y,z]
+I = (ideal vars R)^3
+J = ideal(x^3,y^3,z^3)
+S3 = symmetricGroupActors R
+A1 = action(I,S3)
+A2 = action(J,S3)
+c1 = character(A1,0,10)
+c2 = character(A2,0,10)
+assert(-c1 == (-1)*c1)
+assert(c1 ++ c1 == 2*c1)
+c = character(R,3, hashTable {
+	(0,{5}) => matrix{{0,1,3}},
+	(0,{6}) => matrix{{1,1,1}}
+	})
+assert( (c1 - c2)^{{5},{6}} == c)
+///
+
 end
+
