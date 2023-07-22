@@ -133,6 +133,9 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 
 -- direct sum of characters
 -- modeled after code in Macaulay2/Core/matrix.m2
+-- plus and + added after v2.1 to match difference
+Character + Character := Character => directSum
+plus(Character,Character) := Character => directSum
 Character ++ Character := Character => directSum
 directSum Character := c -> Character.directSum (1 : c)
 Character.directSum = args -> (
@@ -2739,6 +2742,8 @@ Node
     Key
     	(directSum,Character)
 	(symbol ++,Character,Character)
+	(symbol +,Character,Character)
+	(plus,Character,Character)
     Headline
     	direct sum of characters
     Usage
