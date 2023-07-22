@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.1",
-     Date => "February 26, 2023",
+     Version => "2.2",
+     Date => "July 22, 2023",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -1211,7 +1211,11 @@ Node
 		(BOLD "2.1: ", "Adds equality checks for actions and
 		    characters. Contains several small improvements to the
 		    code and documentation, including a new multigraded
-		    example.")
+		    example."),
+		(BOLD "2.2: ", "Characters and character tables are now
+		    defined over fields (instead of polynomial rings).
+		    This version also introduces new character operations
+		    and $\\TeX$ printing for characters and character tables.")
 		}@
     Subnodes
     	:Defining and computing actions
@@ -1248,7 +1252,9 @@ Node
 	(symbol _,Character,ZZ)
 	(symbol ^,Character,List)
     	(symbol *,RingElement,Character)
+	(minus,Character)
 	(directSum,Character)
+	(difference,Character,Character)
 	(dual,Character,RingMap)
 	(tensor,Character,Character)
     	
