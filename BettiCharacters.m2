@@ -188,14 +188,15 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     cl := c1.numActors;
     if (c2.numActors != cl)
     then error "tensor: expected characters all of the same length";
+    -- raw character of tensor product (may contain zeros)
+    H := combine(c1.characters,c2.characters,addDegrees,multiplyCharacters,plus);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
 	-- multiply raw characters
-	(symbol characters) => combine(c1.characters,c2.characters,
-	    addDegrees,multiplyCharacters,plus)
+	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v))
 	}
     )
 
