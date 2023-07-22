@@ -1700,6 +1700,43 @@ Node
         	    
 Node
     Key
+    	(minus,Character)
+    	(symbol -,Character)
+    Headline
+    	additive inverse of a character
+    Description
+    	Text
+	    Additive inverse of a character.
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    S3 = symmetricGroupActors R
+	    A = action(I,S3)
+	    c = character(A,0,10)
+	    -c
+        	    
+Node
+    Key
+    	(difference,Character,Character)
+    	(symbol -,Character,Character)
+    Headline
+    	difference of characters
+    Description
+    	Text
+	    Difference of two characters.
+    	Example
+	    R = QQ[x,y,z]
+	    I = (ideal vars R)^3
+	    J = ideal(x^3,y^3,z^3)
+	    S3 = symmetricGroupActors R
+	    A1 = action(I,S3)
+	    A2 = action(J,S3)
+	    c1 = character(A1,0,10)
+	    c2 = character(A2,0,10)
+	    c1 - c2
+        	    
+Node
+    Key
     	CharacterTable
     Headline
     	the class of all character tables of finite groups
