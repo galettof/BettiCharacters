@@ -2757,7 +2757,8 @@ Node
     Description
     	Text
 	    Returns the direct sum of the input characters.
-	    The operator @TT "++"@ may be used for the same purpose.
+	    The operators @TT "+"@ and @TT "++"@ and the function
+	    @TO (plus,Character,Character)@ may be used for the same purpose.
 	Example
 	    R = QQ[x_1..x_3]
 	    I = ideal(x_1+x_2+x_3)
