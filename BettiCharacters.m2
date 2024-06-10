@@ -44,6 +44,7 @@ export {
     "Labels",
     "numActors",
     "ringActors",
+    "Semidirect",
     "Sub",
     "symmetricGroupActors",
     "symmetricGroupTable"
@@ -565,7 +566,7 @@ CharacterDecomposition * CharacterTable := Character => character
 -- optional argument Sub=>true means ring actors are passed
 -- as one-row matrices of substitutions, Sub=>false means
 -- ring actors are passed as matrices
-action = method(TypicalValue=>Action,Options=>{Sub=>true})
+action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
 
 -- constructor for action on resolutions
 -- INPUT:
