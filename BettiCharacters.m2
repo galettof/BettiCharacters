@@ -868,7 +868,14 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
     M := A.module;
     -- get basis in degree d as map of free modules
     -- how to get this depends on the class of M
-    b := ambient basis(d,M);
+    -- (after adding semidirect option single degree d
+    -- is replaced by orbit of degrees)
+    orb := A.degreeOrbit;
+    degList := orb d;
+    --b := ambient basis(d,M);
+    -- collect basis for each degree in orbit
+    -- then join them horizontally
+    b := fold( (x,y) -> x|y, apply(degList, d -> ambient basis(d,M)))
     if zero b then return toList(numActors(A):map(source b));
     -- function for actors of A in degree d
     f := A -> apply(ringActors A, A.actors, (g,g0) -> (
@@ -880,7 +887,9 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	    )
 	);
     -- make cache function from f and run it on A
-    ((cacheValue (symbol actors,d)) f) A
+    -- (save actors to representative of degree orbit)
+    rep := A.degreeRepresentative;
+    ((cacheValue (symbol actors,rep d)) f) A
     )
 
 -- returns actors on component of given degree
