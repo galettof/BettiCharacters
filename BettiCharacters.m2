@@ -854,7 +854,7 @@ action(Module,List) := ActionOnGradedModule => op -> (M,l) -> (
 	) else (
     	l0 = toList(#l:(id_(module ambient M)));	
 	);
-    action(M,l,l0,Sub=>op.Sub)
+    action(M,l,l0,Sub=>op.Sub,Semidirect=>op.Semidirect)
     )
 
 -- equality check for actions on graded modules
