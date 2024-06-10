@@ -40,6 +40,8 @@ export {
     "CharacterDecomposition",
     "CharacterTable",
     "decomposeCharacter",
+    "degreeOrbit",
+    "degreeRepresentative",
     "inverseRingActors",
     "Labels",
     "numActors",
@@ -566,6 +568,7 @@ CharacterDecomposition * CharacterTable := Character => character
 -- optional argument Sub=>true means ring actors are passed
 -- as one-row matrices of substitutions, Sub=>false means
 -- ring actors are passed as matrices
+-- Semidirect option (added after v2.2)
 action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
 
 -- constructor for action on resolutions
@@ -834,6 +837,8 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	(symbol actors) => apply(l0,g->map(F,F,g)),
 	(symbol module) => M',
 	(symbol relations) => image relations M',
+	(symbol degreeOrbit) => first op.Semidirect,
+	(symbol degreeRepresentative) => last op.Semidirect,
 	}
     )
 
