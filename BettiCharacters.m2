@@ -866,7 +866,7 @@ ActionOnGradedModule == ActionOnGradedModule := (A,B) -> A === B
 -- the actors are computed and stored
 actors(ActionOnGradedModule,List) := List => (A,d) -> (
     -- ensure function is computed with rep of degree orbit
-    -- so that cached results can be pulled up faster
+    -- so that cached results can be pulled up directly
     degRep := A.degreeRepresentative d;
     if (d != degRep) then (
 	actors(A,degRep)
@@ -903,8 +903,11 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
 character(ActionOnGradedModule,List) := Character => (A,d) -> (
+    -- ensure function is computed with rep of degree orbit
+    degRep := A.degreeRepresentative d;
     F := coefficientRing ring A;
-    acts := actors(A,d);
+    -- zero action, return empty character and don't store
+    acts := actors(A,degRep);
     if all(acts,zero) then (
 	return new Character from {
 	    cache => new CacheTable,
@@ -914,14 +917,14 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 	    (symbol characters) => hashTable {},
 	    };
 	);
-    -- function for character of A in degree d
+    -- otherwise make function for character of A in degree d
     f := A -> (
 	new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {(0,d) => lift(matrix{apply(acts, trace)},F)},
+	    (symbol characters) => hashTable {(0,degRep) => lift(matrix{apply(acts, trace)},F)},
 	    }
 	);
     -- make cache function from f and run it on A
@@ -3545,4 +3548,3 @@ assert( (c1 - c2)^{{5},{6}} == c)
 ///
 
 end
-
