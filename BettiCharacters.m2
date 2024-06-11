@@ -866,26 +866,21 @@ ActionOnGradedModule == ActionOnGradedModule := (A,B) -> A === B
 -- the actors are computed and stored
 actors(ActionOnGradedModule,List) := List => (A,d) -> (
     -- ensure function is computed with rep of degree orbit
-    -- so that cached results can be pulled up directly
     degRep := A.degreeRepresentative d;
-    if (d != degRep) then (
-	actors(A,degRep)
-	)
-    else (
+    -- if not cached, compute
+    if not A.cache#?(symbol actors,degRep) then (
 	M := A.module;
 	-- get basis in degree d as map of free modules
-	-- how to get this depends on the class of M
-	-- (after adding semidirect option single degree d
-	-- is replaced by orbit of degrees)
-	orb := A.degreeOrbit;
-	degList := orb d;
-	--b := ambient basis(d,M);
-	-- collect basis for each degree in orbit
-	-- then join them horizontally
+	-- (after semidirect: single degree d replaced by degree orbit)
+	degList := A.degreeOrbit d;
+	-- collect bases for degrees in orbit and join horizontally
 	b := fold( (x,y) -> x|y, apply(degList, d -> ambient basis(d,M)));
-	if zero b then return toList(numActors(A):map(source b));
-	-- function for actors of A in degree d
-	f := A -> apply(ringActors A, A.actors, (g,g0) -> (
+	if zero b then (
+	    A.cache#(symbol actors,degRep) = toList(numActors(A):map(source b));
+	    )
+	else (
+	    A.cache#(symbol actors,degRep) =
+		apply(ringActors A, A.actors, (g,g0) -> (
 		--g0*b acts on the basis of the ambient module
 		--sub(-,g) acts on the polynomial coefficients
 		--result must be reduced against module relations
@@ -893,9 +888,10 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 		(sub(g0*b,g) % A.relations) // b
 		)
 	    );
-	-- make cache function from f and run it on A
-	((cacheValue (symbol actors,d)) f) A
-	)
+	);
+    );
+    -- return cached value
+    A.cache#(symbol actors,degRep)
     )
 
 -- returns actors on component of given degree
