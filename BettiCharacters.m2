@@ -928,7 +928,7 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 	    }
 	);
     -- make cache function from f and run it on A
-    ((cacheValue (symbol character,d)) f) A
+    ((cacheValue (symbol character,degRep)) f) A
     )
 
 -- return character of component of given degree
