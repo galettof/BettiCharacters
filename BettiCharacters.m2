@@ -920,7 +920,6 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 		};
 	    );
 	-- otherwise make character of A in degree d
-	print("\n Nonzero character is computed\n");
 	A.cache#(symbol character,degRep) = new Character from {
 		cache => new CacheTable,
 		(symbol ring) => F,
