@@ -631,6 +631,8 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
+	(symbol degreeOrbit) => first op.Semidirect,
+	(symbol degreeRepresentative) => last op.Semidirect,
 	}
     )
 
