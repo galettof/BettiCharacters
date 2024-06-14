@@ -736,10 +736,10 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 		(symbol characters) => hashTable {},
 		};
 	    );
-	-- separate degrees of i-th free module
-	degs := hashTable apply(unique degrees (target A)_i, d ->
-	    (d,positions(degrees (target A)_i,i->i==d))
-	    );
+	-- record position of degrees of i-th free module
+	-- based on their unique degree orbit rep
+	degs := partition(j -> A.degreeRepresentative degree ((target A)_i)_j,
+	    toList(0..rank((target A)_i)-1));
 	-- create raw character from actors
 	H := applyPairs(degs,
 	    (d,indx) -> ((i,d),
