@@ -685,20 +685,41 @@ actors = method(TypicalValue=>List)
 -- if homological degree is not the one passed by user,
 -- the actors are computed and stored
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
-    -- homological degrees where action is already cached
-    places := apply(keys A.cache, k -> k#1);
-    C := target A;
-    if zero(C_i) then return toList(numActors(A):map(C_i));
-    if i > max places then (
-    	-- function for actors of A in hom degree i
-    	f := A -> apply(inverseRingActors A,actors(A,i-1),
-	    -- given a map of free modules C.dd_i : F <-- F',
-	    -- the inverse group action on the ring (as substitution)
-	    -- and the group action on F, computes the group action on F'
-	    (gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i)
+    -- if not cached, compute
+    if not A.cache#?(symbol actors,i) then (
+	-- homological degrees where action is already cached
+	places := apply(keys A.cache, k -> k#1);
+	-- get the complex
+	C := target A;
+	-- if zero in that hom degree, return zeros
+	if zero(C_i) then return toList(numActors(A):map(C_i));
+	-- if hom degree is to the right of previously computed
+	if i > max places then (
+	    A.cache#(symbol actors,i) =
+	    apply(inverseRingActors A,actors(A,i-1),
+		-- given a map of free modules C.dd_i : F <-- F',
+		-- the inverse group action on the ring (as substitution)
+		-- and the group action on F, computes the group action on F'
+		(gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i)
+		);
+	    )
+	-- if hom degree is to the left of previously computed
+	else (
+	    A.cache#(symbol actors,i) =
+	    apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
+		-- given a map of free modules C.dd_i : F <-- F',
+		-- the inverse group action on the ring (as substitution)
+		-- and the group action on F', computes the group action on F
+		-- it is necessary to transpose because we need a left factorization
+		-- but M2's command // always produces a right factorization
+		transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0))
+		);
 	    );
-    	-- make cache function from f and run it on A
-    	((cacheValue (symbol actors,i)) f) A
+	);
+    -- return cached value
+    A.cache#(symbol actors,i)
+    )
+
     	) else (
     	-- function for actors of A in hom degree i
     	f = A -> apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
