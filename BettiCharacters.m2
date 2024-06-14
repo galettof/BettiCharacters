@@ -883,7 +883,12 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	-- (after semidirect: single degree d replaced by degree orbit)
 	degList := A.degreeOrbit d;
 	-- collect bases for degrees in orbit and join horizontally
-	b := fold( (x,y) -> x|y, apply(degList, d -> ambient basis(d,M)));
+	b := rsort fold( (x,y) -> x|y, apply(degList, d -> ambient basis(d,M)));
+	-- the basis command returns a matrix with columns in decreasing order
+	-- joining basis from different degrees may break this order
+	-- the rsort at the beginning recovers M2's default order
+	-- this sorting was made necessary after introducing semidirect options
+	-- actors matrix would be useless without out as it may not match basis
 	if zero b then (
 	    A.cache#(symbol actors,degRep) = toList(numActors(A):map(source b));
 	    )
