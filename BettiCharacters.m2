@@ -723,19 +723,19 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
-    F := coefficientRing ring A;
-    -- if complex is zero in hom degree i, return empty character
-    if zero (target A)_i then (
-	return new Character from {
-	    cache => new CacheTable,
-	    (symbol ring) => F,
-	    (symbol degreeLength) => degreeLength ring A,
-	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {},
-	    };
-	);
-    -- function for character of A in hom degree i
-    f := A -> (
+    -- if not cached, compute
+    if not A.cache#?(symbol character,i) then (
+	F := coefficientRing ring A;
+	-- if complex is zero in hom degree i, return empty character, don't cache
+	if zero (target A)_i then (
+	    return new Character from {
+		cache => new CacheTable,
+		(symbol ring) => F,
+		(symbol degreeLength) => degreeLength ring A,
+		(symbol numActors) => numActors A,
+		(symbol characters) => hashTable {},
+		};
+	    );
 	-- separate degrees of i-th free module
 	degs := hashTable apply(unique degrees (target A)_i, d ->
 	    (d,positions(degrees (target A)_i,i->i==d))
@@ -746,16 +746,17 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 		lift(matrix{apply(actors(A,i), g -> trace g_indx^indx)},F)
 		)
 	    );
-	new Character from {
+	-- cache character
+	A.cache#(symbol character,i) = 	new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
-	    }
+	    };
 	);
-    -- make cache function from f and run it on A
-    ((cacheValue (symbol character,i)) f) A
+    -- return cached value
+    A.cache#(symbol character,i)
     )
 
 -- return characters of all free modules in a resolution
