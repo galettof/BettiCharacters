@@ -720,21 +720,6 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     A.cache#(symbol actors,i)
     )
 
-    	) else (
-    	-- function for actors of A in hom degree i
-    	f = A -> apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
-	    -- given a map of free modules C.dd_i : F <-- F',
-	    -- the inverse group action on the ring (as substitution)
-	    -- and the group action on F', computes the group action on F
-	    -- it is necessary to transpose because we need a left factorization
-	    -- but M2's command // always produces a right factorization
-	    transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0))
-	    );
-    	-- make cache function from f and run it on A
-    	((cacheValue (symbol actors,i)) f) A
-	)
-    )
-
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
