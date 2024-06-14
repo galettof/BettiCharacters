@@ -641,7 +641,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
     R := ring C;
     l0 := toList(#l:(id_(R^1)));
-    action(C,l,l0,min C,Sub=>op.Sub)
+    action(C,l,l0,min C,Sub=>op.Sub,Semidirect=>op.Semidirect)
     )
 
 -- equality check for actions on complexes
