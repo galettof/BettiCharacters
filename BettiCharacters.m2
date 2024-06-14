@@ -688,7 +688,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     -- if not cached, compute
     if not A.cache#?(symbol actors,i) then (
 	-- homological degrees where action is already cached
-	places := apply(keys A.cache, k -> k#1);
+	places := apply(select(keys A.cache, k -> k#0 == symbol actors), k -> k#1);
 	-- get the complex
 	C := target A;
 	-- if zero in that hom degree, return zeros
