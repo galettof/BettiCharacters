@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- Copyright 2021-2023  Federico Galetto
+-- Copyright 2021-2024  Federico Galetto
 --
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.2",
-     Date => "July 22, 2023",
+     Version => "2.3",
+     Date => "June 14, 2024",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -1254,7 +1254,10 @@ Node
 		(BOLD "2.2: ", "Characters and character tables are now
 		    defined over fields (instead of polynomial rings).
 		    This version also introduces new character operations
-		    and $\\TeX$ printing for characters and character tables.")
+		    and $\\TeX$ printing for characters and character tables."),
+		(BOLD "2.3: ", "New option for the action of a semidirect
+		    product of a finite group acting on a torus.
+		    Improved caching and removed calls to deprecated functions.")
 		}@
     Subnodes
     	:Defining and computing actions
