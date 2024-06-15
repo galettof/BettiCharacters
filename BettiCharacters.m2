@@ -3254,19 +3254,26 @@ Node
 	    As a representative of this orbit we choose the unique degree $d$
 	    whose entries are sorted in nonincreasing order from left to right;
 	    this can be obtained with the function @TO "rsort"@.
+
+	    We illustrate this use case. First, consider the action
+	    on the polynomial ring.
     	Example
 	    R = QQ[x_1..x_4,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}]
 	    S4 = symmetricGroupActors R
 	    A = action(R,S4,Semidirect=>{uniquePermutations,rsort})
-	    actors(A,{2,0,0,0})
-	    character(A,{2,0,0,0})
-	    actors(A,{1,1,0,0})
-	    character(A,{1,1,0,0})
-	    oo == character(A,{1,0,1,0})
-	    I = ideal apply(subsets(gens R,3),product) + ideal apply(gens R, y -> y^5)
+	    actors(A,{1,1,1,0})
+	    character(A,{1,1,1,0})
+	Text
+	    As expected, the character is the same if we compute it
+	    for a different degree in the same orbit.
+	Example
+	    oo == character(A,{1,0,1,1})
+	Text
+	    Next, consider the quotient by an ideal stable under the group action.
+	Example
+	    I = ideal apply(subsets(gens R,3),product)
 	    M = R/I
 	    B = action(M,S4,Semidirect=>{uniquePermutations,rsort})
-	    actors(B,{2,1,0,0})
 	    character(B,{2,1,0,0})
     	Text
 	    Similarly, the @TO "Semidirect"@ option can be used
