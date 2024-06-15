@@ -1871,6 +1871,7 @@ Node
     	Action
 	(action,ChainComplex,List,List,ZZ)
 	(action,Module,List,List)
+	Semidirect
 	Sub
 	    
 Node
@@ -3146,6 +3147,90 @@ Node
 
 Node
     Key
+    	Semidirect
+	[action, Semidirect]
+	degreeOrbit
+	degreeRepresentative
+    Headline
+    	action of semidirect product with torus
+    Description
+    	Text
+	    Consider a polynomial ring $R$ and an $R$-module $M$
+	    with a $\mathbb{Z}^r$-grading corresponding to the action of a
+	    torus $T$. Let $G$ be a finite group acting on $R$
+	    and $M$ in a way that is compatible with multiplication.
+	    Then the semidirect product $T\rtimes G$ acts on $R$ and $M$.
+	    For a given degree $d \in \mathbb{Z}^r$, the graded
+	    components $R_d$ and $M_d$ need not be representations of $G$.
+	    However, if $\mathcal{O}$ is the orbit of $d$ under the action
+	    of $G$ on the character group $\mathbb{Z}^r$ of $T$, then
+	    $\bigoplus_{d\in\mathcal{O}} R_d$ and
+	    $\bigoplus_{d\in\mathcal{O}} M_d$ are representations of
+	    $T\rtimes G$. Starting with version 2.3, the
+	    @TO "BettiCharacters"@ package allows one to compute the
+	    characters of $G$ on these representations using the
+	    @TO "Semidirect"@ option of the @TO "action"@ method,
+	    and specifying a single degree $d$ in the orbit $\mathcal{O}$.
+
+	    The value of the @TO "Semidirect"@ option is a list of two
+	    functions. The first function takes as input a degree $d$
+	    and returns its orbit $\mathcal{O}$ as output. This function is
+	    stored in the action under the key @TO "degreeOrbit"@. The second
+	    function takes as input a degree $d$ and returns a user-chosen
+	    representative $d'$ from the orbit $\mathcal{O}$ of $d$. This
+	    function is stored in the action under the key @TO "degreeRepresentative"@.
+	    When computing the actors or the characters of $G$ on
+	    $\bigoplus_{d\in\mathcal{O}} R_d$ and $\bigoplus_{d\in\mathcal{O}} M_d$,
+	    the values are stored only for the chosen representative $d'$,
+	    and computing the actors or characters of $G$ for another degree
+	    in the same orbit produces the same result as for $d'$.
+	    By default, both functions are set to the identity, which
+	    corresponds to the action of the direct product $T\times G$.
+
+	    A typical use case is that of the symmetric group $\mathfrak{S}_n$
+	    acting on a fine graded polynomial ring $\Bbbk [x_1,\dots,x_n]$ by
+	    permuting the variables. The symmetric group also acts by
+	    permuting the entries of the degrees $d \in \mathbb{Z}^n$.
+	    In this case, the orbit of $d$ consists of all its permutations,
+	    which can be obtained with the function @TO "uniquePermutations"@.
+	    As a representative of this orbit we choose the unique degree $d$
+	    whose entries are sorted in nonincreasing order from left to right;
+	    this can be obtained with the function @TO "rsort"@.
+    	Example
+	    R = QQ[x_1..x_4,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}]
+	    S4 = symmetricGroupActors R
+	    A = action(R,S4,Semidirect=>{uniquePermutations,rsort})
+	    actors(A,{2,0,0,0})
+	    character(A,{2,0,0,0})
+	    actors(A,{1,1,0,0})
+	    character(A,{1,1,0,0})
+	    oo == character(A,{1,0,1,0})
+	    I = ideal apply(subsets(gens R,3),product) + ideal apply(gens R, y -> y^5)
+	    M = R/I
+	    B = action(M,S4,Semidirect=>{uniquePermutations,rsort})
+	    actors(B,{2,1,0,0})
+	    character(B,{2,1,0,0})
+    	Text
+	    Similarly, the @TO "Semidirect"@ option can be used
+	    for actions on complexes and for computing Betti characters
+	    of a module.
+    	Example
+	    RI = res I
+	    C = action(RI,S4,Semidirect=>{uniquePermutations,rsort})
+	    character C
+    Caveat
+	Characters of actions with the semidirect option are indexed
+	by user-chosen representatives of degree orbits as explained
+	above. However, the duals of these characters and characters
+	constructed directly by the user may not follow this choice
+	of representatives. Applying further operations to such
+	characters may result in a mix of different orbit
+	representatives for the same degree orbits.
+    SeeAlso
+	action
+	
+Node
+    Key
     	Sub
 	[action, Sub]
 	[ringActors, Sub]
@@ -3563,6 +3648,31 @@ c = character(R,3, hashTable {
 	(0,{6}) => matrix{{1,1,1}}
 	})
 assert( (c1 - c2)^{{5},{6}} == c)
+///
+
+-- Test 6 (fine grading, semidirect product with symmetric group)
+TEST ///
+clearAll
+R = QQ[x,y,z,Degrees=>{{1,0,0},{0,1,0},{0,0,1}}]
+I = ideal(x*y,x*z,y*z)
+RI = res I
+S3 = symmetricGroupActors R
+A1 = action(RI,S3,Semidirect=>{uniquePermutations,rsort})
+c1 = character(A1)
+d1 = character(R,3, hashTable {
+	(0,{0,0,0}) => matrix{{1,1,1}},
+	(1,{1,1,0}) => matrix{{0,1,3}},
+	(2,{1,1,1}) => matrix{{-1,0,2}}
+	})
+assert( c1 == d1)
+A2 = action(R,S3,Semidirect=>{uniquePermutations,rsort})
+c2 = character(A2,{0,3,0}) ++ character(A2,{1,0,2}) ++ character(A2,{1,1,1})
+d2 = character(R,3, hashTable {
+	(0,{3,0,0}) => matrix{{0,1,3}},
+	(0,{2,1,0}) => matrix{{0,0,6}},
+	(0,{1,1,1}) => matrix{{1,1,1}}
+	})
+assert( c2 == d2)
 ///
 
 end
