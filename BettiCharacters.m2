@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- Copyright 2021-2023  Federico Galetto
+-- Copyright 2021-2024  Federico Galetto
 --
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.2",
-     Date => "July 22, 2023",
+     Version => "2.3",
+     Date => "June 14, 2024",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -40,10 +40,13 @@ export {
     "CharacterDecomposition",
     "CharacterTable",
     "decomposeCharacter",
+    "degreeOrbit",
+    "degreeRepresentative",
     "inverseRingActors",
     "Labels",
     "numActors",
     "ringActors",
+    "Semidirect",
     "Sub",
     "symmetricGroupActors",
     "symmetricGroupTable"
@@ -565,7 +568,8 @@ CharacterDecomposition * CharacterTable := Character => character
 -- optional argument Sub=>true means ring actors are passed
 -- as one-row matrices of substitutions, Sub=>false means
 -- ring actors are passed as matrices
-action = method(TypicalValue=>Action,Options=>{Sub=>true})
+-- Semidirect option (added after v2.2)
+action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
 
 -- constructor for action on resolutions
 -- INPUT:
@@ -598,7 +602,8 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
     	--convert variable substitutions to matrices
-	l=apply(l,g->(vars R)\\lift(g,R));
+	--l=apply(l,g->(vars R)\\lift(g,R)); --deprecated
+	l=apply(l,g->lift(g,R)//(vars R));
 	) else (
 	--if ring actors are matrices they must be square
     	if not all(l,g->numRows(g)==n) then (
@@ -627,6 +632,8 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
 	(symbol inverseRingActors) => apply(l,inverse),
+	(symbol degreeOrbit) => first op.Semidirect,
+	(symbol degreeRepresentative) => last op.Semidirect,
 	}
     )
 
@@ -635,7 +642,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
     R := ring C;
     l0 := toList(#l:(id_(R^1)));
-    action(C,l,l0,min C,Sub=>op.Sub)
+    action(C,l,l0,min C,Sub=>op.Sub,Semidirect=>op.Semidirect)
     )
 
 -- equality check for actions on complexes
@@ -679,71 +686,80 @@ actors = method(TypicalValue=>List)
 -- if homological degree is not the one passed by user,
 -- the actors are computed and stored
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
-    -- homological degrees where action is already cached
-    places := apply(keys A.cache, k -> k#1);
-    C := target A;
-    if zero(C_i) then return toList(numActors(A):map(C_i));
-    if i > max places then (
-    	-- function for actors of A in hom degree i
-    	f := A -> apply(inverseRingActors A,actors(A,i-1),
-	    -- given a map of free modules C.dd_i : F <-- F',
-	    -- the inverse group action on the ring (as substitution)
-	    -- and the group action on F, computes the group action on F'
-	    (gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i)
+    -- if not cached, compute
+    if not A.cache#?(symbol actors,i) then (
+	-- homological degrees where action is already cached
+	places := apply(select(keys A.cache, k -> k#0 == symbol actors), k -> k#1);
+	-- get the complex
+	C := target A;
+	-- if zero in that hom degree, return zeros
+	if zero(C_i) then return toList(numActors(A):map(C_i));
+	-- if hom degree is to the right of previously computed
+	if i > max places then (
+	    A.cache#(symbol actors,i) =
+	    apply(inverseRingActors A,actors(A,i-1),
+		-- given a map of free modules C.dd_i : F <-- F',
+		-- the inverse group action on the ring (as substitution)
+		-- and the group action on F, computes the group action on F'
+		--(gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i) --deprecated
+		(gInv,g0) -> (g0*C.dd_i)//sub(C.dd_i,gInv)
+		);
+	    )
+	-- if hom degree is to the left of previously computed
+	else (
+	    A.cache#(symbol actors,i) =
+	    apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
+		-- given a map of free modules C.dd_i : F <-- F',
+		-- the inverse group action on the ring (as substitution)
+		-- and the group action on F', computes the group action on F
+		-- it is necessary to transpose because we need a left factorization
+		-- but M2's command // always produces a right factorization
+		--transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0)) --deprecated
+		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//transpose(C.dd_(i+1)))
+		);
 	    );
-    	-- make cache function from f and run it on A
-    	((cacheValue (symbol actors,i)) f) A
-    	) else (
-    	-- function for actors of A in hom degree i
-    	f = A -> apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
-	    -- given a map of free modules C.dd_i : F <-- F',
-	    -- the inverse group action on the ring (as substitution)
-	    -- and the group action on F', computes the group action on F
-	    -- it is necessary to transpose because we need a left factorization
-	    -- but M2's command // always produces a right factorization
-	    transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0))
-	    );
-    	-- make cache function from f and run it on A
-    	((cacheValue (symbol actors,i)) f) A
-	)
+	);
+    -- return cached value
+    A.cache#(symbol actors,i)
     )
 
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => (A,i) -> (
-    F := coefficientRing ring A;
-    -- if complex is zero in hom degree i, return empty character
-    if zero (target A)_i then (
-	return new Character from {
-	    cache => new CacheTable,
-	    (symbol ring) => F,
-	    (symbol degreeLength) => degreeLength ring A,
-	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {},
-	    };
-	);
-    -- function for character of A in hom degree i
-    f := A -> (
-	-- separate degrees of i-th free module
-	degs := hashTable apply(unique degrees (target A)_i, d ->
-	    (d,positions(degrees (target A)_i,i->i==d))
+    -- if not cached, compute
+    if not A.cache#?(symbol character,i) then (
+	F := coefficientRing ring A;
+	-- if complex is zero in hom degree i, return empty character, don't cache
+	if zero (target A)_i then (
+	    return new Character from {
+		cache => new CacheTable,
+		(symbol ring) => F,
+		(symbol degreeLength) => degreeLength ring A,
+		(symbol numActors) => numActors A,
+		(symbol characters) => hashTable {},
+		};
 	    );
+	-- record position of degrees of i-th free module
+	-- based on their unique degree orbit rep
+	degs := partition(j -> A.degreeRepresentative degree ((target A)_i)_j,
+	    toList(0..rank((target A)_i)-1));
 	-- create raw character from actors
 	H := applyPairs(degs,
 	    (d,indx) -> ((i,d),
 		lift(matrix{apply(actors(A,i), g -> trace g_indx^indx)},F)
 		)
 	    );
-	new Character from {
+	-- cache character
+	A.cache#(symbol character,i) = 	new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => H,
-	    }
+	    };
 	);
-    -- make cache function from f and run it on A
-    ((cacheValue (symbol character,i)) f) A
+    -- return cached value
+    A.cache#(symbol character,i)
     )
 
 -- return characters of all free modules in a resolution
@@ -792,7 +808,8 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
     	--convert variable substitutions to matrices
-	l=apply(l,g->(vars R)\\lift(g,R));
+	--l=apply(l,g->(vars R)\\lift(g,R)); --deprecated
+	l=apply(l,g->lift(g,R)//(vars R));
 	) else (
 	--if ring actors are matrices they must be square
     	if not all(l,g->numRows(g)==n) then (
@@ -833,6 +850,8 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	(symbol actors) => apply(l0,g->map(F,F,g)),
 	(symbol module) => M',
 	(symbol relations) => image relations M',
+	(symbol degreeOrbit) => first op.Semidirect,
+	(symbol degreeRepresentative) => last op.Semidirect,
 	}
     )
 
@@ -848,7 +867,7 @@ action(Module,List) := ActionOnGradedModule => op -> (M,l) -> (
 	) else (
     	l0 = toList(#l:(id_(module ambient M)));	
 	);
-    action(M,l,l0,Sub=>op.Sub)
+    action(M,l,l0,Sub=>op.Sub,Semidirect=>op.Semidirect)
     )
 
 -- equality check for actions on graded modules
@@ -859,22 +878,38 @@ ActionOnGradedModule == ActionOnGradedModule := (A,B) -> A === B
 -- returns actors on component of given multidegree
 -- the actors are computed and stored
 actors(ActionOnGradedModule,List) := List => (A,d) -> (
-    M := A.module;
-    -- get basis in degree d as map of free modules
-    -- how to get this depends on the class of M
-    b := ambient basis(d,M);
-    if zero b then return toList(numActors(A):map(source b));
-    -- function for actors of A in degree d
-    f := A -> apply(ringActors A, A.actors, (g,g0) -> (
-    	    --g0*b acts on the basis of the ambient module
-	    --sub(-,g) acts on the polynomial coefficients
-	    --result must be reduced against module relations
-	    --then factored by original basis to get action matrix
-	    (sub(g0*b,g) % A.relations) // b
+    -- ensure function is computed with rep of degree orbit
+    degRep := A.degreeRepresentative d;
+    -- if not cached, compute
+    if not A.cache#?(symbol actors,degRep) then (
+	M := A.module;
+	-- get basis in degree d as map of free modules
+	-- (after semidirect: single degree d replaced by degree orbit)
+	degList := A.degreeOrbit d;
+	-- collect bases for degrees in orbit and join horizontally
+	b := rsort fold( (x,y) -> x|y, apply(degList, d -> ambient basis(d,M)));
+	-- the basis command returns a matrix with columns in decreasing order
+	-- joining basis from different degrees may break this order
+	-- the rsort at the beginning recovers M2's default order
+	-- this sorting was made necessary after introducing semidirect options
+	-- actors matrix would be useless without out as it may not match basis
+	if zero b then (
+	    A.cache#(symbol actors,degRep) = toList(numActors(A):map(source b));
 	    )
+	else (
+	    A.cache#(symbol actors,degRep) =
+		apply(ringActors A, A.actors, (g,g0) -> (
+		--g0*b acts on the basis of the ambient module
+		--sub(-,g) acts on the polynomial coefficients
+		--result must be reduced against module relations
+		--then factored by original basis to get action matrix
+		(sub(g0*b,g) % A.relations) // b
+		)
+	    );
 	);
-    -- make cache function from f and run it on A
-    ((cacheValue (symbol actors,d)) f) A
+    );
+    -- return cached value
+    A.cache#(symbol actors,degRep)
     )
 
 -- returns actors on component of given degree
@@ -882,29 +917,33 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
 character(ActionOnGradedModule,List) := Character => (A,d) -> (
-    F := coefficientRing ring A;
-    acts := actors(A,d);
-    if all(acts,zero) then (
-	return new Character from {
-	    cache => new CacheTable,
-	    (symbol ring) => F,
-	    (symbol degreeLength) => degreeLength ring A,
-	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {},
-	    };
+    -- ensure function is computed with rep of degree orbit
+    degRep := A.degreeRepresentative d;
+    -- if not cached, compute
+    if not A.cache#?(symbol character,degRep) then (
+	F := coefficientRing ring A;
+	-- zero action, return empty character and don't cache
+	acts := actors(A,degRep);
+	if all(acts,zero) then (
+	    return new Character from {
+		cache => new CacheTable,
+		(symbol ring) => F,
+		(symbol degreeLength) => degreeLength ring A,
+		(symbol numActors) => numActors A,
+		(symbol characters) => hashTable {},
+		};
+	    );
+	-- otherwise make character of A in degree d
+	A.cache#(symbol character,degRep) = new Character from {
+		cache => new CacheTable,
+		(symbol ring) => F,
+		(symbol degreeLength) => degreeLength ring A,
+		(symbol numActors) => numActors A,
+		(symbol characters) => hashTable {(0,degRep) => lift(matrix{apply(acts, trace)},F)},
+		};
 	);
-    -- function for character of A in degree d
-    f := A -> (
-	new Character from {
-	    cache => new CacheTable,
-	    (symbol ring) => F,
-	    (symbol degreeLength) => degreeLength ring A,
-	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {(0,d) => lift(matrix{apply(acts, trace)},F)},
-	    }
-	);
-    -- make cache function from f and run it on A
-    ((cacheValue (symbol character,d)) f) A
+    -- return cached value
+    A.cache#(symbol character,degRep)
     )
 
 -- return character of component of given degree
@@ -1215,7 +1254,10 @@ Node
 		(BOLD "2.2: ", "Characters and character tables are now
 		    defined over fields (instead of polynomial rings).
 		    This version also introduces new character operations
-		    and $\\TeX$ printing for characters and character tables.")
+		    and $\\TeX$ printing for characters and character tables."),
+		(BOLD "2.3: ", "New option for the action of a semidirect
+		    product of a finite group acting on a torus.
+		    Improved caching and removed calls to deprecated functions.")
 		}@
     Subnodes
     	:Defining and computing actions
@@ -1236,6 +1278,7 @@ Node
       	"BettiCharacters Example 2"
       	"BettiCharacters Example 3"
       	"BettiCharacters Example 4"
+	"BettiCharacters Example 5"
 
 Node
     Key
@@ -1568,6 +1611,63 @@ Node
 
 Node
     Key
+    	"BettiCharacters Example 5"
+    Headline
+    	semidirect product of torus and symmetric group
+    Description
+    	Text
+	    We present the example in the introduction of
+	    @HREF("https://doi.org/10.1112/jlms.12551",
+	    "S. Murai, C. Raicu - An equivariant Hochster’s formula for $\\mathfrak{S}_n$-invariant monomial ideals")@.
+
+	    Consider the ideal $I$ in three variables generated by
+	    monomials whose exponent vectors are permutations of
+	    $(4,1,1)$ or $(5,2,0)$. This ideal is clearly stable
+	    under the permutation action of $\mathfrak{S}_3$.
+	    Moreover, $I$ is compatible with the fine grading
+	    on $R = \Bbbk [x_1,x_2,x_3]$ given by $\deg (x_i) = e_i
+	    \in \mathbb{Z}^3$. We compute a minimal free resolution of
+	    $R/I$ and show its Betti diagram.
+    	Example
+    	    R = QQ[x_1..x_3,Degrees=>{{1,0,0},{0,1,0},{0,0,1}}]
+	    I = ideal(x_1^4*x_2*x_3,x_1*x_2^4*x_3,x_1*x_2*x_3^4,
+		x_1^5*x_2^2,x_1^5*x_3^2,x_1^2*x_2^5,x_1^2*x_3^5,x_2^5*x_3^2,x_2^2*x_3^5)
+	    RI = res I
+	    betti RI
+	Text
+	    Next, we set up the action of the semidirect product
+	    $(\Bbbk^\times)^3 \rtimes \mathfrak{S}_3$ where
+	    $\mathfrak{S}_3$ acts on $(\Bbbk^\times)^3$ by
+	    permuting entries. This results in $\mathfrak{S}_3$
+	    acting on the grading group $\mathbb{Z}^3$ (the character
+		group of $(\Bbbk^\times)^3$) by permuting the
+	    entries of the degree vectors. Thus, the orbit of a
+	    degree $d\in \mathbb{Z}^3$ consists of all permutations
+	    of $d$; we fix the nonincreasing permutation of $d$ as
+	    the distinguished representative of this orbit.
+	    See @TO "Semidirect"@ for details.
+	Example
+	    S3 = symmetricGroupActors(R)
+    	    A = action(RI,S3,Semidirect=>{uniquePermutations,rsort})
+    	    c = character A
+    	Text
+    	    To match the description of the paper, which resolves the
+	    ideal $I$ instead of the quotient $R/I$, we remove
+	    the component in homological degree 0, then shift the
+	    complex to the left. Finally, the resulting character is
+	    decomposed against the character table of $\mathfrak{S}_3$.
+    	Example
+	    c = (c - character(R,3,hashTable{(0,{0,0,0})=>matrix{{1,1,1}}}))[1]
+    	    T = symmetricGroupTable(3,QQ)
+	    decomposeCharacter(c,T)
+	Text
+	    The irreducible representations found above match
+	    our expectations as can be verified by
+	    applying Pieri's rule to the description
+	    in Example 1.4 of Murai and Raicu's paper.
+
+Node
+    Key
     	Action
     Headline
     	the class of all finite group actions
@@ -1829,6 +1929,7 @@ Node
     	Action
 	(action,ChainComplex,List,List,ZZ)
 	(action,Module,List,List)
+	Semidirect
 	Sub
 	    
 Node
@@ -3104,6 +3205,97 @@ Node
 
 Node
     Key
+    	Semidirect
+	[action, Semidirect]
+	degreeOrbit
+	degreeRepresentative
+    Headline
+    	action of semidirect product with torus
+    Description
+    	Text
+	    Consider a polynomial ring $R$ and an $R$-module $M$
+	    with a $\mathbb{Z}^r$-grading corresponding to the action of a
+	    torus $T$. Let $G$ be a finite group acting on $R$
+	    and $M$ in a way that is compatible with multiplication.
+	    Then the semidirect product $T\rtimes G$ acts on $R$ and $M$.
+	    For a given degree $d \in \mathbb{Z}^r$, the graded
+	    components $R_d$ and $M_d$ need not be representations of $G$.
+	    However, if $\mathcal{O}$ is the orbit of $d$ under the action
+	    of $G$ on the character group $\mathbb{Z}^r$ of $T$, then
+	    $\bigoplus_{d\in\mathcal{O}} R_d$ and
+	    $\bigoplus_{d\in\mathcal{O}} M_d$ are representations of
+	    $T\rtimes G$. Starting with version 2.3, the
+	    @TO "BettiCharacters"@ package allows one to compute the
+	    characters of $G$ on these representations using the
+	    @TO "Semidirect"@ option of the @TO "action"@ method,
+	    and specifying a single degree $d$ in the orbit $\mathcal{O}$.
+
+	    The value of the @TO "Semidirect"@ option is a list of two
+	    functions. The first function takes as input a degree $d$
+	    and returns its orbit $\mathcal{O}$ as output. This function is
+	    stored in the action under the key @TO "degreeOrbit"@. The second
+	    function takes as input a degree $d$ and returns a user-chosen
+	    representative $d'$ from the orbit $\mathcal{O}$ of $d$. This
+	    function is stored in the action under the key @TO "degreeRepresentative"@.
+	    When computing the actors or the characters of $G$ on
+	    $\bigoplus_{d\in\mathcal{O}} R_d$ and $\bigoplus_{d\in\mathcal{O}} M_d$,
+	    the values are stored only for the chosen representative $d'$,
+	    and computing the actors or characters of $G$ for another degree
+	    in the same orbit produces the same result as for $d'$.
+	    By default, both functions are set to the identity, which
+	    corresponds to the action of the direct product $T\times G$.
+
+	    A typical use case is that of the symmetric group $\mathfrak{S}_n$
+	    acting on a fine graded polynomial ring $\Bbbk [x_1,\dots,x_n]$ by
+	    permuting the variables. The symmetric group also acts by
+	    permuting the entries of the degrees $d \in \mathbb{Z}^n$.
+	    In this case, the orbit of $d$ consists of all its permutations,
+	    which can be obtained with the function @TO "uniquePermutations"@.
+	    As a representative of this orbit we choose the unique degree $d$
+	    whose entries are sorted in nonincreasing order from left to right;
+	    this can be obtained with the function @TO "rsort"@.
+
+	    We illustrate this use case. First, consider the action
+	    on the polynomial ring.
+    	Example
+	    R = QQ[x_1..x_4,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}]
+	    S4 = symmetricGroupActors R
+	    A = action(R,S4,Semidirect=>{uniquePermutations,rsort})
+	    actors(A,{1,1,1,0})
+	    character(A,{1,1,1,0})
+	Text
+	    As expected, the character is the same if we compute it
+	    for a different degree in the same orbit.
+	Example
+	    oo == character(A,{1,0,1,1})
+	Text
+	    Next, consider the quotient by an ideal stable under the group action.
+	Example
+	    I = ideal apply(subsets(gens R,3),product)
+	    M = R/I
+	    B = action(M,S4,Semidirect=>{uniquePermutations,rsort})
+	    character(B,{2,1,0,0})
+    	Text
+	    Similarly, the @TO "Semidirect"@ option can be used
+	    for actions on complexes and for computing Betti characters
+	    of a module.
+    	Example
+	    RI = res I
+	    C = action(RI,S4,Semidirect=>{uniquePermutations,rsort})
+	    character C
+    Caveat
+	Characters of actions with the semidirect option are indexed
+	by user-chosen representatives of degree orbits as explained
+	above. However, the duals of these characters and characters
+	constructed directly by the user may not follow this choice
+	of representatives. Applying further operations to such
+	characters may result in a mix of different orbit
+	representatives for the same degree orbits.
+    SeeAlso
+	action
+	
+Node
+    Key
     	Sub
 	[action, Sub]
 	[ringActors, Sub]
@@ -3523,5 +3715,29 @@ c = character(R,3, hashTable {
 assert( (c1 - c2)^{{5},{6}} == c)
 ///
 
-end
+-- Test 6 (fine grading, semidirect product with symmetric group)
+TEST ///
+clearAll
+R = QQ[x,y,z,Degrees=>{{1,0,0},{0,1,0},{0,0,1}}]
+I = ideal(x*y,x*z,y*z)
+RI = res I
+S3 = symmetricGroupActors R
+A1 = action(RI,S3,Semidirect=>{uniquePermutations,rsort})
+c1 = character(A1)
+d1 = character(R,3, hashTable {
+	(0,{0,0,0}) => matrix{{1,1,1}},
+	(1,{1,1,0}) => matrix{{0,1,3}},
+	(2,{1,1,1}) => matrix{{-1,0,2}}
+	})
+assert( c1 == d1)
+A2 = action(R,S3,Semidirect=>{uniquePermutations,rsort})
+c2 = character(A2,{0,3,0}) ++ character(A2,{1,0,2}) ++ character(A2,{1,1,1})
+d2 = character(R,3, hashTable {
+	(0,{3,0,0}) => matrix{{0,1,3}},
+	(0,{2,1,0}) => matrix{{0,0,6}},
+	(0,{1,1,1}) => matrix{{1,1,1}}
+	})
+assert( c2 == d2)
+///
 
+end
