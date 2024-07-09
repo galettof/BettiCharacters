@@ -702,7 +702,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		-- the inverse group action on the ring (as substitution)
 		-- and the group action on F, computes the group action on F'
 		--(gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i) --deprecated
-		(gInv,g0) -> (g0*C.dd_i)//sub(C.dd_i,gInv)
+		(gInv,g0) -> (g0*C.dd_i)//(forceGB sub(C.dd_i,gInv))
 		);
 	    )
 	-- if hom degree is to the left of previously computed
@@ -715,7 +715,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		-- it is necessary to transpose because we need a left factorization
 		-- but M2's command // always produces a right factorization
 		--transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0)) --deprecated
-		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//transpose(C.dd_(i+1)))
+		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//(forceGB transpose(C.dd_(i+1))))
 		);
 	    );
 	);
