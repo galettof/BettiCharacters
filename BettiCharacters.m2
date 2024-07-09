@@ -715,7 +715,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		-- it is necessary to transpose because we need a left factorization
 		-- but M2's command // always produces a right factorization
 		--transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0)) --deprecated
-		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//(forceGB transpose(C.dd_(i+1))))
+		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//transpose(C.dd_(i+1)))
 		);
 	    );
 	);
