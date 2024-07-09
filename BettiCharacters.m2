@@ -702,7 +702,12 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		-- the inverse group action on the ring (as substitution)
 		-- and the group action on F, computes the group action on F'
 		--(gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i) --deprecated
-		(gInv,g0) -> (g0*C.dd_i)//(forceGB sub(C.dd_i,gInv))
+		(gInv,g0) -> (
+		    -- compute a Gröbner basis with the minimum number of elements
+		    GB := gb(sub(C.dd_i,gInv),BasisElementLimit=>numColumns C.dd_i);
+		    --(g0*C.dd_i)//(forceGB sub(C.dd_i,gInv))
+		    (g0*C.dd_i)//GB
+		    )
 		);
 	    )
 	-- if hom degree is to the left of previously computed
