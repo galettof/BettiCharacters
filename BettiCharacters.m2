@@ -855,7 +855,7 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	(symbol inverseRingActors) => apply(l,inverse),
 	(symbol actors) => apply(l0,g->map(F,F,g)),
 	(symbol module) => M',
-	(symbol relations) => image relations M',
+	(symbol relations) => gb image relations M',
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
@@ -903,16 +903,14 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	    A.cache#(symbol actors,degRep) = toList(numActors(A):map(source b));
 	    )
 	else (
+	    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	    A.cache#(symbol actors,degRep) =
 		apply(ringActors A, A.actors,
 		--g0*b acts on the basis of the ambient module
 		--sub(-,g) acts on the polynomial coefficients
 		--result must be reduced against module relations
 		--then factored by original basis to get action matrix
-		(g,g0) -> (
-		    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-		    (sub(g0*b,g) % A.relations) // GB
-		)
+		(g,g0) -> (sub(g0*b,g) % A.relations) // GB
 	    );
 	);
     );
