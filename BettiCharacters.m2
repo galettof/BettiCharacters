@@ -719,7 +719,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		-- it is necessary to transpose because we need a left factorization
 		-- but M2's command // always produces a right factorization
 		(gInv,g0) -> (
-		    GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+		    GB := gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 		    transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//GB)
 		    )
 		);
