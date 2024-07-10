@@ -701,13 +701,10 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		-- given a map of free modules C.dd_i : F <-- F',
 		-- the inverse group action on the ring (as substitution)
 		-- and the group action on F, computes the group action on F'
-		--(gInv,g0) -> sub(C.dd_i,gInv)\\(g0*C.dd_i) --deprecated
 		(gInv,g0) -> (
-		    -- compute a Gröbner basis with the minimum number of elements
-		    -- otherwise M2 computes the entire basis
-		    -- NOTE: doesn't work if ChangeMatrix=>false (which is default)
+		    -- compute a Gröbner basis but only up to minimal generators
+		    -- NOTE: does not work if ChangeMatrix=>false (which is default)
 		    GB := gb(sub(C.dd_i,gInv),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-		    --(g0*C.dd_i)//(forceGB sub(C.dd_i,gInv))
 		    g0*C.dd_i//GB
 		    )
 		);
@@ -715,14 +712,16 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	-- if hom degree is to the left of previously computed
 	else (
 	    A.cache#(symbol actors,i) =
-	    apply(inverseRingActors A,actors(A,i+1), (gInv,g0) ->
+	    apply(inverseRingActors A,actors(A,i+1),
 		-- given a map of free modules C.dd_i : F <-- F',
 		-- the inverse group action on the ring (as substitution)
 		-- and the group action on F', computes the group action on F
 		-- it is necessary to transpose because we need a left factorization
 		-- but M2's command // always produces a right factorization
-		--transpose(transpose(C.dd_(i+1))\\transpose(sub(C.dd_(i+1),gInv)*g0)) --deprecated
-		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//transpose(C.dd_(i+1)))
+		(gInv,g0) -> (
+		    GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+		    transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//GB)
+		    )
 		);
 	    );
 	);
