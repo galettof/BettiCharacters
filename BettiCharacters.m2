@@ -698,6 +698,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	if zero(C_i) then return toList(numActors(A):map(C_i));
 	-- if hom degree is to the right of previously computed
 	if i > max places then (
+	    -* earlier actors computation
 	    A.cache#(symbol actors,i) =
 	    apply(inverseRingActors A,actors(A,i-1),
 		-- given a map of free modules C.dd_i : F <-- F',
@@ -709,6 +710,17 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		    GB := gb(sub(C.dd_i,gInv),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 		    g0*C.dd_i//GB
 		    )
+		);
+	    *-
+	    --this streamlines actors computation with fewer GBs
+	    -- NOTE: does not work if ChangeMatrix=>false (which is default)
+	    GB := gb(C.dd_i,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	    A.cache#(symbol actors,i) =
+	    apply(ringActors A,actors(A,i-1),
+		-- given a map of free modules C.dd_i : F <-- F',
+		-- the inverse group action on the ring (as substitution)
+		-- and the group action on F, computes the group action on F'
+		(g,g0) -> g0*sub(C.dd_i,g)//GB
 		);
 	    )
 	-- if hom degree is to the left of previously computed
