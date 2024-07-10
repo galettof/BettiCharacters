@@ -904,12 +904,14 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	    )
 	else (
 	    A.cache#(symbol actors,degRep) =
-		apply(ringActors A, A.actors, (g,g0) -> (
+		apply(ringActors A, A.actors,
 		--g0*b acts on the basis of the ambient module
 		--sub(-,g) acts on the polynomial coefficients
 		--result must be reduced against module relations
 		--then factored by original basis to get action matrix
-		(sub(g0*b,g) % A.relations) // b
+		(g,g0) -> (
+		    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+		    (sub(g0*b,g) % A.relations) // GB
 		)
 	    );
 	);
