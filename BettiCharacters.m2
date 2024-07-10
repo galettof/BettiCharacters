@@ -583,7 +583,8 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
 	);
-    if not isField coefficientRing R then (
+    F := coefficientRing R;
+    if not isField F then (
 	error "action: expected coefficients in a field";
 	);
     if not all(length C,i -> isFreeModule C_(i+min(C))) then (
@@ -597,22 +598,23 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     if not all(l,g->numColumns(g)==n) then (
 	error "action: ring actor matrix has wrong number of columns";
 	);
+    --move ring actors to ring so they can be lifted to coefficient ring
+    l=apply(l, g -> promote(g,R));
     if op.Sub then (
-    	if not all(l,g->numRows(g)==1) then (
+	if not all(l,g->numRows(g)==1) then (
 	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
-    	--convert variable substitutions to matrices
-	--l=apply(l,g->(vars R)\\lift(g,R)); --deprecated
-	l=apply(l,g->lift(g,R)//(vars R));
+	--convert variable substitutions to matrices
+	GB := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	l=apply(l,g->lift(g,R)//GB);
 	) else (
 	--if ring actors are matrices they must be square
-    	if not all(l,g->numRows(g)==n) then (
+	if not all(l,g->numRows(g)==n) then (
 	    error "action: ring actor matrix has wrong number of rows";
 	    );
-	--lift action matrices to R for uniformity with
-	--input as substitutions
-	l=apply(l,g->promote(g,R));
 	);
+    --compute inverses in the coefficient ring to avoid GBs
+    invl := apply(l, g -> promote(inverse lift(g,F),R));
     --check list of group elements has same length
     if #l != #l0 then (
 	error "action: lists of actors must have equal length";
@@ -631,7 +633,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol target) => C,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	(symbol inverseRingActors) => apply(l,inverse),
+	(symbol inverseRingActors) => invl,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
