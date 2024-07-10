@@ -706,9 +706,9 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 		    -- compute a Gröbner basis with the minimum number of elements
 		    -- otherwise M2 computes the entire basis
 		    -- NOTE: doesn't work if ChangeMatrix=>false (which is default)
-		    GB := gb(sub(C.dd_i,gInv),BasisElementLimit=>numColumns C.dd_i,ChangeMatrix=>true);
+		    GB := gb(sub(C.dd_i,gInv),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 		    --(g0*C.dd_i)//(forceGB sub(C.dd_i,gInv))
-		    quotient(g0*C.dd_i,GB)
+		    g0*C.dd_i//GB
 		    )
 		);
 	    )
