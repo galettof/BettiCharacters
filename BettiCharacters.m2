@@ -711,11 +711,21 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	    )
 	-- if hom degree is to the left of previously computed
 	else (
+	    -- may need to compute inverse of ring actors
+	    if not A.cache.?inverse then (
+		--convert variable substitutions to matrices
+		--then invert and convert back to substitutions
+		R := ring A;
+		b := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+		A.cache.inverse = apply(A.ringActors, g ->
+		    (vars R) * (inverse lift(g//b,coefficientRing R))
+		    );
+		);
 	    GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	    A.cache#(symbol actors,i) =
-	    apply(inverseRingActors A,actors(A,i+1),
+	    apply(A.cache.inverse,actors(A,i+1),
 		-- given a map of free modules C.dd_i : F <-- F',
-		-- the group action on the ring (as substitution)
+		-- the inverse group action on the ring (as substitution)
 		-- and the group action on F', computes the group action on F
 		(gInv,g0) -> (
 		    transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//GB)
