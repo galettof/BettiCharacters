@@ -583,8 +583,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
 	);
-    F := coefficientRing R;
-    if not isField F then (
+    if not isField coefficientRing R then (
 	error "action: expected coefficients in a field";
 	);
     if not all(length C,i -> isFreeModule C_(i+min(C))) then (
@@ -606,7 +605,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
 	) else (
-	--if ring actors are matrices they must be square
+	--if ring actors are matrices, they must be square
 	if not all(l,g->numRows(g)==n) then (
 	    error "action: ring actor matrix has wrong number of rows";
 	    );
@@ -666,7 +665,10 @@ numActors(Action) := ZZ => A -> A.numActors
 -- Sub=>false returns square matrices
 ringActors = method(TypicalValue=>List,Options=>{Sub=>true})
 ringActors(Action) := List => op -> A -> (
-    if not op.Sub then apply(A.ringActors,g->(vars ring A)*g)
+    if not op.Sub then (
+	GB := gb(vars ring A,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	apply(A.ringActors,g->g//GB)
+	)
     else A.ringActors
     )
 
@@ -701,7 +703,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	    -- NOTE: does not work if ChangeMatrix=>false (which is default)
 	    GB := gb(C.dd_i,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	    A.cache#(symbol actors,i) =
-	    apply(ringActors A,actors(A,i-1),
+	    apply(A.ringActors, actors(A,i-1),
 		-- given a map of free modules C.dd_i : F <-- F',
 		-- the group action on the ring (as substitution)
 		-- and the group action on F, computes the group action on F'
@@ -816,21 +818,20 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
     if not all(l,g->numColumns(g)==n) then (
 	error "action: ring actor matrix has wrong number of columns";
 	);
+    --move ring actors to ring for uniformity
+    l = apply(l, g -> promote(g,R));
     if op.Sub then (
+	--if ring actors are substitutions, they must be one-row matrices
     	if not all(l,g->numRows(g)==1) then (
 	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
-    	--convert variable substitutions to matrices
-	--l=apply(l,g->(vars R)\\lift(g,R)); --deprecated
-	l=apply(l,g->lift(g,R)//(vars R));
 	) else (
-	--if ring actors are matrices they must be square
-    	if not all(l,g->numRows(g)==n) then (
+	--if ring actors are matrices, they must be square
+	if not all(l,g->numRows(g)==n) then (
 	    error "action: ring actor matrix has wrong number of rows";
 	    );
-	--lift action matrices to R for uniformity with
-	--input as substitutions
-	l=apply(l,g->promote(g,R));
+	--convert them to substitutions
+	l = apply(l, g -> (vars R) * g);
 	);
     --check list of group elements has same length
     if #l != #l0 then (
@@ -859,7 +860,6 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	(symbol target) => M,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	--(symbol inverseRingActors) => apply(l,inverse),
 	(symbol actors) => apply(l0,g->map(F,F,g)),
 	(symbol module) => M',
 	(symbol relations) => gb image relations M',
@@ -912,7 +912,7 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	else (
 	    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	    A.cache#(symbol actors,degRep) =
-		apply(ringActors A, A.actors,
+		apply(A.ringActors, A.actors,
 		--g0*b acts on the basis of the ambient module
 		--sub(-,g) acts on the polynomial coefficients
 		--result must be reduced against module relations
@@ -2005,7 +2005,7 @@ Node
 	    A = action(RI,G)
 	Text
 	    The group elements acting on the ring can be recovered
-	    using @TT "ringActors"@, while their inverses can be
+	    using @TO ringActors@, while their inverses can be
 	    recovered using @TT "inverseRingActors"@.
 	    To recover just the number of group elements,
 	    use @TO numActors@.
@@ -3316,7 +3316,7 @@ Node
 	    A = action(RI,G,Sub=>false)
     	Text
 	    Similarly, setting @TT "Sub=>false"@
-	    causes @TT "ringActors"@ and @TT "inverseRingActors"@
+	    causes @TO ringActors@ and @TT "inverseRingActors"@
 	    to return the group elements acting on the ring as
 	    square matrices. With the default setting
 	    @TT "Sub=>true"@, the same elements are returned as
