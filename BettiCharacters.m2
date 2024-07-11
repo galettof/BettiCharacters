@@ -42,7 +42,7 @@ export {
     "decomposeCharacter",
     "degreeOrbit",
     "degreeRepresentative",
-    "inverseRingActors",
+    --"inverseRingActors",
     "Labels",
     "numActors",
     "ringActors",
@@ -599,22 +599,24 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	error "action: ring actor matrix has wrong number of columns";
 	);
     --move ring actors to ring so they can be lifted to coefficient ring
-    l=apply(l, g -> promote(g,R));
+    l = apply(l, g -> promote(g,R));
+    --check ring actors have right size, if square convert to substitution
     if op.Sub then (
 	if not all(l,g->numRows(g)==1) then (
 	    error "action: expected ring actor matrix to be a one-row substitution matrix";
 	    );
 	--convert variable substitutions to matrices
-	GB := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-	l=apply(l,g->lift(g,R)//GB);
+	-- GB := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	-- l=apply(l,g->lift(g,R)//GB);
 	) else (
 	--if ring actors are matrices they must be square
 	if not all(l,g->numRows(g)==n) then (
 	    error "action: ring actor matrix has wrong number of rows";
 	    );
+	l = apply(l, g -> (vars R) * g);
 	);
     --compute inverses in the coefficient ring to avoid GBs
-    invl := apply(l, g -> promote(inverse lift(g,F),R));
+    --invl := apply(l, g -> promote(inverse lift(g,F),R));
     --check list of group elements has same length
     if #l != #l0 then (
 	error "action: lists of actors must have equal length";
@@ -633,7 +635,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol target) => C,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	(symbol inverseRingActors) => invl,
+	--(symbol inverseRingActors) => invl,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
@@ -669,10 +671,11 @@ numActors(Action) := ZZ => A -> A.numActors
 -- Sub=>false returns square matrices
 ringActors = method(TypicalValue=>List,Options=>{Sub=>true})
 ringActors(Action) := List => op -> A -> (
-    if op.Sub then apply(A.ringActors,g->(vars ring A)*g)
+    if not op.Sub then apply(A.ringActors,g->(vars ring A)*g)
     else A.ringActors
     )
 
+-*
 -- returns the inverses of the actors on ring variables
 -- same options as ringActors
 inverseRingActors = method(TypicalValue=>List,Options=>{Sub=>true})
@@ -680,6 +683,7 @@ inverseRingActors(Action) := List => op -> A -> (
     if op.Sub then apply(A.inverseRingActors,g->(vars ring A)*g)
     else A.inverseRingActors
     )
+*-
 
 -- returns various group actors
 actors = method(TypicalValue=>List)
@@ -691,7 +695,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     -- if not cached, compute
     if not A.cache#?(symbol actors,i) then (
 	-- homological degrees where action is already cached
-	places := apply(select(keys A.cache, k -> k#0 == symbol actors), k -> k#1);
+	places := apply(select(keys A.cache, k -> instance(k,Sequence) and k#0 == symbol actors), k -> k#1);
 	-- get the complex
 	C := target A;
 	-- if zero in that hom degree, return zeros
@@ -860,7 +864,7 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	(symbol target) => M,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	(symbol inverseRingActors) => apply(l,inverse),
+	--(symbol inverseRingActors) => apply(l,inverse),
 	(symbol actors) => apply(l0,g->map(F,F,g)),
 	(symbol module) => M',
 	(symbol relations) => gb image relations M',
@@ -2006,13 +2010,13 @@ Node
 	    A = action(RI,G)
 	Text
 	    The group elements acting on the ring can be recovered
-	    using @TO ringActors@, while their inverses can be
-	    recovered using @TO inverseRingActors@.
+	    using @TT "ringActors"@, while their inverses can be
+	    recovered using @TT "inverseRingActors"@.
 	    To recover just the number of group elements,
 	    use @TO numActors@.
 	Example
 	    ringActors A
-	    inverseRingActors A
+	    --inverseRingActors A
 	    numActors A
 	Text
 	    The simplified version of this function suffices when
@@ -2234,7 +2238,7 @@ Node
     Subnodes
  	(actors,ActionOnComplex,ZZ)  
  	(actors,ActionOnGradedModule,List)
-     	inverseRingActors
+     	--inverseRingActors
      	numActors
 	    
 Node
@@ -2971,35 +2975,6 @@ Node
     SeeAlso
     	characterTable
 	    
-Node
-    Key
-    	inverseRingActors
-    	(inverseRingActors,Action)
-    Headline
-    	get inverse of action on ring generators
-    Usage
-    	inverseRingActors(A)
-    Inputs
-    	A:Action
-    Outputs
-    	G:List
-	    of group elements
-    Description
-    	Text
-	    Returns a @TO List@ of group elements
-	    acting on the vector space spanned by the variables
-	    of the polynomial ring associated with the object
-	    acted upon.
-	    These are the inverses of the elements originally
-	    defined by the user when constructing the action.
-	    By default, these elements are
-	    expressed as one-row substitution matrices as those
-	    accepted by @TO substitute@. One may obtain these elements
-	    as square matrices by setting the optional input @TO Sub@
-	    to @TT "false"@.
-    SeeAlso
-    	action
-
 
 Node
     Key
@@ -3313,7 +3288,7 @@ Node
     	Sub
 	[action, Sub]
 	[ringActors, Sub]
-	[inverseRingActors, Sub]
+	--[inverseRingActors, Sub]
     Headline
     	format ring actors as one-row substitution matrices
     Description
@@ -3346,16 +3321,16 @@ Node
 	    A = action(RI,G,Sub=>false)
     	Text
 	    Similarly, setting @TT "Sub=>false"@
-	    causes @TO ringActors@ and @TO inverseRingActors@
+	    causes @TT "ringActors"@ and @TT "inverseRingActors"@
 	    to return the group elements acting on the ring as
 	    square matrices. With the default setting
 	    @TT "Sub=>true"@, the same elements are returned as
 	    one-row substitution matrices.
     	Example
 	    ringActors(A,Sub=>false)
-	    inverseRingActors(A,Sub=>false)
+	    --inverseRingActors(A,Sub=>false)
 	    ringActors(A)
-	    inverseRingActors(A)
+	    --inverseRingActors(A)
 
 
 Node
@@ -3755,3 +3730,32 @@ assert( c2 == d2)
 ///
 
 end
+Node
+    Key
+    	inverseRingActors
+    	(inverseRingActors,Action)
+    Headline
+    	get inverse of action on ring generators
+    Usage
+    	inverseRingActors(A)
+    Inputs
+    	A:Action
+    Outputs
+    	G:List
+	    of group elements
+    Description
+    	Text
+	    Returns a @TO List@ of group elements
+	    acting on the vector space spanned by the variables
+	    of the polynomial ring associated with the object
+	    acted upon.
+	    These are the inverses of the elements originally
+	    defined by the user when constructing the action.
+	    By default, these elements are
+	    expressed as one-row substitution matrices as those
+	    accepted by @TO substitute@. One may obtain these elements
+	    as square matrices by setting the optional input @TO Sub@
+	    to @TT "false"@.
+    SeeAlso
+    	action
+
