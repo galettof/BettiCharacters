@@ -711,7 +711,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	    )
 	-- if hom degree is to the left of previously computed
 	else (
-	    GB := gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	    GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	    A.cache#(symbol actors,i) =
 	    apply(inverseRingActors A,actors(A,i+1),
 		-- given a map of free modules C.dd_i : F <-- F',
