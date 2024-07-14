@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.3",
-     Date => "June 14, 2024",
+     Version => "2.4",
+     Date => "July 13, 2024",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -1259,7 +1259,10 @@ Node
 		    and $\\TeX$ printing for characters and character tables."),
 		(BOLD "2.3: ", "New option for the action of a semidirect
 		    product of a finite group acting on a torus.
-		    Improved caching and removed calls to deprecated functions.")
+		    Improved caching and removed calls to deprecated functions."),
+		(BOLD "2.4: ", "Introduces significant optizimations to the core
+		    algorithm for computing Betti characters. Removed the ",
+		    TT "inverseRingActors", " method since it is not used anymore.")
 		}@
     Subnodes
     	:Defining and computing actions
