@@ -582,7 +582,8 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
 	);
-    if not isField coefficientRing R then (
+    F := coefficientRing R;
+    if not isField F then (
 	error "action: expected coefficients in a field";
 	);
     if not all(length C,i -> isFreeModule C_(i+min(C))) then (
@@ -628,6 +629,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol ring) => R,
 	(symbol target) => C,
 	(symbol numActors) => #l,
+	(symbol degreesRing) => F degreesMonoid R,
 	(symbol ringActors) => l,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
