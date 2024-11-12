@@ -753,7 +753,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	m := map(DR^1,DR^n,0);
 	for j to r do (
 	    d := degree( ((target A)_i)_j );
-	    m += lift(matrix{parallelApply(a, g -> g_(j,j) )},F) * (DR_d);
+	    m += lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d);
 	    );
 	-- cache character
 	A.cache#(symbol character,i) = 	new Character from {
