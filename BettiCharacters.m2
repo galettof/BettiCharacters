@@ -735,25 +735,25 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
     -- if not cached, compute
     if not A.cache#?(symbol character,i) then (
 	F := coefficientRing ring A;
+	DR := A.degreesRing;
+	n := numActors A;
 	-- if complex is zero in hom degree i, return empty character, don't cache
 	if zero (target A)_i then (
 	    return new Character from {
 		cache => new CacheTable,
 		(symbol ring) => F,
-		(symbol degreeLength) => degreeLength ring A,
-		(symbol numActors) => numActors A,
+		(symbol degreesRing) => DR,
+		(symbol numActors) => n,
 		(symbol characters) => hashTable {},
 		};
 	    );
-	-- record position of degrees of i-th free module
-	-- based on their unique degree orbit rep
-	degs := partition(j -> A.degreeRepresentative degree ((target A)_i)_j,
-	    toList(0..rank((target A)_i)-1));
 	-- create raw character from actors
-	H := applyPairs(degs,
-	    (d,indx) -> ((i,d),
-		lift(matrix{apply(actors(A,i), g -> trace g_indx^indx)},F)
-		)
+	a := actors(A,i);
+	r := rank((target A)_i) - 1;
+	m := map(DR^1,DR^n,0);
+	h := for j to r do (
+	    d := degree( ((target A)_i)_j );
+	    m += lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d);
 	    );
 	-- cache character
 	A.cache#(symbol character,i) = 	new Character from {
@@ -761,7 +761,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	    (symbol ring) => F,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => H,
+	    (symbol characters) => hashTable(i,h),
 	    };
 	);
     -- return cached value
