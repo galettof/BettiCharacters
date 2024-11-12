@@ -743,6 +743,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 		cache => new CacheTable,
 		(symbol ring) => F,
 		(symbol degreesRing) => DR,
+		(symbol degreeRepresentative) => A.degreeRepresentative,
 		(symbol numActors) => n,
 		(symbol characters) => hashTable {},
 		};
@@ -750,18 +751,24 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	-- create raw character from actors
 	a := actors(A,i);
 	r := rank((target A)_i) - 1;
-	m := map(DR^1,DR^n,0);
+	-- a zero matrix over the character ring
+	raw := map(DR^1,DR^n,0);
+	-- for each basis element extract corresponding diagonal entry
+	-- put it in a row matrix and multiply by degree, then add
+	-- this will graded the raw graded character as a matrix
 	for j to r do (
 	    d := degree( ((target A)_i)_j );
-	    m += lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d);
+	    raw += lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d);
 	    );
 	-- cache character
 	A.cache#(symbol character,i) = 	new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => F,
+	    (symbol degreesRing) => DR,
+	    (symbol degreeRepresentative) => A.degreeRepresentative,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable {i=>m},
+	    (symbol characters) => hashTable {i=>raw},
 	    };
 	);
     -- return cached value
@@ -1115,9 +1122,28 @@ ZZ => X -> X.degreeLength
 
 -- printing for characters
 net Character := c -> (
-    bottom := apply(sort pairs c.characters,
+    -- prep the character for printing by separating degrees
+    DR := c.degreesRing;
+    F := coefficientRing DR;
+    -- go through homological degrees
+    -- collect multidegrees in the same orbit of the group action
+    -- and save a single character with the degree representative
+    h := new MutableHashTable;
+    for k in keys c.characters do (
+	raw := c.characters#k;
+	mons := flatten entries monomials raw;
+	while mons =!= {} do (
+	    m := first mons;
+	    d := c.degreeRepresentative first exponents m;
+	    orbit := select(mons, f -> c.degreeRepresentative first exponents f == d);
+	    C := lift(last coefficients(raw, Monomials=>orbit),F);
+	    h#(k,d) = matrix{toList (numRows C:1_F)} * C;
+	    mons = mons - set(orbit);
+	    );
+	);
+    bottom := apply(sort pairs h,
 	(k,v) -> {net k} | apply(flatten entries v,net));
-    stack("Character over "|(net c.ring)," ",
+    stack("Character over "|(net F)," ",
 	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
     )
 
