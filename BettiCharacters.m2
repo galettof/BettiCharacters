@@ -751,7 +751,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	a := actors(A,i);
 	r := rank((target A)_i) - 1;
 	m := map(DR^1,DR^n,0);
-	h := for j to r do (
+	for j to r do (
 	    d := degree( ((target A)_i)_j );
 	    m += lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d);
 	    );
@@ -761,7 +761,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	    (symbol ring) => F,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
-	    (symbol characters) => hashTable(i,h),
+	    (symbol characters) => hashTable {i=>m},
 	    };
 	);
     -- return cached value
