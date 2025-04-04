@@ -363,6 +363,8 @@ minus Character := Character => c -> (
 	(symbol ring) => c.ring,
 	(symbol degreeLength) => c.degreeLength,
 	(symbol numActors) => c.numActors,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol characters) => applyValues(c.characters,v->-v)
 	}    
     )
