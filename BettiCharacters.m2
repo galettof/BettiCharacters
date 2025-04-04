@@ -285,12 +285,14 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
 
 -- extract character by homological dimension (added after v2.1)
 Character _ ZZ := Character => (c,i) -> (
-    H := select(pairs c.characters, p -> first first p == i);
+    H := select(pairs c.characters, p -> first p == i);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => c.ring,
 	(symbol degreeLength) => c.degreeLength,
 	(symbol numActors) => c.numActors,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol characters) => hashTable H
 	}    
     )
@@ -300,7 +302,8 @@ Character _ List := Character => (c,l) -> (
     if any(l, i -> not instance(i,ZZ)) then (
 	error "Character_List: expected a list of integers";
 	);
-    directSum(apply(l, i -> c_i))
+    -- unique avoids adding pieces of the character multiple times
+    directSum(apply(unique l, i -> c_i))
     )
 
 -- extract characters by degree (added after v2.1)
