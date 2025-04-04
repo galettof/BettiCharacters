@@ -215,18 +215,20 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     )
 
 -- shift homological degree of characters
-Character Array := Character => (C,A) -> (
+Character Array := Character => (c,A) -> (
     if # A =!= 1 then error "Character Array: expected array of length 1";
     n := A#0;
     if not instance(n,ZZ) then error "Character Array: expected an integer";
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => C.ring,
-	(symbol degreeLength) => C.degreeLength,
-	(symbol numActors) => C.numActors,
+	(symbol ring) => c.ring,
+	(symbol degreeLength) => c.degreeLength,
+	(symbol numActors) => c.numActors,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	-- homological shift raw characters
-	(symbol characters) => applyKeys(C.characters,
-	    k -> (k#0 - n, k#1))
+	(symbol characters) => applyKeys(c.characters,
+	    k -> k - n)
 	}
     )
 
