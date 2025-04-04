@@ -160,6 +160,8 @@ Character.directSum = args -> (
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
+	(symbol degreesRing) => (args#0).degreesRing,
+	(symbol degreeRepresentative) => (args#0).degreeRepresentative,
 	-- add raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v)),
 	}
