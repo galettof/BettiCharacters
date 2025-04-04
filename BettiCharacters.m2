@@ -169,6 +169,7 @@ Character.directSum = args -> (
 
 -- tensor product of characters (auxiliary functions)
 -- function to add sequences (homological,internal) degrees
+-- OBSOLETE after switching to raw characters
 addDegrees = (d1,d2) -> apply(d1,d2,plus)
 
 -- function to multiply character matrices (Hadamard product)
@@ -196,12 +197,18 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     if (c2.numActors != cl)
     then error "tensor: expected characters all of the same length";
     -- raw character of tensor product (may contain zeros)
-    H := combine(c1.characters,c2.characters,addDegrees,multiplyCharacters,plus);
+    -- homological degrees should be added, hence the first plus
+    -- raw characters should be Hadamard multiplied
+    -- if different homological degrees add up to the same value,
+    -- the corresponding characters should be added, hence the last plus
+    H := combine(c1.characters,c2.characters,plus,multiplyCharacters,plus);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
+	(symbol degreesRing) => c1.degreesRing,
+	(symbol degreeRepresentative) => c1.degreeRepresentative,
 	-- multiply raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v))
 	}
