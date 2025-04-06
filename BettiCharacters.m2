@@ -769,14 +769,13 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	-- create raw character from actors
 	a := actors(A,i);
 	r := rank((target A)_i) - 1;
-	-- a zero matrix over the character ring
-	raw := map(DR^1,DR^n,0);
 	-- for each basis element extract corresponding diagonal entry
 	-- put it in a row matrix and multiply by degree, then add
-	-- this will graded the raw graded character as a matrix
-	for j to r do (
-	    d := degree( ((target A)_i)_j );
-	    raw += lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d);
+	-- this will give the graded raw character as a matrix
+	raw := sum parallelApply(toList(0..r), j -> (
+		d := degree( ((target A)_i)_j );
+		lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d)
+		)
 	    );
 	-- cache character
 	A.cache#(symbol character,i) = 	new Character from {
