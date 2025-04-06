@@ -1139,29 +1139,32 @@ ZZ => X -> X.degreeLength
 
 -- printing for characters
 net Character := c -> (
-    -- prep the character for printing by separating degrees
-    DR := c.degreesRing;
-    F := coefficientRing DR;
-    -- go through homological degrees
-    -- collect multidegrees in the same orbit of the group action
-    -- and save a single character with the degree representative
-    h := new MutableHashTable;
-    for k in keys c.characters do (
-	raw := c.characters#k;
-	mons := flatten entries monomials raw;
-	while mons =!= {} do (
-	    m := first mons;
-	    d := c.degreeRepresentative first exponents m;
-	    orbit := select(mons, f -> c.degreeRepresentative first exponents f == d);
-	    C := lift(last coefficients(raw, Monomials=>orbit),F);
-	    h#(k,d) = matrix{toList (numRows C:1_F)} * C;
-	    mons = mons - set(orbit);
+    if not c.cache.?net then (
+	-- prep the character for printing by separating degrees
+	DR := c.degreesRing;
+	F := coefficientRing DR;
+	-- go through homological degrees
+	-- collect multidegrees in the same orbit of the group action
+	-- and save a single character with the degree representative
+	h := new MutableHashTable;
+	for k in keys c.characters do (
+	    raw := c.characters#k;
+	    mons := flatten entries monomials raw;
+	    while mons =!= {} do (
+		m := first mons;
+		d := c.degreeRepresentative first exponents m;
+		orbit := select(mons, f -> c.degreeRepresentative first exponents f == d);
+		C := lift(last coefficients(raw, Monomials=>orbit),F);
+		h#(k,d) = matrix{toList (numRows C:1_F)} * C;
+		mons = mons - set(orbit);
+		);
 	    );
+	bottom := apply(sort pairs h,
+	    (k,v) -> {net k} | apply(flatten entries v,net));
+	c.cache.net = stack("Character over "|(net F)," ",
+	    netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2));
 	);
-    bottom := apply(sort pairs h,
-	(k,v) -> {net k} | apply(flatten entries v,net));
-    stack("Character over "|(net F)," ",
-	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
+    c.cache.net
     )
 
 -- tex string for characters
