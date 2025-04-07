@@ -160,6 +160,7 @@ Character.directSum = args -> (
 	(symbol ring) => R,
 	(symbol degreeLength) => dl,
 	(symbol numActors) => cl,
+	(symbol degreeOrbit) => (args#0).degreeOrbit,
 	(symbol degreesRing) => (args#0).degreesRing,
 	(symbol degreeRepresentative) => (args#0).degreeRepresentative,
 	-- add raw characters
@@ -779,6 +780,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 		cache => new CacheTable,
 		(symbol ring) => F,
 		(symbol degreesRing) => DR,
+		(symbol degreeOrbit) => A.degreeOrbit,
 		(symbol degreeRepresentative) => A.degreeRepresentative,
 		(symbol numActors) => n,
 		(symbol characters) => hashTable {},
@@ -800,6 +802,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	    cache => new CacheTable,
 	    (symbol ring) => F,
 	    (symbol degreesRing) => DR,
+	    (symbol degreeOrbit) => A.degreeOrbit,
 	    (symbol degreeRepresentative) => A.degreeRepresentative,
 	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
