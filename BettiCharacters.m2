@@ -363,7 +363,7 @@ Character ^ List := Character => (c,degs) -> (
 ZZ * Character :=
 QQ * Character :=
 RingElement * Character := Character => (r,c) -> (
-    try a := promote(r,ring c) else (
+    try a := promote(r,c.degreesRing) else (
 	error "RingElement*Character: could not promote scalar to field of character";
 	);
     H := applyPairs(c.characters,(k,v)->(
