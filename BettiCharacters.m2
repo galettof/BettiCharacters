@@ -251,6 +251,15 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     -- this sends a degree T^d to its opposite T^(-d)
     DR := c.degreesRing;
     inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
+    -- create hash table for raw dual
+    H := applyPairs(c.characters,
+	(k,v) -> (
+	    (M,C) := coefficients v;
+	    M = inv M;
+	    C = promote(phi(lift(C,F)),DR);
+	    (-k, M*C)
+	    )
+	);
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => F,
@@ -258,14 +267,7 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
 	(symbol degreesRing) => c.degreesRing,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
-	(symbol characters) => applyPairs(c.characters,
-	    (k,v) -> (
-		(M,C) := coefficients v;
-		M = inv M;
-		C = promote(phi(lift(C,F)),DR);
-		(-k, M*C)
-		)
-	    )
+	(symbol characters) => H
 	}
     )
 
