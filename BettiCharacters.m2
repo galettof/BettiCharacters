@@ -333,13 +333,26 @@ Character ^ List := Character => (c,degs) -> (
 	);
     -- check all degrees are compatible
     if all(degs,d->all(d,i->instance(i,ZZ)) and #d==c.degreeLength) then (
-	H := select(pairs c.characters, p -> member(last first p,degs));
+	-- find all degrees in the orbit of degs and remove duplicates
+	exps := unique flatten apply(degs, d -> c.degreeOrbit d);
+	-- get corresponding monomials in character ring
+	DR := c.degreesRing;
+	mons := apply(exps, e -> DR_e);
+	-- extract those monomials from character
+	H := applyValues(c.characters, v -> (
+		(M,C) := coefficients(v,Monomials=>mons);
+		M*C
+		)
+	    );
     	return new Character from {
 	    cache => new CacheTable,
 	    (symbol ring) => c.ring,
 	    (symbol degreeLength) => c.degreeLength,
+	    (symbol degreesRing) => c.degreesRing,
+	    (symbol degreeOrbit) => c.degreeOrbit,
+	    (symbol degreeRepresentative) => c.degreeRepresentative,
 	    (symbol numActors) => c.numActors,
-	    (symbol characters) => hashTable H
+	    (symbol characters) => H
 	    }    
 	) else (
 	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(c.degreeLength));
