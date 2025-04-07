@@ -272,13 +272,22 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     if set perm =!= set(1..n) then (
 	error ("dual: expected a permutation of {1,..," | toString(n) | "}");
 	);
+    -- ring map that inverts variables in degree ring
+    -- this sends a degree T^d to its opposite T^(-d)
+    DR := c.degreesRing;
+    inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => c.ring,
 	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => n,
+	-- dual lives in opposite homological dimension
+	-- for internal degrees apply the inversion map
+	-- permute columns for values of dual character
 	(symbol characters) => applyPairs(c.characters,
-	    (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) )
+	    (k,v) -> (-k, (inv v)_(apply(perm, i -> i-1)))
 	    )
 	}
     )
