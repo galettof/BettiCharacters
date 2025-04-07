@@ -247,17 +247,24 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
 	error "dual: expected an order 2 automorphism of the base field";
 	);
-    -- error if characters cannot be lifted to coefficient field
-    H := try applyValues(c.characters, v -> lift(v,F)) else (
-	error "dual: could not lift characters to base field";
-	);
+    -- ring map that inverts variables in degree ring
+    -- this sends a degree T^d to its opposite T^(-d)
+    DR := c.degreesRing;
+    inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
     new Character from {
 	cache => new CacheTable,
 	(symbol ring) => F,
 	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
-	(symbol characters) => applyPairs(H,
-	    (k,v) -> ( apply(k,minus), phi v )
+	(symbol characters) => applyPairs(c.characters,
+	    (k,v) -> (
+		(M,C) := coefficients v;
+		M = inv M;
+		C = promote(phi(lift(C,F)),DR);
+		(-k, M*C)
+		)
 	    )
 	}
     )
