@@ -215,6 +215,43 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
 	}
     )
 
+-- tensor power (new in v3.0)
+-- M2 uses BinaryPowerMethod in M2/Macaulay2/d/actors.d
+-- to construct tensor powers of rings, modules, etc.
+-- however, this requires a constructor for the inverse/dual
+-- which in the case of characters requires additional user input
+-- we define a recursive tensor power only for positive exponents
+Character ^** ZZ := Character => (c,n) -> (
+    -- return error for negative exponents
+    if n < 0 then (
+	error "Character ^** ZZ: not implemented for negative exponents; use dual";
+	)
+    -- for n=0, return trivial character in hom degree zero
+    else if n == 0 then (
+	H := hashTable {
+	    (0,matrix{toList(c.numActors:1_(c.degreesRing))})
+	    };
+	new Character from {
+	    cache => new CacheTable,
+	    (symbol ring) => c.ring,
+	    (symbol degreeLength) => c.degreeLength,
+	    (symbol degreesRing) => c.degreesRing,
+	    (symbol degreeOrbit) => c.degreeOrbit,
+	    (symbol degreeRepresentative) => c.degreeRepresentative,
+	    (symbol numActors) => c.numActors,
+	    (symbol characters) => H
+	    }
+	)
+    -- for n=1, return original character
+    else if n == 1 then (
+	c
+	)
+    -- for n>=2, then reduce to lower power
+    else (
+	tensor(c, c ^** (n-1) )
+	)
+    )
+
 -- shift homological degree of characters
 Character Array := Character => (c,A) -> (
     if # A =!= 1 then error "Character Array: expected array of length 1";
