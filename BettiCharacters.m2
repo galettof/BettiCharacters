@@ -141,14 +141,14 @@ plus(Character,Character) := Character => directSum
 Character ++ Character := Character => directSum
 directSum Character := c -> Character.directSum (1 : c)
 Character.directSum = args -> (
-    -- check ring is the same for all summands
-    R := (args#0).ring;
-    if any(args, c -> c.ring =!= R)
-    then error "directSum: expected characters all over the same field";
+    -- check degreesRing is the same for all summands
+    DR := (args#0).degreesRing;
+    if any(args, c -> c.degreesRing =!= DR)
+    then error "directSum: expected characters over the same ring";
     -- check degree length is the same for all summands
-    dl := (args#0).degreeLength;
-    if any(args, c -> c.degreeLength != dl)
-    then error "directSum: expected characters all with the same degree length";
+    -- dl := (args#0).degreeLength;
+    -- if any(args, c -> c.degreeLength != dl)
+    -- then error "directSum: expected characters all with the same degree length";
     -- check character length is the same for all summands
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
@@ -157,12 +157,10 @@ Character.directSum = args -> (
     H := fold( (c1,c2) -> merge(c1,c2,plus), apply(args, c -> c.characters) );
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
-	(symbol degreeLength) => dl,
-	(symbol numActors) => cl,
-	(symbol degreeOrbit) => (args#0).degreeOrbit,
 	(symbol degreesRing) => (args#0).degreesRing,
+	(symbol degreeOrbit) => (args#0).degreeOrbit,
 	(symbol degreeRepresentative) => (args#0).degreeRepresentative,
+	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v)),
 	}
@@ -828,7 +826,6 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	if zero (target A)_i then (
 	    return new Character from {
 		cache => new CacheTable,
-		(symbol ring) => F,
 		(symbol degreesRing) => DR,
 		(symbol degreeOrbit) => A.degreeOrbit,
 		(symbol degreeRepresentative) => A.degreeRepresentative,
@@ -850,11 +847,9 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 	-- cache character
 	A.cache#(symbol character,i) = 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => F,
 	    (symbol degreesRing) => DR,
 	    (symbol degreeOrbit) => A.degreeOrbit,
 	    (symbol degreeRepresentative) => A.degreeRepresentative,
-	    (symbol degreeLength) => degreeLength ring A,
 	    (symbol numActors) => numActors A,
 	    (symbol characters) => hashTable {i=>raw},
 	    };
