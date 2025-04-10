@@ -145,10 +145,6 @@ Character.directSum = args -> (
     DR := (args#0).degreesRing;
     if any(args, c -> c.degreesRing =!= DR)
     then error "directSum: expected characters over the same ring";
-    -- check degree length is the same for all summands
-    -- dl := (args#0).degreeLength;
-    -- if any(args, c -> c.degreeLength != dl)
-    -- then error "directSum: expected characters all with the same degree length";
     -- check character length is the same for all summands
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
@@ -166,11 +162,6 @@ Character.directSum = args -> (
 	}
     )
 
--- tensor product of characters (auxiliary functions)
--- function to add sequences (homological,internal) degrees
--- OBSOLETE after switching to raw characters
-addDegrees = (d1,d2) -> apply(d1,d2,plus)
-
 -- function to multiply character matrices (Hadamard product)
 multiplyCharacters = (c1,c2) -> (
     e1 := flatten entries c1;
@@ -183,14 +174,10 @@ multiplyCharacters = (c1,c2) -> (
 -- modeled after directSum, but only works for two characters
 Character ** Character := Character => tensor
 tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
-    -- check ring is the same for all factors
-    R := c1.ring;
-    if (c2.ring =!= R)
-    then error "tensor: expected characters all over the same field";
-    -- check degree length is the same for all summands
-    dl := c1.degreeLength;
-    if (c2.degreeLength != dl)
-    then error "tensor: expected characters all with the same degree length";
+    -- check degreesRing is the same for all factors
+    R := c1.degreesRing;
+    if (c2.degreesRing =!= R)
+    then error "tensor: expected characters all over the same ring";
     -- check character length is the same for all summands
     cl := c1.numActors;
     if (c2.numActors != cl)
@@ -203,11 +190,10 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     H := combine(c1.characters,c2.characters,plus,multiplyCharacters,plus);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
-	(symbol degreeLength) => dl,
-	(symbol numActors) => cl,
 	(symbol degreesRing) => c1.degreesRing,
+	(symbol degreeOrbit) => c1.degreeOrbit,
 	(symbol degreeRepresentative) => c1.degreeRepresentative,
+	(symbol numActors) => cl,
 	-- multiply raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v))
 	}
@@ -231,8 +217,6 @@ Character ^** ZZ := Character => (c,n) -> (
 	    };
 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => c.ring,
-	    (symbol degreeLength) => c.degreeLength,
 	    (symbol degreesRing) => c.degreesRing,
 	    (symbol degreeOrbit) => c.degreeOrbit,
 	    (symbol degreeRepresentative) => c.degreeRepresentative,
