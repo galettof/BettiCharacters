@@ -172,7 +172,7 @@ character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
 	error ("character: expected matrices to have the same number of columns");
 	);
     -- move character values into given ring
-    H := try applyValues(H, v -> promote(v,F)) else (
+    H = try applyValues(H, v -> promote(v,F)) else (
 	error "character: could not promote characters to field of coefficients";
 	);
     -- partition keys by hom degree, then extract internal degree
