@@ -75,6 +75,7 @@ Character == Character := (A,B) -> A === B
 -- method for returning characters of various action types
 character = method(TypicalValue=>Character,Options=>{Semidirect=>(d -> {d},identity)})
 
+-*
 -- construct a finite dimensional character by hand
 -- this constructor is new after v2.1
 -- it is intended to make characters independent of a
@@ -131,7 +132,7 @@ character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
 character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
     character(coefficientRing R,degreeLength R,cl,H)
     )
-
+*-
 
 -- construct a finite dimensional character by hand
 -- new constructor with v3.0
