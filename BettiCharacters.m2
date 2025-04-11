@@ -416,6 +416,12 @@ minus Character := Character => c -> (
 Character - Character :=
 difference(Character,Character) := Character =>
 (c1,c2) -> directSum(c1,-c2)
+
+
+
+----------------------------------------------------------------------
+-- Character tables and decompositions -------------------------------
+----------------------------------------------------------------------
     
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
