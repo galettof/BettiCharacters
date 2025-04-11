@@ -241,11 +241,10 @@ Character Array := Character => (c,A) -> (
     if not instance(n,ZZ) then error "Character Array: expected an integer";
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
-	(symbol numActors) => c.numActors,
 	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
+	(symbol numActors) => c.numActors,
 	-- homological shift raw characters
 	(symbol characters) => applyKeys(c.characters,
 	    k -> k - n)
