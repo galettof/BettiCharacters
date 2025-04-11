@@ -361,8 +361,6 @@ Character ^ List := Character => (c,degs) -> (
 	    );
     	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => c.ring,
-	    (symbol degreeLength) => c.degreeLength,
 	    (symbol degreesRing) => c.degreesRing,
 	    (symbol degreeOrbit) => c.degreeOrbit,
 	    (symbol degreeRepresentative) => c.degreeRepresentative,
@@ -388,11 +386,10 @@ RingElement * Character := Character => (r,c) -> (
 	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
-	(symbol numActors) => c.numActors,
 	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
+	(symbol numActors) => c.numActors,
 	(symbol characters) => H
 	}    
     )
@@ -407,11 +404,10 @@ Character * RingElement := Character => (c,r) -> r*c
 minus Character := Character => c -> (
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
-	(symbol numActors) => c.numActors,
 	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
+	(symbol numActors) => c.numActors,
 	(symbol characters) => applyValues(c.characters,v->-v)
 	}    
     )
