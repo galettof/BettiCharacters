@@ -281,9 +281,8 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
 	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => F,
-	(symbol degreeLength) => c.degreeLength,
 	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => H
@@ -306,9 +305,8 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
 	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => n,
 	-- dual lives in opposite homological dimension
