@@ -73,7 +73,7 @@ Character == Character := (A,B) -> A === B
 ----------------------------------------------------------------------
 
 -- method for returning characters of various action types
-character = method(TypicalValue=>Character)
+character = method(TypicalValue=>Character,Options=>{Semidirect=>(d -> {d},identity)})
 
 -- construct a finite dimensional character by hand
 -- this constructor is new after v2.1
@@ -130,6 +130,64 @@ character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
 -- (default before v2.1, kept for compatibility)
 character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
     character(coefficientRing R,degreeLength R,cl,H)
+    )
+
+
+-- construct a finite dimensional character by hand
+-- new constructor with v3.0
+-- INPUT:
+-- 1) polynomial ring over a field (for degree ring)
+-- 2) hash table for raw character: (homdeg,deg) => character matrix
+character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
+    -- check polynomial ring is over a field
+    F := coefficientRing R;
+    if not isField F then (
+	error "character: expected polynomial ring over a field";
+	);
+    -- check keys are in the right format
+    k := keys H;
+    if any(k, i -> class i =!= Sequence or #i != 2 or
+	class i#0 =!= ZZ or class i#1 =!= List) then (
+	error "character: expected keys of the form (ZZ,List)";
+	);
+    -- build character ring and get degree length
+    DR := F ** (degreesRing R);
+    dl := degreeLength R;
+    -- check degree vectors are allowed
+    degs := apply(k,last);
+    if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
+	error ("character: expected integer degree vectors of length " | toString(dl));
+	);
+    -- check character vectors are allowed
+    v := values H;
+    if any(v, i -> class i =!= Matrix) then (
+	error "character: expected characters to be matrices";
+	);
+    if any(v, i -> numRows i != 1) then (
+	error ("character: expected characters to be one-row matrices");
+	);
+    cl := numColumns first v;
+    if any(v, i -> numColumns i != cl) then (
+	error ("character: expected matrices to have the same number of columns");
+	);
+    -- move character values into given ring
+    H := try applyValues(H, v -> promote(v,F)) else (
+	error "character: could not promote characters to field of coefficients";
+	);
+    -- partition keys by hom degree, then extract internal degree
+    -- so {(0,{0}),(0,{1})} goes to 0=>{(0,{0}),(0,{1})}
+    pk := partition(i -> i#0,k);
+    -- for each hom degree, multiply each char matrix with degree monomial
+    -- then add them all
+    H' := applyValues(pk, l -> sum apply(l, d -> (H#s) * DR_(d#1)) );
+    new Character from {
+	cache => new CacheTable,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => first op.Semidirect,
+	(symbol degreeRepresentative) => last op.Semidirect,
+	(symbol numActors) => cl,
+	(symbol characters) => H',
+	}
     )
 
 
