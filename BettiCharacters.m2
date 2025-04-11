@@ -323,11 +323,10 @@ Character _ ZZ := Character => (c,i) -> (
     H := select(pairs c.characters, p -> first p == i);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
-	(symbol numActors) => c.numActors,
 	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
 	(symbol degreeRepresentative) => c.degreeRepresentative,
+	(symbol numActors) => c.numActors,
 	(symbol characters) => hashTable H
 	}    
     )
