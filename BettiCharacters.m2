@@ -179,7 +179,7 @@ character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
     pk := partition(i -> i#0,k);
     -- for each hom degree, multiply each char matrix with degree monomial
     -- then add them all
-    H' := applyValues(pk, l -> sum apply(l, d -> (H#s) * DR_(d#1)) );
+    H' := applyValues(pk, l -> sum apply(l, d -> (H#d) * DR_(d#1)) );
     new Character from {
 	cache => new CacheTable,
 	(symbol degreesRing) => DR,
