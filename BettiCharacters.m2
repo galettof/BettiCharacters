@@ -729,7 +729,7 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
     if op.Sub then (
 	--if ring actors are substitutions, they must be one-row matrices
 	if not all(l,g->numRows(g)==1) then (
-	    error "action: expected ring actor matrix to be a one-row substitution matrix";
+	    error "action: expected ring actors to be a one-row matrices";
 	    );
 	) else (
 	--if ring actors are matrices, they must be square
