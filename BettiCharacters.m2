@@ -725,7 +725,9 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 	error "action: ring actor matrix has wrong number of columns";
 	);
     --move ring actors to ring for uniformity
-    l = apply(l, g -> promote(g,R));
+    l = try apply(l, g -> promote(g,R)) else (
+	error "action: could not promote actors to ring of complex";
+	);
     if op.Sub then (
 	--if ring actors are substitutions, they must be one-row matrices
 	if not all(l,g->numRows(g)==1) then (
