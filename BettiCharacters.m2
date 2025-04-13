@@ -694,7 +694,8 @@ CharacterDecomposition * CharacterTable := Character => character
 -- as one-row matrices of substitutions, Sub=>false means
 -- ring actors are passed as matrices
 -- Semidirect option (added after v2.2)
-action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
+action = method(TypicalValue=>Action,
+    Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
 
 -- constructor for action on resolutions
 -- INPUT:
@@ -702,7 +703,7 @@ action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},i
 -- 2) a list of actors on the ring variables
 -- 3) a list of actors on the i-th module of the resolution
 -- 4) homological index i
-action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
+action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
     --check C is a homogeneous min free res over a poly ring over a field
     R := ring C;
     if not isPolynomialRing R then (
