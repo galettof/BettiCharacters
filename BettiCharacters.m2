@@ -720,7 +720,7 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 	error "action: complex is not homogeneous";
 	);
     --check the matrix of the action on the variables has right size
-    n := dim R;
+    n := numgens R;
     if not all(l,g->numColumns(g)==n) then (
 	error "action: ring actor matrix has wrong number of columns";
 	);
