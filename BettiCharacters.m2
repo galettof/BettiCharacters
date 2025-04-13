@@ -758,7 +758,7 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 	(symbol ring) => R,
 	(symbol target) => C,
 	(symbol numActors) => #l,
-	(symbol degreesRing) => F degreesMonoid R,
+	(symbol degreesRing) => F ** (degreesRing R),
 	(symbol ringActors) => l,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
@@ -860,7 +860,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 
 -- return the character of one free module of a resolution
 -- in a given homological degree
-character(ActionOnComplex,ZZ) := Character => (A,i) -> (
+character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
     -- if not cached, compute
     if not A.cache#?(symbol character,i) then (
 	F := coefficientRing ring A;
@@ -904,7 +904,7 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 
 -- return characters of all free modules in a resolution
 -- by repeatedly using previous function
-character ActionOnComplex := Character => A -> (
+character ActionOnComplex := Character => op -> A -> (
     C := target A;
     directSum for i from min(C) to min(C)+length(C) list character(A,i)
     )
