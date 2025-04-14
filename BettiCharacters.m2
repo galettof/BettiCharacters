@@ -1064,13 +1064,15 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     -- if not cached, compute
     if not A.cache#?(symbol character,degRep) then (
 	F := coefficientRing ring A;
+	DR := A.degreesRing;
 	-- zero action, return empty character and don't cache
 	acts := actors(A,degRep);
 	if all(acts,zero) then (
 	    return new Character from {
 		cache => new CacheTable,
-		(symbol ring) => F,
-		(symbol degreeLength) => degreeLength ring A,
+		(symbol degreesRing) => DR,
+		(symbol degreeOrbit) => A.degreeOrbit,
+		(symbol degreeRepresentative) => A.degreeRepresentative,
 		(symbol numActors) => numActors A,
 		(symbol characters) => hashTable {},
 		};
@@ -1078,10 +1080,11 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
 	-- otherwise make character of A in degree d
 	A.cache#(symbol character,degRep) = new Character from {
 		cache => new CacheTable,
-		(symbol ring) => F,
-		(symbol degreeLength) => degreeLength ring A,
+		(symbol degreesRing) => DR,
+		(symbol degreeOrbit) => A.degreeOrbit,
+		(symbol degreeRepresentative) => A.degreeRepresentative,
 		(symbol numActors) => numActors A,
-		(symbol characters) => hashTable {(0,degRep) => lift(matrix{apply(acts, trace)},F)},
+		(symbol characters) => hashTable {0 => lift(matrix{apply(acts, trace)},F) * (DR_degRep)},
 		};
 	);
     -- return cached value
