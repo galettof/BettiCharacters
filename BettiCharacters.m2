@@ -704,7 +704,7 @@ action = method(TypicalValue=>Action,
 -- 3) a list of actors on the i-th module of the resolution
 -- 4) homological index i
 action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
-    --check C is a homogeneous min free res over a poly ring over a field
+    --check C is a homogeneous complex over a poly ring over a field
     R := ring C;
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
@@ -921,7 +921,7 @@ character ActionOnComplex := Character => op -> A -> (
 action(PolynomialRing,List,List) :=
 action(QuotientRing,List,List) :=
 action(Ideal,List,List) :=
-action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
+action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
     -- check M is graded over a poly ring over a field
     -- the way to get the ring depends on the class of M
     if instance(M,Ring) then (
