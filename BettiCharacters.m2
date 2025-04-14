@@ -152,7 +152,7 @@ character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
 	error "character: expected keys of the form (ZZ,List)";
 	);
     -- build character ring and get degree length
-    DR := F ** (degreesRing R);
+    DR := F degreesMonoid R;
     dl := degreeLength R;
     -- check degree vectors are allowed
     degs := apply(k,last);
@@ -758,8 +758,8 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 	(symbol ring) => R,
 	(symbol target) => C,
 	(symbol numActors) => #l,
-	(symbol degreesRing) => F ** (degreesRing R),
 	(symbol ringActors) => l,
+	(symbol degreesRing) => F degreesMonoid R,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
