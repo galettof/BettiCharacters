@@ -705,6 +705,7 @@ action = method(TypicalValue=>Action,
 -- 4) homological index i
 action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
     --check C is a homogeneous complex over a poly ring over a field
+    --NOTE: minimality is necessary, but assumed
     R := ring C;
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
