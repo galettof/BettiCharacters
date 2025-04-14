@@ -1099,8 +1099,8 @@ character(ActionOnGradedModule,ZZ) := Character => op -> (A,d) -> (
 
 -- return character of components in a range of degrees
 character(ActionOnGradedModule,ZZ,ZZ) := Character => op -> (A,lo,hi) -> (
-    if not all(gens ring A, v->(degree v)=={1}) then (
-	error "character: expected a ZZ-graded polynomial ring";
+    if degreeLength A.ring != 1 then (
+	error "character: expected module over a ZZ-graded polynomial ring";
     	);
     directSum for d from lo to hi list character(A,d)
     )
