@@ -1058,7 +1058,7 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
-character(ActionOnGradedModule,List) := Character => (A,d) -> (
+character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
     -- ensure function is computed with rep of degree orbit
     degRep := A.degreeRepresentative d;
     -- if not cached, compute
@@ -1092,12 +1092,12 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     )
 
 -- return character of component of given degree
-character(ActionOnGradedModule,ZZ) := Character => (A,d) -> (
+character(ActionOnGradedModule,ZZ) := Character => op -> (A,d) -> (
     character(A,{d})
     )
 
 -- return character of components in a range of degrees
-character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
+character(ActionOnGradedModule,ZZ,ZZ) := Character => op -> (A,lo,hi) -> (
     if not all(gens ring A, v->(degree v)=={1}) then (
 	error "character: expected a ZZ-graded polynomial ring";
     	);
