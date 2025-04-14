@@ -933,23 +933,26 @@ action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
     if not isPolynomialRing R then (
 	error "action: expected a module/ideal/quotient over a polynomial ring";
 	);
-    if not isField coefficientRing R then (
+    F := coefficientRing R;
+    if not isField F then (
 	error "action: expected coefficients in a field";
 	);
     if not isHomogeneous M then (
 	error "action: module/ideal/quotient is not graded";
 	);
     --check matrix of action on variables has right size
-    n := dim R;
+    n := numgens R;
     if not all(l,g->numColumns(g)==n) then (
 	error "action: ring actor matrix has wrong number of columns";
 	);
     --move ring actors to ring for uniformity
-    l = apply(l, g -> promote(g,R));
+    l = try apply(l, g -> promote(g,R)) else (
+	error "action: could not promote actors to ring of module";
+	);
     if op.Sub then (
 	--if ring actors are substitutions, they must be one-row matrices
     	if not all(l,g->numRows(g)==1) then (
-	    error "action: expected ring actor matrix to be a one-row substitution matrix";
+	    error "action: expected ring actors to be a one-row matrices";
 	    );
 	) else (
 	--if ring actors are matrices, they must be square
@@ -965,9 +968,9 @@ action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
 	);
     --check size of module actors matches rank of ambient module
     if instance(M,Module) then (
-    	F := ambient M;
-	) else ( F = R^1; );
-    r := rank F;
+    	A := ambient M;
+	) else ( A = R^1; );
+    r := rank A;
     if not all(l0,g->numColumns(g)==r and numRows(g)==r) then (
 	error "action: module actor matrix has wrong number of rows or columns";
 	);
@@ -984,10 +987,10 @@ action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol target) => M,
+	(symbol module) => M',
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	(symbol actors) => apply(l0,g->map(F,F,g)),
-	(symbol module) => M',
+	(symbol actors) => apply(l0,g->map(A,A,g)),
 	(symbol relations) => gb image relations M',
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
