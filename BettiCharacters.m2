@@ -992,6 +992,7 @@ action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
 	(symbol ringActors) => l,
 	(symbol actors) => apply(l0,g->map(A,A,g)),
 	(symbol relations) => gb image relations M',
+	(symbol degreesRing) => F degreesMonoid R,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
