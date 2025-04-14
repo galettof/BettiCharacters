@@ -806,7 +806,7 @@ ringActors(Action) := List => op -> A -> (
 actors = method(TypicalValue=>List)
 
 -- returns actors on resolution in a given homological degree
--- if homological degree is not the one passed by user,
+-- if homological degree is not the one passed by user upon construction,
 -- the actors are computed and stored
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     -- if not cached, compute
