@@ -643,14 +643,15 @@ decomposeCharacter = method(TypicalValue=>CharacterDecomposition);
 decomposeCharacter(Character,CharacterTable) :=
 CharacterDecomposition => (C,T) -> (
     -- check character and table are over same ring
-    R := C.ring;
-    if T.ring =!= R then (
+    F := coefficientRing C.degreesRing;
+    if T.ring =!= F then (
 	error "decomposeCharacter: expected character and table over the same field";
 	);
     -- check number of actors is the same
     if C.numActors != T.numActors then (
 	error "decomposeCharacter: character length does not match table";
 	);
+    -- order of the group = sum of conjugacy class sizes
     ord := sum T.size;
     -- create decomposition hash table
     D := applyValues(C.characters, char -> 1/ord*char*T.matrix);
@@ -659,10 +660,9 @@ CharacterDecomposition => (C,T) -> (
     p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     new CharacterDecomposition from {
 	(symbol numActors) => C.numActors,
-	(symbol ring) => R,
-	(symbol degreeLength) => C.degreeLength,
-	(symbol Labels) => T.Labels,
+	(symbol degreesRing) => C.degreesRing,
 	(symbol decompose) => D,
+	(symbol Labels) => T.Labels,
 	(symbol positions) => p
 	}
     )
