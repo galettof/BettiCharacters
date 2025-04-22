@@ -1332,50 +1332,58 @@ texMath CharacterTable := T -> (
     )
 
 -- printing character decompositions
-net CharacterDecomposition := D -> (
-    if not D.cache.?net then (
-	-- prep decomposition for printing by separating degrees
-	DR := D.degreesRing;
-	F := coefficientRing DR;
-	-- go through homological degrees
-	-- collect multidegrees in the same orbit of the group action
-	-- and save a single character with the degree representative
-	h := new MutableHashTable;
-	for k in keys D.decompose do (
-	    raw := D.decompose#k;
-	    mons := flatten entries monomials raw;
-	    while mons =!= {} do (
-		m := first mons;
-		d := D.degreeRepresentative first exponents m;
-		orbit := select(mons, f -> D.degreeRepresentative first exponents f == d);
-		C := lift(last coefficients(raw, Monomials=>orbit),F);
-		h#(k,d) = matrix{toList (numRows C:1_F)} * C;
-		mons = mons - set(orbit);
-		);
+-- the next function preps a character for printing by caching
+-- a bigraded hash table of its data as before v3.0
+prepDecomposition := D -> (
+    DR := D.degreesRing;
+    F := coefficientRing DR;
+    -- go through homological degrees
+    -- collect multidegrees in the same orbit of the group action
+    -- and save a single character with the degree representative
+    h := new MutableHashTable;
+    for k in keys D.decompose do (
+	raw := D.decompose#k;
+	mons := flatten entries monomials raw;
+	while mons =!= {} do (
+	    m := first mons;
+	    d := D.degreeRepresentative first exponents m;
+	    orbit := select(mons, f -> D.degreeRepresentative first exponents f == d);
+	    C := lift(last coefficients(raw, Monomials=>orbit),F);
+	    h#(k,d) = matrix{toList (numRows C:1_F)} * C;
+	    mons = mons - set(orbit);
 	    );
-	-- find non zero columns of table for printing
-	M := matrix apply(values D.decompose, m -> flatten entries m);
-	p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
-	-- top row of decomposition table
-	a := {{""} | (first D.Labels)_p };
-	-- body of decomposition table
-	b := apply(sort pairs h,(k,v) -> {k} | (flatten entries v)_p );
-	D.cache.net = stack("Decomposition table"," ",
-	    netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
-	    )
 	);
-    D.cache.net
+    D.cache.print = new HashTable from h;
+    )
+
+-- create net for pretty printing of character decomposition
+net CharacterDecomposition := D -> (
+    if not D.cache.?print then prepDecomposition D;
+    -- find non zero columns of table for printing
+    M := matrix apply(values D.decompose, m -> flatten entries m);
+    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
+    -- top row of decomposition table
+    a := {{""} | (first D.Labels)_p };
+    -- body of decomposition table
+    b := apply(sort pairs D.cache.print,
+	(k,v) -> {k} | (flatten entries v)_p );
+    stack("Decomposition table"," ",
+	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
+	)
     )
 
 -- tex string for character decompositions
 texMath CharacterDecomposition := D -> (
-    p := D.positions;
+    if not D.cache.?print then prepDecomposition D;
+    -- find non zero columns of table for printing
+    M := matrix apply(values D.decompose, m -> flatten entries m);
+    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     -- make table headers, one column per nonzero irrrep
     s := concatenate("\\begin{array}{c|",#p:"r","}\n");
     -- top row with labels of characters appearing in decomposition
     s = s | concatenate("&",between("&",(last D.Labels)_p),"\\\\ \\hline\n");
     -- decomposition table entries
-    rows := apply(sort pairs D.decompose,
+    rows := apply(sort pairs D.cache.print,
 	(k,v) -> concatenate(texMath k,"&",
 	    between("&",apply((flatten entries v)_p,texMath))
 	    )
