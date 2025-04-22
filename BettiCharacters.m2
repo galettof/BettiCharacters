@@ -655,9 +655,6 @@ CharacterDecomposition => (C,T) -> (
     ord := sum T.size;
     -- create decomposition hash table
     D := applyValues(C.characters, char -> 1/ord*char*T.matrix);
-    -- find non zero columns of table for printing
-    M := matrix apply(values D, m -> flatten entries m);
-    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     new CharacterDecomposition from {
 	cache => new CacheTable,
 	(symbol numActors) => C.numActors,
@@ -665,8 +662,7 @@ CharacterDecomposition => (C,T) -> (
 	(symbol degreeOrbit) => C.degreeOrbit,
 	(symbol degreeRepresentative) => C.degreeRepresentative,
 	(symbol decompose) => D,
-	(symbol Labels) => T.Labels,
-	(symbol positions) => p
+	(symbol Labels) => T.Labels
 	}
     )
 
@@ -1351,8 +1347,9 @@ net CharacterDecomposition := D -> (
 		mons = mons - set(orbit);
 		);
 	    );
-	-- get positions where decomposition is nonzero
-	p := D.positions;
+	-- find non zero columns of table for printing
+	M := matrix apply(values D.decompose, m -> flatten entries m);
+	p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
 	-- top row of decomposition table
 	a := {{""} | (first D.Labels)_p };
 	-- body of decomposition table
