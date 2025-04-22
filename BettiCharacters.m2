@@ -659,6 +659,7 @@ CharacterDecomposition => (C,T) -> (
     M := matrix apply(values D, m -> flatten entries m);
     p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     new CharacterDecomposition from {
+	cache => new CacheTable,
 	(symbol numActors) => C.numActors,
 	(symbol degreesRing) => C.degreesRing,
 	(symbol decompose) => D,
