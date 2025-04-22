@@ -662,6 +662,8 @@ CharacterDecomposition => (C,T) -> (
 	cache => new CacheTable,
 	(symbol numActors) => C.numActors,
 	(symbol degreesRing) => C.degreesRing,
+	(symbol degreeOrbit) => C.degreeOrbit,
+	(symbol degreeRepresentative) => C.degreeRepresentative,
 	(symbol decompose) => D,
 	(symbol Labels) => T.Labels,
 	(symbol positions) => p
@@ -1329,14 +1331,37 @@ texMath CharacterTable := T -> (
 
 -- printing character decompositions
 net CharacterDecomposition := D -> (
-    p := D.positions;
-    -- top row of decomposition table
-    a := {{""} | (first D.Labels)_p };
-    -- body of decomposition table
-    b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
-    stack("Decomposition table"," ",
-    	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
-	)
+    if not D.cache.?net then (
+	-- prep decomposition for printing by separating degrees
+	DR := D.degreesRing;
+	F := coefficientRing DR;
+	-- go through homological degrees
+	-- collect multidegrees in the same orbit of the group action
+	-- and save a single character with the degree representative
+	h := new MutableHashTable;
+	for k in keys D.decompose do (
+	    raw := D.decompose#k;
+	    mons := flatten entries monomials raw;
+	    while mons =!= {} do (
+		m := first mons;
+		d := D.degreeRepresentative first exponents m;
+		orbit := select(mons, f -> D.degreeRepresentative first exponents f == d);
+		C := lift(last coefficients(raw, Monomials=>orbit),F);
+		h#(k,d) = matrix{toList (numRows C:1_F)} * C;
+		mons = mons - set(orbit);
+		);
+	    );
+	-- get positions where decomposition is nonzero
+	p := D.positions;
+	-- top row of decomposition table
+	a := {{""} | (first D.Labels)_p };
+	-- body of decomposition table
+	b := apply(sort pairs h,(k,v) -> {k} | (flatten entries v)_p );
+	D.cache.net = stack("Decomposition table"," ",
+	    netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
+	    )
+	);
+    D.cache.net
     )
 
 -- tex string for character decompositions
