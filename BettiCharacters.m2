@@ -1286,16 +1286,20 @@ net Character := c -> (
 
 -- tex string for characters
 texMath Character := c -> (
-    -- make table headers, one column per actor
-    s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
-    -- character entries
-    rows := apply(sort pairs c.characters,
-	(k,v) -> concatenate(texMath k,"&",
-	    between("&",apply(flatten entries v,texMath))
-	    )
+    if not c.cache.?tex then (
+	-- make table headers, one column per actor
+	s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
+	-- character entries
+	rows := apply(sort pairs c.characters,
+	    (k,v) -> concatenate(texMath k,"&",
+		between("&",apply(flatten entries v,texMath))
+		)
+	    );
+	-- assemble and close array
+	c.cache.tex =
+	s | concatenate(between("\\\\ \n",rows),"\n\\end{array}");
 	);
-    -- assemble and close array
-    s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
+    c.cache.tex
     )
 
 -- printing for character tables
