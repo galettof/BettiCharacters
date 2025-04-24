@@ -687,6 +687,15 @@ Character / CharacterTable := CharacterDecomposition => decomposeCharacter
 -- recreate a character from decomposition
 character(CharacterDecomposition,CharacterTable) :=
 Character => op -> (D,T) -> (
+    -- check decomposition and table are over same ring
+    F := coefficientRing D.degreesRing;
+    if T.ring =!= F then (
+	error "character: expected decomposition and table over the same field";
+	);
+    -- check number of actors is the same
+    if D.numActors != T.numActors then (
+	error "character: decomposition and table have different number of actors";
+	);
     new Character from {
 	cache => new CacheTable,
 	(symbol degreesRing) => D.degreesRing,
