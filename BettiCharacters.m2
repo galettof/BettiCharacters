@@ -651,6 +651,9 @@ o -> (conjSize,charTable,F,perm) -> (
 	}
     )
 
+-- equality for character tables as raw hash tables
+CharacterTable == CharacterTable := (A,B) -> A === B
+
 -- new method for character decomposition
 decomposeCharacter = method(TypicalValue=>CharacterDecomposition);
 
@@ -708,6 +711,9 @@ Character => op -> (D,T) -> (
 
 -- shortcut to recreate character from decomposition
 CharacterDecomposition * CharacterTable := Character => character
+
+-- equality for character decompositions as raw hash tables
+CharacterDecomposition == CharacterDecomposition := (A,B) -> A === B
 
 ----------------------------------------------------------------------
 -- Actions on complexes and characters of complexes ------------------
