@@ -1620,7 +1620,7 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(QQ,1,15,hashTable {(0,{7}) =>
+    	sign = character(R,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
 	dual(c,id_QQ)[-5] ** sign === c
     Text
