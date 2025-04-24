@@ -132,13 +132,13 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 -- construct a finite dimensional character by hand
 -- new constructor with v3.0
 -- INPUT:
--- 1) polynomial ring over a field (for degree ring)
+-- 1) degree ring (over a field)
 -- 2) hash table for raw character: (homdeg,deg) => character matrix
-character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
+character(PolynomialRing,HashTable) := Character => op -> (DR,H) -> (
     -- check polynomial ring is over a field
-    F := coefficientRing R;
+    F := coefficientRing DR;
     if not isField F then (
-	error "character: expected polynomial ring over a field";
+	error "character: expected degree ring over a field";
 	);
     -- check keys are in the right format
     k := keys H;
@@ -147,8 +147,8 @@ character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
 	error "character: expected keys of the form (ZZ,List)";
 	);
     -- build character ring and get degree length
-    DR := F degreesMonoid R;
-    dl := degreeLength R;
+    --DR := F degreesMonoid R;
+    dl := numgens DR;
     -- check degree vectors are allowed
     degs := apply(k,last);
     if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
@@ -1620,7 +1620,7 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(R,hashTable {(0,{7}) =>
+    	sign = character(c.degreesRing,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
 	dual(c,id_QQ)[-5] ** sign === c
     Text
