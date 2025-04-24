@@ -1263,6 +1263,7 @@ symmetricGroupActors PolynomialRing := R -> (
 -- Overloaded Methods
 ----------------------------------------------------------------------
 
+-*
 -- get object acted upon
 target(Action) := A -> A.target
 
@@ -1274,6 +1275,7 @@ ring Character :=
 ring CharacterTable :=
 ring CharacterDecomposition :=
 Ring => X -> X.ring
+*-
 
 -*
 -- get degree length of a character (or decomposition)
