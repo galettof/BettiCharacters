@@ -240,8 +240,8 @@ multiplyCharacters = (c1,c2) -> (
 Character ** Character := Character => tensor
 tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     -- check degreesRing is the same for all factors
-    R := c1.degreesRing;
-    if (c2.degreesRing =!= R)
+    DR := c1.degreesRing;
+    if (c2.degreesRing =!= DR)
     then error "tensor: expected characters all over the same ring";
     -- check character length is the same for all summands
     cl := c1.numActors;
@@ -263,9 +263,9 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     H := combine(c1.characters,c2.characters,plus,multiplyCharacters,plus);
     new Character from {
 	cache => new CacheTable,
-	(symbol degreesRing) => c1.degreesRing,
-	(symbol degreeOrbit) => c1.degreeOrbit,
-	(symbol degreeRepresentative) => c1.degreeRepresentative,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => degOrb,
+	(symbol degreeRepresentative) => degRep,
 	(symbol numActors) => cl,
 	-- multiply raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v))
