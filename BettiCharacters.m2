@@ -43,7 +43,7 @@ export {
     "degreeOrbit",
     "degreeRepresentative",
     "Labels",
-    "numActors",
+    --"numActors",
     "ringActors",
     "Semidirect",
     "Sub",
