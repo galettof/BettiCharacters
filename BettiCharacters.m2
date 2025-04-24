@@ -63,11 +63,6 @@ Action = new Type of HashTable
 ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
 
--- equality check for actions implemented below
-
--- equality for characters as raw hash tables
-Character == Character := (A,B) -> A === B
-
 ----------------------------------------------------------------------
 -- Characters and character tables -----------------------------------
 ----------------------------------------------------------------------
@@ -191,6 +186,9 @@ character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
 	}
     )
 
+
+-- equality for characters as raw hash tables
+Character == Character := (A,B) -> A === B
 
 -- direct sum of characters
 -- modeled after code in Macaulay2/Core/matrix.m2
