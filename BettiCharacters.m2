@@ -67,8 +67,11 @@ ActionOnGradedModule = new Type of Action
 -- Characters and character tables -----------------------------------
 ----------------------------------------------------------------------
 
+-- function to take a single degree and make it into a list
+bracketize := d -> {d}
+
 -- method for returning characters of various action types
-character = method(TypicalValue=>Character,Options=>{Semidirect=>(d -> {d},identity)})
+character = method(TypicalValue=>Character,Options=>{Semidirect=>(bracketize,identity)})
 
 -*
 -- construct a finite dimensional character by hand
@@ -725,7 +728,7 @@ CharacterDecomposition == CharacterDecomposition := (A,B) -> A === B
 -- ring actors are passed as matrices
 -- Semidirect option (added after v2.2)
 action = method(TypicalValue=>Action,
-    Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
+    Options=>{Sub=>true,Semidirect=>(bracketize,identity)})
 
 -- constructor for action on resolutions
 -- INPUT:
@@ -1622,7 +1625,7 @@ Node
     Example
     	sign = character(c.degreesRing,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
-	dual(c,id_QQ)[-5] ** sign === c
+	dual(c,id_QQ)[-5] ** sign == c
     Text
     	The second argument in the @TT "dual"@ command is the
 	restriction of complex conjugation to the field of
