@@ -827,7 +827,7 @@ numActors(Action) := ZZ => A -> A.numActors
 ringActors = method(TypicalValue=>List,Options=>{Sub=>true})
 ringActors(Action) := List => op -> A -> (
     if not op.Sub then (
-	GB := gb(vars ring A,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	GB := gb(vars A.ring,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	apply(A.ringActors,g->g//GB)
 	)
     else A.ringActors
@@ -845,9 +845,9 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	-- homological degrees where action is already cached
 	places := apply(select(keys A.cache, k -> instance(k,Sequence) and k#0 == symbol actors), k -> k#1);
 	-- get the complex
-	C := target A;
+	C := A.target;
 	-- if zero in that hom degree, return zeros
-	if zero(C_i) then return toList(numActors(A):map(C_i));
+	if zero(C_i) then return toList(A.numActors:map(C_i));
 	-- if hom degree is to the right of previously computed
 	if i > max places then (
 	    -- compute GB of differential but only up to min gens
@@ -867,7 +867,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	    if not A.cache.?inverse then (
 		--convert variable substitutions to matrices
 		--then invert and convert back to substitutions
-		R := ring A;
+		R := A.ring;
 		b := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 		A.cache.inverse = apply(A.ringActors, g ->
 		    (vars R) * (inverse lift(g//b,coefficientRing R))
@@ -894,11 +894,11 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
     -- if not cached, compute
     if not A.cache#?(symbol character,i) then (
-	F := coefficientRing ring A;
+	F := coefficientRing A.ring;
 	DR := A.degreesRing;
-	n := numActors A;
+	n := A.numActors;
 	-- if complex is zero in hom degree i, return empty character, don't cache
-	if zero (target A)_i then (
+	if zero (A.target)_i then (
 	    return new Character from {
 		cache => new CacheTable,
 		(symbol degreesRing) => DR,
@@ -910,12 +910,12 @@ character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
 	    );
 	-- create raw character from actors
 	a := actors(A,i);
-	r := rank((target A)_i) - 1;
+	r := rank((A.target)_i) - 1;
 	-- for each basis element extract corresponding diagonal entry
 	-- put it in a row matrix and multiply by degree, then add
 	-- this will give the graded raw character as a matrix
 	raw := sum parallelApply(toList(0..r), j -> (
-		d := degree( ((target A)_i)_j );
+		d := degree( ((A.target)_i)_j );
 		lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d)
 		)
 	    );
@@ -925,7 +925,7 @@ character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
 	    (symbol degreesRing) => DR,
 	    (symbol degreeOrbit) => A.degreeOrbit,
 	    (symbol degreeRepresentative) => A.degreeRepresentative,
-	    (symbol numActors) => numActors A,
+	    (symbol numActors) => A.numActors,
 	    (symbol characters) => hashTable {i=>raw},
 	    };
 	);
@@ -936,7 +936,7 @@ character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
 -- return characters of all free modules in a resolution
 -- by repeatedly using previous function
 character ActionOnComplex := Character => op -> A -> (
-    C := target A;
+    C := A.target;
     directSum for i from min(C) to min(C)+length(C) list character(A,i)
     )
 
@@ -1067,7 +1067,7 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	-- this sorting was made necessary after introducing semidirect options
 	-- actors matrix would be useless without out as it may not match basis
 	if zero b then (
-	    A.cache#(symbol actors,degRep) = toList(numActors(A):map(source b));
+	    A.cache#(symbol actors,degRep) = toList(A.numActors:map(source b));
 	    )
 	else (
 	    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
@@ -1094,7 +1094,7 @@ character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
     degRep := A.degreeRepresentative d;
     -- if not cached, compute
     if not A.cache#?(symbol character,degRep) then (
-	F := coefficientRing ring A;
+	F := coefficientRing A.ring;
 	DR := A.degreesRing;
 	-- zero action, return empty character and don't cache
 	acts := actors(A,degRep);
@@ -1104,7 +1104,7 @@ character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
 		(symbol degreesRing) => DR,
 		(symbol degreeOrbit) => A.degreeOrbit,
 		(symbol degreeRepresentative) => A.degreeRepresentative,
-		(symbol numActors) => numActors A,
+		(symbol numActors) => A.numActors,
 		(symbol characters) => hashTable {},
 		};
 	    );
@@ -1114,7 +1114,7 @@ character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
 		(symbol degreesRing) => DR,
 		(symbol degreeOrbit) => A.degreeOrbit,
 		(symbol degreeRepresentative) => A.degreeRepresentative,
-		(symbol numActors) => numActors A,
+		(symbol numActors) => A.numActors,
 		(symbol characters) => hashTable {0 => lift(matrix{apply(acts, trace)},F) * (DR_degRep)},
 		};
 	);
@@ -1428,7 +1428,7 @@ texMath CharacterDecomposition := D -> (
 
 -- printing for Action type
 net Action := A -> (
-    (net class target A)|" with "|(net numActors A)|" actors"
+    (net class A.target)|" with "|(net (A.numActors))|" actors"
     )
 
 
