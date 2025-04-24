@@ -406,7 +406,8 @@ Character ^ List := Character => (c,degs) -> (
 	degs = {degs};
 	);
     -- check all degrees are compatible
-    if all(degs,d->all(d,i->instance(i,ZZ)) and #d==c.degreeLength) then (
+    dl := numgens c.degreesRing;
+    if all(degs,d->all(d,i->instance(i,ZZ)) and #d==dl) then (
 	-- find all degrees in the orbit of degs and remove duplicates
 	exps := unique flatten apply(degs, d -> c.degreeOrbit d);
 	-- get corresponding monomials in character ring
@@ -427,7 +428,7 @@ Character ^ List := Character => (c,degs) -> (
 	    (symbol characters) => H
 	    }    
 	) else (
-	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(c.degreeLength));
+	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(dl));
 	);
     )
 
@@ -1245,11 +1246,12 @@ ring CharacterTable :=
 ring CharacterDecomposition :=
 Ring => X -> X.ring
 
+-*
 -- get degree length of a character (or decomposition)
 degreeLength Character :=
 degreeLength CharacterDecomposition :=
 ZZ => X -> X.degreeLength
-
+*-
 
 ---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
@@ -1924,7 +1926,6 @@ Node
 	    @TO BettiCharacters@.
     Subnodes
     	(ring,Character)
-    	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
     	(symbol _,Character,ZZ)
     	(symbol ^,Character,List)
@@ -2104,26 +2105,6 @@ Node
 	characterTable
 	decomposeCharacter
 
-Node
-    Key
-    	(degreeLength,Character)
-    	(degreeLength,CharacterDecomposition)
-    Headline
-    	get the degree length of a character
-    Usage
-    	degreeLength(X)
-    Inputs
-    	X:
-    Outputs
-    	:ZZ
-	    degree length
-    Description
-    	Text
-	    Returns the degree length of a character.
-    SeeAlso
-    	character
-	decomposeCharacter
-    	    
 Node
     Key
     	action
