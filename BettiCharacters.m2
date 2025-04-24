@@ -1499,7 +1499,12 @@ Node
 		    Improved caching and removed calls to deprecated functions."),
 		(BOLD "2.4: ", "Introduces significant optizimations to the core
 		    algorithm for computing Betti characters. Removed the ",
-		    TT "inverseRingActors", " method since it is not used anymore.")
+		    TT "inverseRingActors", " method since it is not used anymore."),
+		(BOLD "2.5: ", "Overhauls the internal representation of characters
+		    to better handle actions of semidirect products; v2.5 characters
+		    are incompatible with those from previous versions. Adds tensor
+		    powers of characters. Removes some less used methods to access
+		    keys of actions and characters.")
 		}@
     Subnodes
     	:Defining and computing actions
