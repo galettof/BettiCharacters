@@ -331,7 +331,8 @@ alexopts = {Strategy=>0};
 -- character of dual/contragredient representation with conjugation
 dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     -- check characteristic
-    F := c.ring;
+    DR := c.degreesRing;
+    F := coefficientRing DR;
     if char(F) != 0 then (
 	error "dual: use permutation constructor in positive characteristic";
 	);
@@ -341,7 +342,6 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
 	);
     -- ring map that inverts variables in degree ring
     -- this sends a degree T^d to its opposite T^(-d)
-    DR := c.degreesRing;
     inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
     -- create hash table for raw dual
     H := applyPairs(c.characters,
