@@ -1243,7 +1243,7 @@ symmetricGroupActors PolynomialRing := R -> (
 	error "symmetricGroupActors: expected polynomial ring over a field";
 	);
     -- check number of variables
-    n := dim R;
+    n := numgens R;
     if n < 1 then (
 	error "symmetricGroupActors: expected a positive number of variables";
 	);
