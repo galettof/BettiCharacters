@@ -671,11 +671,12 @@ Character / CharacterTable := CharacterDecomposition => decomposeCharacter
 
 -- recreate a character from decomposition
 character(CharacterDecomposition,CharacterTable) :=
-Character => (D,T) -> (
+Character => op -> (D,T) -> (
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => D.ring,
-	(symbol degreeLength) => D.degreeLength,
+	(symbol degreesRing) => D.degreesRing,
+	(symbol degreeOrbit) => D.degreeOrbit,
+	(symbol degreeRepresentative) => D.degreeRepresentative,
 	(symbol numActors) => D.numActors,
 	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
 	}
