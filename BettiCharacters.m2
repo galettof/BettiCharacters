@@ -210,7 +210,7 @@ Character.directSum = args -> (
     degOrb := (args#0).degreeOrbit;
     if any(args, c -> c.degreeOrbit =!= degOrb)
     then error "directSum: characters have different degree orbit functions";
-    -- check degreeOrbit is the same for all summands
+    -- check degreeRepresentative is the same for all summands
     degRep := (args#0).degreeRepresentative;
     if any(args, c -> c.degreeRepresentative =!= degRep)
     then error "directSum: characters have different degree representative functions";
