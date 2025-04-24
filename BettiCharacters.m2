@@ -247,6 +247,14 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
     cl := c1.numActors;
     if (c2.numActors != cl)
     then error "tensor: expected characters all of the same length";
+    -- check degreeOrbit is the same for all summands
+    degOrb := c1.degreeOrbit;
+    if (c2.degreeOrbit =!= degOrb)
+    then error "tensor: characters have different degree orbit functions";
+    -- check degreeRepresentative is the same for all summands
+    degRep := c1.degreeRepresentative;
+    if (c2.degreeRepresentative =!= degRep)
+    then error "tensor: characters have different degree representative functions";
     -- raw character of tensor product (may contain zeros)
     -- homological degrees should be added, hence the first plus
     -- raw characters should be Hadamard multiplied
