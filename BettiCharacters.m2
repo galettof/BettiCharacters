@@ -206,13 +206,21 @@ Character.directSum = args -> (
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
     then error "directSum: expected characters all of the same length";
+    -- check degreeOrbit is the same for all summands
+    degOrb := (args#0).degreeOrbit;
+    if any(args, c -> c.degreeOrbit =!= degOrb)
+    then error "directSum: characters have different degree orbit functions";
+    -- check degreeOrbit is the same for all summands
+    degRep := (args#0).degreeRepresentative;
+    if any(args, c -> c.degreeRepresentative =!= degRep)
+    then error "directSum: characters have different degree representative functions";
     -- raw character of direct sum (could have zero entries)
     H := fold( (c1,c2) -> merge(c1,c2,plus), apply(args, c -> c.characters) );
     new Character from {
 	cache => new CacheTable,
-	(symbol degreesRing) => (args#0).degreesRing,
-	(symbol degreeOrbit) => (args#0).degreeOrbit,
-	(symbol degreeRepresentative) => (args#0).degreeRepresentative,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => degOrb,
+	(symbol degreeRepresentative) => degRep,
 	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v)),
