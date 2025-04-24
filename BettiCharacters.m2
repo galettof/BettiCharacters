@@ -1547,6 +1547,7 @@ Node
 	(difference,Character,Character)
 	(dual,Character,RingMap)
 	(tensor,Character,Character)
+	(symbol ^**,Character,ZZ)
     	
 
 Node
