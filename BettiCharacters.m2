@@ -1232,7 +1232,7 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 
 -- symmetric group table for backwards compatibility
 symmetricGroupTable PolynomialRing := R -> (
-    symmetricGroupTable(dim R,coefficientRing R)
+    symmetricGroupTable(numgens R,coefficientRing R)
     )
 
 -- symmetric group variable permutation action
