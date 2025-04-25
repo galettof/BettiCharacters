@@ -1908,9 +1908,7 @@ Node
 	    complex to the left. Finally, the resulting character is
 	    decomposed against the character table of $\mathfrak{S}_3$.
     	Example
-	    c0 = character(c.degreesRing,hashTable{(0,{0,0,0})=>matrix{{1,1,1}}},
-		Semidirect=>{uniquePermutations,rsort})
-	    c = (c - c0)[1]
+	    c = (c - c_0)[1]
     	    T = symmetricGroupTable(3,QQ)
 	    decomposeCharacter(c,T)
 	Text
