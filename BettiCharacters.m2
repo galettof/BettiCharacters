@@ -2065,7 +2065,7 @@ Node
 	    DR = c.degreesRing
 	    T = DR_0
 	    c * T^10
-	    
+
 Node
     Key
     	(minus,Character)
