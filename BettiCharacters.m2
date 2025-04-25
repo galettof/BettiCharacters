@@ -2057,7 +2057,15 @@ Node
 	    c = character(A,0,10)
 	    2*c
 	    c*(1/3)
-        	    
+	Text
+	    As of version 2.5, it is possible to multiply
+	    characters by elements of their degrees ring,
+	    which will result in an internal degree shift.
+	Example
+	    DR = c.degreesRing
+	    T = DR_0
+	    c * T^10
+	    
 Node
     Key
     	(minus,Character)
