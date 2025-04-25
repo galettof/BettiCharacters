@@ -1929,10 +1929,8 @@ Node
     Subnodes
     	ActionOnComplex
 	ActionOnGradedModule
-	(net,Action)
-	(ring,Action)
 	ringActors
-	(target,Action)
+	(net,Action)
 	    
 Node
     Key
@@ -1967,9 +1965,10 @@ Node
     Subnodes
     	(ring,Character)
     	(symbol SPACE,Character,Array)
-    	(symbol _,Character,ZZ)
-    	(symbol ^,Character,List)
     	(symbol *,RingElement,Character)
+    	(symbol ^,Character,List)
+    	(symbol ^**,Character,ZZ)
+    	(symbol _,Character,ZZ)
     	(minus,Character)
 	(directSum,Character)
     	(difference,Character,Character)
