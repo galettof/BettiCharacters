@@ -1564,8 +1564,8 @@ Node
 	Specht ideal associated	with the partition (5,2).
 	The action of the symmetric group on the resolution of
 	this ideal is described in	
-	@arXiv("2010.06522",
-	    "K. Shibata, K. Yanagawa - Minimal free resolutions of the Specht ideals of shapes (n−2,2) and (d,d,1)")@.
+	@HREF("https://doi.org/10.1142/S0219498823501992",
+	    "K. Shibata, K. Yanagawa - Elementary construction of minimal free resolutions of the Specht ideals of shapes (n−2,2) and (d,d,1)")@.
 	The same ideal is also the ideal of the 6-equals
 	subspace arrangement in a 7-dimensional affine space.
 	This point of view is explored in
