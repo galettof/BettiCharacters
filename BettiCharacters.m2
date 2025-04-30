@@ -56,6 +56,7 @@ export {
 -- Types
 ----------------------------------------------------------------------
 
+CharacterRing = new Type of PolynomialRing
 Character = new Type of HashTable
 CharacterTable = new Type of HashTable
 CharacterDecomposition = new Type of HashTable
@@ -66,6 +67,40 @@ ActionOnGradedModule = new Type of Action
 ----------------------------------------------------------------------
 -- Characters and character tables -----------------------------------
 ----------------------------------------------------------------------
+
+-- (new in v3.0) creates the ring where characters values live
+characterRing = method(TypicalValue=>CharacterRing);
+-- create using degrees ring of polynomial ring
+characterRing(PolynomialRing) := R -> (
+    -- if already stored, return it
+    try R.cache#(symbol characterRing) else (
+	-- check if input is polynomial ring
+	if not isPolynomialRing R then (
+	    error "characterRing: expected a polynomial ring";
+	    );
+	-- check coefficients are in a field
+	F := coefficientRing R;
+	if not isField F then (
+	    error "characterRing: expected coefficients in a field";
+	    );
+	R.cache = new CacheTable from
+	{(symbol characterRing) => QQ degreesMonoid R};
+	return R.cache#(symbol characterRing);
+	);
+    )
+
+-- or create using a field and list of degrees
+characterRing(Ring,List) := (F,degs) -> (
+    -- check if given ring is a field
+    if not isField F then (
+	error "characterRing: expected a field";
+	);
+    -- check given list contains lists of integers of same length
+    if not all(degs,d->all(d,i->instance(i,ZZ)) and #d==#degs_0) then (
+	error "characterRing: expected a list (multi)degrees of the same length";
+	);
+    characterRing(F[Variables => #degs, Degrees => degs])
+    )
 
 -- function to take a single degree and make it into a list
 -- this is the default degreeOrbit function to be used by
