@@ -68,6 +68,9 @@ ActionOnGradedModule = new Type of Action
 ----------------------------------------------------------------------
 
 -- function to take a single degree and make it into a list
+-- this is the default degreeOrbit function to be used by
+-- all actions GxT where T is the torus that gives the grading
+-- actions by semidirect products G⋉T need a different function
 bracketize := d -> {d}
 
 -- method for returning characters of various action types
