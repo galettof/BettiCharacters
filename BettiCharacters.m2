@@ -35,6 +35,7 @@ export {
     "ActionOnGradedModule",
     "actors",
     "character",
+    "characterRing",
     "characterTable",
     "Character",
     "CharacterDecomposition",
@@ -84,7 +85,7 @@ characterRing(PolynomialRing) := R -> (
 	    error "characterRing: expected coefficients in a field";
 	    );
 	R.cache = new CacheTable from
-	{(symbol characterRing) => QQ degreesMonoid R};
+	{(symbol characterRing) => F degreesMonoid R};
 	return R.cache#(symbol characterRing);
 	);
     )
