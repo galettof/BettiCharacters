@@ -35,7 +35,6 @@ export {
     "ActionOnGradedModule",
     "actors",
     "character",
-    "characterRing",
     "characterTable",
     "Character",
     "CharacterDecomposition",
@@ -57,7 +56,6 @@ export {
 -- Types
 ----------------------------------------------------------------------
 
-CharacterRing = new Type of PolynomialRing
 Character = new Type of HashTable
 CharacterTable = new Type of HashTable
 CharacterDecomposition = new Type of HashTable
@@ -68,41 +66,6 @@ ActionOnGradedModule = new Type of Action
 ----------------------------------------------------------------------
 -- Characters and character tables -----------------------------------
 ----------------------------------------------------------------------
-
--- (new in v3.0) creates the ring where characters values live
-characterRing = method(TypicalValue=>CharacterRing);
--- create using degrees ring of polynomial ring
-characterRing(PolynomialRing) := R -> (
-    -- if already stored, return it
-    try R.cache#(symbol characterRing) else (
-	-- check if input is polynomial ring
-	if not isPolynomialRing R then (
-	    error "characterRing: expected a polynomial ring";
-	    );
-	-- check coefficients are in a field
-	F := coefficientRing R;
-	if not isField F then (
-	    error "characterRing: expected coefficients in a field";
-	    );
-	R.cache = new CacheTable from
-	{(symbol characterRing) => new CharacterRing from
-	    (F degreesMonoid R)};
-	return R.cache#(symbol characterRing);
-	);
-    )
-
--- or create using a field and list of degrees
-characterRing(Ring,List) := (F,degs) -> (
-    -- check if given ring is a field
-    if not isField F then (
-	error "characterRing: expected a field";
-	);
-    -- check given list contains lists of integers of same length
-    if not all(degs,d->all(d,i->instance(i,ZZ)) and #d==#degs_0) then (
-	error "characterRing: expected a list (multi)degrees of the same length";
-	);
-    characterRing(F[Variables => #degs, Degrees => degs])
-    )
 
 -- function to take a single degree and make it into a list
 -- this is the default degreeOrbit function to be used by
@@ -175,17 +138,23 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 -- construct a finite dimensional character by hand
 -- new constructor with v3.0
 -- INPUT:
--- 1) character ring (see above)
+-- 1) degree ring (over a field)
 -- 2) hash table for raw character: (homdeg,deg) => character matrix
-character(CharacterRing,HashTable) := Character => op -> (CR,H) -> (
+character(PolynomialRing,HashTable) := Character => op -> (DR,H) -> (
+    -- check polynomial ring is over a field
+    F := coefficientRing DR;
+    if not isField F then (
+	error "character: expected degree ring over a field";
+	);
     -- check keys are in the right format
     k := keys H;
     if any(k, i -> class i =!= Sequence or #i != 2 or
 	class i#0 =!= ZZ or class i#1 =!= List) then (
 	error "character: expected keys of the form (ZZ,List)";
 	);
-    -- get degree length based on character ring
-    dl := numgens CR;
+    -- build character ring and get degree length
+    --DR := F degreesMonoid R;
+    dl := numgens DR;
     -- check degree vectors are allowed
     degs := apply(k,last);
     if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
@@ -204,21 +173,18 @@ character(CharacterRing,HashTable) := Character => op -> (CR,H) -> (
 	error ("character: expected matrices to have the same number of columns");
 	);
     -- move character values into given ring
-    F := coefficientRing CR;
     H = try applyValues(H, v -> promote(v,F)) else (
-	error "character: could not promote matrices to character ring";
+	error "character: could not promote characters to field of coefficients";
 	);
     -- partition keys by hom degree, then extract internal degree
     -- so {(0,{0}),(0,{1})} goes to 0=>{(0,{0}),(0,{1})}
     pk := partition(i -> i#0,k);
     -- for each hom degree, multiply each char matrix with degree monomial
     -- then add them all
-    -- phi puts the character matrices in the character ring
-    phi := map(CR,F);
-    H' := applyValues(pk, l -> sum apply(l, d -> (phi(H#d)) * CR_(d#1)) );
+    H' := applyValues(pk, l -> sum apply(l, d -> (H#d) * DR_(d#1)) );
     new Character from {
 	cache => new CacheTable,
-	(symbol degreesRing) => CR,
+	(symbol degreesRing) => DR,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	(symbol numActors) => cl,
