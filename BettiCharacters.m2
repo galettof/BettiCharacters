@@ -3130,7 +3130,7 @@ Node
 	    F = toField(QQ[w]/ideal(1+w+w^2))
 	    R = F[x_1..x_4]
 	    conj = map(F,F,{w^2})
-	    X = character(F,1,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
+	    X = character(R,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
 	    X' = dual(X,conj)
     	Text
     	    If working over coefficient fields of positive characteristic
