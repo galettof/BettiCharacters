@@ -2501,8 +2501,10 @@ Node
 	    In the case of actions on modules, the @TT "=="@ operator
 	    compares the group action on the module generators.
 	    
-	    For characters, the underlying ring must be the same,
-	    as well as the number of entries in each character.
+	    For characters, the underlying ring must be the same
+	    (see @TO "Character class"@),
+	    as well as the degree orbit and representative functions
+	    (see @TO "Semidirect"@).
 	    Characters are compared across all homological and
 	    internal degrees.
     	Example
