@@ -2284,8 +2284,8 @@ Node
 	    G'' = toList(5:id_(R^1))
 	    action(RE,G,G'',3)
     Caveat
-    	This function does not check if the complex @TT "C"@ is a
-	free resolution. If the user passes a complex that is not a
+    	This function does not check if the complex @TT "C"@ is a minimal
+	free resolution. If the user passes a complex that is not a minimal
 	free resolution, then later computations (i.e., Betti characters)
 	may fail or return meaningless results.
 
