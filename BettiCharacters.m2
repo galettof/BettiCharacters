@@ -3541,6 +3541,7 @@ Node
     Key
     	(tensor,Character,Character)
 	(symbol **,Character,Character)
+	(symbol ^**,Character,ZZ)
     Headline
     	tensor product of characters
     Usage
@@ -3568,8 +3569,13 @@ Node
 	    observed by tensoring with the character of the
 	    sign representation concentrated in degree 3.
     	Example
-	    sign = character(QQ,1,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    sign = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
 	    dual(a,{1,2,3}) ** sign === a
+	Text
+	    Starting with version 2.5, this package allows nonnegative
+	    tensor powers of characters using @TO (symbol ^**,Character,ZZ)@.
+	Example
+	    a ^** 3
 
 ///
 	    
