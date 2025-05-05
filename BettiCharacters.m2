@@ -1986,7 +1986,6 @@ Node
 	    This class is provided by the package
 	    @TO BettiCharacters@.
     Subnodes
-    	(ring,Character)
     	(symbol SPACE,Character,Array)
     	(symbol *,RingElement,Character)
     	(symbol ^,Character,List)
