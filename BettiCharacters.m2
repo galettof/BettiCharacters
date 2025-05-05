@@ -2585,7 +2585,7 @@ Node
     	(character,ActionOnComplex)
     	(character,ActionOnComplex,ZZ)
      	(character,ActionOnGradedModule,List)
-	(character,Ring,ZZ,ZZ,HashTable)
+	(character,PolynomialRing,HashTable)
 	(character,CharacterDecomposition,CharacterTable)
 	    
 Node
