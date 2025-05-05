@@ -1988,7 +1988,6 @@ Node
     	(symbol SPACE,Character,Array)
     	(symbol *,RingElement,Character)
     	(symbol ^,Character,List)
-    	(symbol ^**,Character,ZZ)
     	(symbol _,Character,ZZ)
     	(minus,Character)
 	(directSum,Character)
