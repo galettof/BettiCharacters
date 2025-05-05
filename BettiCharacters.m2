@@ -3539,24 +3539,6 @@ Node
 
 Node
     Key
-    	(target,Action)
-    Headline
-    	get object acted upon
-    Usage
-    	target(A)
-    Inputs
-    	A:Action
-    Description
-    	Text
-	    Returns the object being acted upon.
-	    Depending on the action, this object may be a
-	    @TO ChainComplex@, a @TO PolynomialRing@, a
-	    @TO QuotientRing@, an @TO Ideal@, or a @TO Module@.
-    SeeAlso
-    	action
-
-Node
-    Key
     	(tensor,Character,Character)
 	(symbol **,Character,Character)
     Headline
