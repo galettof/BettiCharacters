@@ -2154,29 +2154,6 @@ Node
 
 Node
     Key
-    	(ring,Character)
-    	(ring,CharacterTable)
-    	(ring,CharacterDecomposition)
-    Headline
-    	get field of a character
-    Usage
-    	ring(X)
-    Inputs
-    	X:
-    Outputs
-    	:Ring
-	    associated with the object acted upon
-    Description
-    	Text
-	    Returns the field over which a character
-	    (or character table) is defined.
-    SeeAlso
-    	character
-	characterTable
-	decomposeCharacter
-
-Node
-    Key
     	action
     Headline
     	define finite group action
@@ -2257,7 +2234,6 @@ Node
 	    use @TO numActors@.
 	Example
 	    ringActors A
-	    numActors A
 	Text
 	    The simplified version of this function suffices when
 	    dealing with resolutions of quotients of the ring
