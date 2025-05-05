@@ -3829,19 +3829,23 @@ RI = res I
 S3 = symmetricGroupActors R
 A1 = action(RI,S3,Semidirect=>{uniquePermutations,rsort})
 c1 = character(A1)
-d1 = character(R,3, hashTable {
+d1 = character(R, hashTable {
 	(0,{0,0,0}) => matrix{{1,1,1}},
-	(1,{1,1,0}) => matrix{{0,1,3}},
+	(1,{1,1,0}) => matrix{{0,1,1}},
+	(1,{1,0,1}) => matrix{{0,0,1}},
+	(1,{0,1,1}) => matrix{{0,0,1}},
 	(2,{1,1,1}) => matrix{{-1,0,2}}
-	})
-assert( c1 == d1)
+	},
+    Semidirect=>{uniquePermutations,rsort})
+assert( c1 === d1)
 A2 = action(R,S3,Semidirect=>{uniquePermutations,rsort})
 c2 = character(A2,{0,3,0}) ++ character(A2,{1,0,2}) ++ character(A2,{1,1,1})
-d2 = character(R,3, hashTable {
+d2 = character(R, hashTable {
 	(0,{3,0,0}) => matrix{{0,1,3}},
 	(0,{2,1,0}) => matrix{{0,0,6}},
 	(0,{1,1,1}) => matrix{{1,1,1}}
-	})
+	},
+    Semidirect=>{uniquePermutations,rsort})
 assert( c2 == d2)
 ///
 
