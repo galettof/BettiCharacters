@@ -3223,7 +3223,9 @@ Node
 	    tex d
     	Text
 	    The labels are stored in the character table under the
-	    key @TT "Labels"@.
+	    key @TT "Labels"@. In particular, two character tables
+	    of the same group that are equal in all aspects except
+	    for their labels will fail an equality check.
     SeeAlso
     	characterTable
 	decomposeCharacter
