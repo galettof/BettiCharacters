@@ -3660,36 +3660,36 @@ S5 = for p in partitions(5) list (
     )
 assert(S5 == symmetricGroupActors(R))
 A = action(RI,S5)
-a = character(R,7,hashTable {
+a = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
     ((1,{2}), matrix{{0,-1,1,-1,1,1,5}}),
     ((2,{3}), matrix{{0,1,-1,-1,1,-1,5}}),
     ((3,{5}), matrix{{1,-1,-1,1,1,-1,1}})
     })
-assert((character A) === a)
+assert((character A) == a)
 B = action(R,S5)
-b = character(R,7,hashTable {
+b = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
     ((0,{1}), matrix{{0,1,0,2,1,3,5}}),
     ((0,{2}), matrix{{0,1,1,3,3,7,15}}),
     ((0,{3}), matrix{{0,1,1,5,3,13,35}})
     })
-assert(character(B,0,3) === b)
+assert(character(B,0,3) == b)
 C = action(I,S5)
-c = character(R,7,hashTable {
+c = character(R,hashTable {
     ((0,{2}), matrix{{0,-1,1,-1,1,1,5}}),
     ((0,{3}), matrix{{0,-2,1,-1,0,4,20}})
     })
-assert(character(C,0,3) === c)
+assert(character(C,0,3) == c)
 D = action(R/I,S5)
-d = character(R,7,hashTable {
+d = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
     ((0,{1}), matrix{{0,1,0,2,1,3,5}}),
     ((0,{2}), matrix{{0,2,0,4,2,6,10}}),
     ((0,{3}), matrix{{0,3,0,6,3,9,15}})
     })
-assert(character(D,0,3) === d)
-assert(b === c++d)
+assert(character(D,0,3) == d)
+assert(b == c++d)
 cS5 = symmetricGroupTable(5,QQ)
 assert( cS5.table ==
     matrix{{1_QQ,1,1,1,1,1,1},
@@ -3701,19 +3701,19 @@ assert( cS5.table ==
 	{1,-1,-1,1,1,-1,1}}
     )
 adec = a/cS5
-assert( set keys adec.decompose ===
-    set {(0,{0}),(1,{2}),(2,{3}),(3,{5})})
-assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{0,0,1_QQ,0,0,0,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_QQ,0,0}})
-assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_QQ}})
+assert( set keys adec.decompose == set {0,1,2,3})
+CR = a.degreesRing
+T = CR_0
+assert( adec.decompose#0 == matrix{{1_QQ,0,0,0,0,0,0}} * T^0)
+assert( adec.decompose#1 == matrix{{0,0,1_QQ,0,0,0,0}} * T^2)
+assert( adec.decompose#2 == matrix{{0,0,0,0,1_QQ,0,0}} * T^3)
+assert( adec.decompose#3 == matrix{{0,0,0,0,0,0,1_QQ}} * T^5)
 ddec = d/cS5
-assert( set keys ddec.decompose ===
-    set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0,0,0,0,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{2_QQ,2,0,0,0,0,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{3_QQ,3,0,0,0,0,0}})
+assert( set keys ddec.decompose == set {0})
+assert( ddec.decompose#0 == matrix{{1_QQ,0,0,0,0,0,0}} * T^0
+    + matrix{{1_QQ,1,0,0,0,0,0}} * T^1
+    + matrix{{2_QQ,2,0,0,0,0,0}} * T^2
+    + matrix{{3_QQ,3,0,0,0,0,0}} * T^3)
 ///
 
 -- Test 2 (non symmetric group, tests actors)
