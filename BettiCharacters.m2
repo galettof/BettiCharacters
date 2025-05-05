@@ -2878,7 +2878,7 @@ Node
 	    A = action(R,acts)
 	    c = character(A,0,10)
 	    d = c/T
-	    c === d*T
+	    c == d*T
     SeeAlso
     	characterTable
 	decomposeCharacter
