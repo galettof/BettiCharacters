@@ -2230,8 +2230,6 @@ Node
 	Text
 	    The group elements acting on the ring can be recovered
 	    using @TO ringActors@.
-	    To recover just the number of group elements,
-	    use @TO numActors@.
 	Example
 	    ringActors A
 	Text
@@ -2363,11 +2361,8 @@ Node
 	Text
 	    The group elements acting on the ring can be recovered
 	    using @TO ringActors@.
-	    To recover just the number of group elements,
-	    use @TO numActors@.
 	Example
 	    ringActors A
-	    numActors A
 	Text
 	    The simplified version of this function assumes that
 	    the group acts trivially on the generator of the
