@@ -3813,7 +3813,7 @@ c1 = character(A1,0,10)
 c2 = character(A2,0,10)
 assert(-c1 == (-1)*c1)
 assert(c1 ++ c1 == 2*c1)
-c = character(R,3, hashTable {
+c = character(R, hashTable {
 	(0,{5}) => matrix{{0,1,3}},
 	(0,{6}) => matrix{{1,1,1}}
 	})
