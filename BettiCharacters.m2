@@ -138,11 +138,11 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 -- construct a finite dimensional character by hand
 -- new constructor with v3.0
 -- INPUT:
--- 1) degree ring (over a field)
+-- 1) polynomial ring (over a field)
 -- 2) hash table for raw character: (homdeg,deg) => character matrix
-character(PolynomialRing,HashTable) := Character => op -> (DR,H) -> (
+character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
     -- check polynomial ring is over a field
-    F := coefficientRing DR;
+    F := coefficientRing R;
     if not isField F then (
 	error "character: expected degree ring over a field";
 	);
@@ -152,8 +152,14 @@ character(PolynomialRing,HashTable) := Character => op -> (DR,H) -> (
 	class i#0 =!= ZZ or class i#1 =!= List) then (
 	error "character: expected keys of the form (ZZ,List)";
 	);
-    -- build character ring and get degree length
-    --DR := F degreesMonoid R;
+    -- check if character ring is already present
+    -- if not, construct it and cache it
+    if not R#?cache then R#cache = new CacheTable;
+    if not R#cache#?degreesRing then (
+	R#cache#degreesRing = F degreesMonoid R;
+	);
+    DR := R#cache#degreesRing;
+    -- get degree length
     dl := numgens DR;
     -- check degree vectors are allowed
     degs := apply(k,last);
@@ -782,6 +788,13 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
     if #l != #l0 then (
 	error "action: lists of actors must have equal length";
 	);
+    -- check if character ring is already present
+    -- if not, construct it and cache it
+    if not R#?cache then R#cache = new CacheTable;
+    if not R#cache#?degreesRing then (
+	R#cache#degreesRing = F degreesMonoid R;
+	);
+    DR := R#cache#degreesRing;
     --check size of module actors matches rank of starting module
     r := rank C_i;
     if not all(l0,g->numColumns(g)==r and numRows(g)==r) then (
@@ -796,7 +809,7 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 	(symbol target) => C,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	(symbol degreesRing) => F degreesMonoid R,
+	(symbol degreesRing) => DR,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
@@ -1018,6 +1031,13 @@ action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
 	) else (
 	M' = module M;
 	);
+    -- check if character ring is already present
+    -- if not, construct it and cache it
+    if not R#?cache then R#cache = new CacheTable;
+    if not R#cache#?degreesRing then (
+	R#cache#degreesRing = F degreesMonoid R;
+	);
+    DR := R#cache#degreesRing;
     --store everything into a hash table
     new ActionOnGradedModule from {
 	cache => new CacheTable,
@@ -1028,7 +1048,7 @@ action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
 	(symbol ringActors) => l,
 	(symbol actors) => apply(l0,g->map(A,A,g)),
 	(symbol relations) => gb image relations M',
-	(symbol degreesRing) => F degreesMonoid R,
+	(symbol degreesRing) => DR,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
@@ -1626,7 +1646,7 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(c.degreesRing,hashTable {(0,{7}) =>
+    	sign = character(R,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
 	dual(c,id_QQ)[-5] ** sign == c
     Text
