@@ -136,7 +136,7 @@ character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
 *-
 
 -- construct a finite dimensional character by hand
--- new constructor with v3.0
+-- new constructor with v2.5
 -- INPUT:
 -- 1) polynomial ring (over a field)
 -- 2) hash table for raw character: (homdeg,deg) => character matrix
@@ -284,7 +284,7 @@ tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
 	}
     )
 
--- tensor power (new in v3.0)
+-- tensor power (new in v2.5)
 -- M2 uses BinaryPowerMethod in M2/Macaulay2/d/actors.d
 -- to construct tensor powers of rings, modules, etc.
 -- however, this requires a constructor for the inverse/dual
@@ -1316,7 +1316,7 @@ ZZ => X -> X.degreeLength
 
 -- printing for characters
 -- the next function preps a character for printing by caching
--- a bigraded hash table of its data as before v3.0
+-- a bigraded hash table of its data as before v2.5
 prepCharacter := c -> (
     DR := c.degreesRing;
     F := coefficientRing DR;
@@ -1393,7 +1393,7 @@ texMath CharacterTable := T -> (
 
 -- printing character decompositions
 -- the next function preps a character for printing by caching
--- a bigraded hash table of its data as before v3.0
+-- a bigraded hash table of its data as before v2.5
 prepDecomposition := D -> (
     DR := D.degreesRing;
     F := coefficientRing DR;
