@@ -2981,7 +2981,7 @@ Node
     	Example
 	    perm = {1,2,4,3}
 	    T' = characterTable(s,M,F,perm)
-	    T' === T
+	    T' == T
     Caveat
     	This constructor checks orthonormality of the table
 	matrix under the standard scalar product of characters.
