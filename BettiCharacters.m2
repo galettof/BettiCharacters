@@ -3457,14 +3457,6 @@ Node
 	    RI = res I
 	    C = action(RI,S4,Semidirect=>{uniquePermutations,rsort})
 	    character C
-    Caveat
-	Characters of actions with the semidirect option are indexed
-	by user-chosen representatives of degree orbits as explained
-	above. However, the duals of these characters and characters
-	constructed directly by the user may not follow this choice
-	of representatives. Applying further operations to such
-	characters may result in a mix of different orbit
-	representatives for the same degree orbits.
     SeeAlso
 	action
 	
