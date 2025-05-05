@@ -3528,7 +3528,7 @@ Node
     	Text
 	    If @TT "R"@ is a polynomial ring, then
 	    @TT "symmetricGroupTable R"@ calls
-	    @TT "symmetricGroupTable(dim R,coefficientRing R)"@.
+	    @TT "symmetricGroupTable(numgens R,coefficientRing R)"@.
 	    This is kept for compatibility with versions 2.1 and earlier
 	    of the package to create the character table of the symmetric
 	    group acting on the variables of @TT "R"@ over the
