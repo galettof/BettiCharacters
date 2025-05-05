@@ -3592,51 +3592,49 @@ RI = res I
 S3 = {matrix{{y,z,x}},matrix{{y,x,z}},matrix{{x,y,z}}}
 assert(S3 == symmetricGroupActors(R))
 A = action(RI,S3)
-a = character(R,3,hashTable {
+a = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1}}),
     ((1,{2}), matrix{{0,1,3}}),
     ((2,{3}), matrix{{-1,0,2}})
     })
-assert((character A) === a)
+assert((character A) == a)
 B = action(R,S3)
-b = character(R,3,hashTable {
+b = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1}}),
     ((0,{1}), matrix{{0,1,3}}),
     ((0,{2}), matrix{{0,2,6}}),
     ((0,{3}), matrix{{1,2,10}})
     })
-assert(character(B,0,3) === b)
+assert(character(B,0,3) == b)
 C = action(I,S3)
-c = character(R,3,hashTable {
+c = character(R,hashTable {
     ((0,{2}), matrix{{0,1,3}}),
     ((0,{3}), matrix{{1,1,7}})
     })
-assert(character(C,0,3) === c)
+assert(character(C,0,3) == c)
 D = action(R/I,S3)
-d = character(R,3,hashTable {
+d = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1}}),
     ((0,{1}), matrix{{0,1,3}}),
     ((0,{2}), matrix{{0,1,3}}),
     ((0,{3}), matrix{{0,1,3}})
     })
-assert(character(D,0,3) === d)
-assert(b === c++d)
+assert(character(D,0,3) == d)
+assert(b == c++d)
 cS3 = symmetricGroupTable(3,QQ)
 assert( cS3.table ==
     matrix{{1_QQ,1,1},{-1,0,2},{1,-1,1}})
 adec = a/cS3
-assert( set keys adec.decompose ===
-    set {(0,{0}),(1,{2}),(2,{3})})
-assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{1_QQ,1,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,1_QQ,0}})
+assert( set keys adec.decompose == set {0,1,2})
+CR = a.degreesRing
+T = CR_0
+assert( adec.decompose#0 == matrix{{1_QQ,0,0}} * T^0)
+assert( adec.decompose#1 == matrix{{1_QQ,1,0}} * T^2)
+assert( adec.decompose#2 == matrix{{0,1_QQ,0}} * T^3)
 ddec = d/cS3
-assert( set keys ddec.decompose ===
-    set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{1_QQ,1,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{1_QQ,1,0}})
+assert( set keys ddec.decompose == set {0})
+assert( ddec.decompose#0 == matrix{{1_QQ,0,0}} * T^0
+    + matrix{{1_QQ,1,0}} * (T^1+T^2+T^3))
 ///
 
 -- Test 1 (non-monomial ideal, symmetric group)
