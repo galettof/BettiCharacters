@@ -3794,7 +3794,7 @@ K = res ideal vars R
 S4 = symmetricGroupActors(R)
 A = action(K,S4)
 c = character A
-sign = character(R,5, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
+sign = character(R, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
 -- check duality of representations in Koszul complex
 -- which is true up to a twist by a sign representation
 assert(dual(c,id_QQ) == c ** sign)
