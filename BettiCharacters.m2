@@ -3768,7 +3768,7 @@ G = {
     matrix{{x_1,x_2,y_1,y_2}}
     }
 A = action(RI,G)
-a = character(R,4,hashTable {
+a = character(R,hashTable {
     ((0,{0,0}), matrix{{1,1,1,1}}),
     ((1,{1,1}), matrix{{0,0,0,4}}),
     ((2,{1,2}), matrix{{0,0,-2,2}}),
@@ -3777,7 +3777,7 @@ a = character(R,4,hashTable {
     })
 assert((character A) == a)
 B = action(R,G)
-b = character(R,4,hashTable {
+b = character(R,hashTable {
     ((0,{0,2}), matrix{{1,3,1,3}}),
     ((0,{2,0}), matrix{{1,1,3,3}})
     })
