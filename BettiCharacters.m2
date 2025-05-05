@@ -2449,7 +2449,6 @@ Node
     Subnodes
  	(actors,ActionOnComplex,ZZ)  
  	(actors,ActionOnGradedModule,List)
-     	numActors
 	    
 Node
     Key
@@ -3326,30 +3325,6 @@ Node
 	    Format objects of type @TO CharacterDecomposition@
 	    for printing in TeX format.
 	    See @TO texMath@ for more information.
-
-
-Node
-    Key
-    	numActors
-    	(numActors,Action)
-    Headline
-    	number of acting elements
-    Usage
-    	numActors(A)
-    Inputs
-    	A:Action
-    Outputs
-    	:ZZ
-    Description
-    	Text
-	    Returns the number of group elements passed by the user
-	    when defining the given action.
-	    This number is not necessarily the order of the acting
-	    group because in order to compute characters it is
-	    enough to work with a representative of each conjugacy
-	    class of the group.
-    SeeAlso
-    	action
 
 
 Node
