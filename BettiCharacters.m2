@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- Copyright 2021-2024  Federico Galetto
+-- Copyright 2021-2025  Federico Galetto
 --
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
