@@ -2579,7 +2579,7 @@ Node
 	    be concentrated in homological degree zero.
 	    
 	    Characters may also be constructed by hand using
-	    @TO (character,Ring,ZZ,ZZ,HashTable)@.
+	    @TO (character,PolynomialRing,HashTable)@.
     Subnodes
     	Character
     	(character,ActionOnComplex)
