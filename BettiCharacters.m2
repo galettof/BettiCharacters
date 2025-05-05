@@ -1537,6 +1537,7 @@ Node
       	action
 	actors
       	:Characters and related operations
+	"Character class"
         character
 	"Character operations"
 	:Character tables and decompositions
@@ -1553,6 +1554,96 @@ Node
       	"BettiCharacters Example 4"
 	"BettiCharacters Example 5"
 
+Node
+    Key
+	"Character class"
+    Headline
+	internal representation of graded characters
+    Description
+	Text
+	   Version 2.5 of the @TO "BettiCharacters"@ package introduces
+	   a new internal representation of graded characters.
+	   Although character printouts look the same as in
+	   previous versions, this new
+	   representation is incompatible with the one from earlier
+	   versions of the package. The earlier representation was
+	   not sufficient to compute tensor products of characters of
+	   the semidirect product of a finite group with a torus
+	   (see @TO "Semidirect"@). Not only the new representation
+	   makes this possible, it also generally makes character
+	   operations more natural and sets the groundwork for
+	   functionality to be added in future versions.
+
+	   To understand how characters are stored, consider the
+	   following example.
+	Example
+	    R = QQ[x,y,z]
+	    I = ideal(x+y+z,x*y+x*z+y*z,x*y*z)
+	    Q = R/I
+	    S2 = symmetricGroupActors R
+	    A = action(Q,S2)
+	    a = character(A,0,10)
+	Text
+	    The quotient ring @TT "Q"@ is a module concentrated in
+	    homological degree zero. It is an Artinian ring with
+	    nonzero components in degrees zero, one, two, and three.
+	    Hence, the printout of the character of @TT "Q"@
+	    shows four rows indexed by pairs @TT "(h,d)"@, with
+	    @TT "h"@ the homological degree and @TT "d"@ the
+	    internal degree.
+
+	    Internally, the character stores a single matrix for
+	    each homological degree. To separate the internal
+	    degrees, the character uses elements from the
+	    @TO "degreesMonoid"@ of the ambient ring of @TT "Q"@.
+	    Factoring out the monomials of the monoid of degrees,
+	    gives the characters of the graded components.
+	Example
+	    a.characters
+	    coefficients a.characters#0
+	Text
+	    With this setup, the character in each homological
+	    degree is a matrix with values in a "character ring".
+	    This character ring is constructed as @TT "F[M]"@,
+	    where @TT "F"@ is the field of coefficients of @TT "R"@
+	    and @TT "M"@ is the @TO "degreesMonoid"@ of @TT "R"@.
+	    The character ring is stored with each action and
+	    character, and in the cache table of the polynomial
+	    ring under the key @TT "degreesRing"@.
+	Example
+	    A.degreesRing
+	    a.degreesRing
+	    R.cache#degreesRing
+	Text
+	    When different characters are combined with methods
+	    such as @TO "BettiCharacters::directSum(Character)"@ or
+	    @TO "BettiCharacters::tensor(Character,Character)"@, the package
+	    checks that all characters have values in the same
+	    character ring. All actions and characters of
+	    objects (rings, ideals, modules, resolutions) over
+	    the same ambient ring automatically share the
+	    same character ring.
+
+	    The character ring can be defined just as well
+	    when the ambient ring is multigraded and in the
+	    presence of actions by the semidirect product of
+	    a finite group and the torus responsible for the
+	    multigrading.
+	Example
+	    S = QQ[u,v,w,Degrees=>{{1,0,0},{0,1,0},{0,0,1}}]
+	    J = ideal(u^2,v^2,w^2,u*v*w)
+	    RJ = res J
+	    S3 = symmetricGroupActors(S)
+	    B = action(RJ,S3,Semidirect=>{uniquePermutations,rsort})
+	    b = character B
+	    b.characters
+	    b.degreesRing
+    Caveat
+	To avoid issues such as incompatible character rings
+	or character rings being recreated over and over,
+	the handling of character rings is currently not
+	exposed to the user.
+	
 Node
     Key
     	"Character operations"
