@@ -3304,27 +3304,6 @@ Node
 	    for printing in TeX format.
 	    See @TO texMath@ for more information.
 
-
-Node
-    Key
-    	(ring,Action)
-    Headline
-    	get ring of object acted upon
-    Usage
-    	ring(A)
-    Inputs
-    	A:Action
-    Outputs
-    	:PolynomialRing
-	    associated with the object acted upon
-    Description
-    	Text
-	    Returns the polynomial ring associated with the object
-	    being acted upon.
-    SeeAlso
-    	action
-
-
 Node
     Key
     	ringActors
