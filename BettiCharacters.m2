@@ -2792,19 +2792,14 @@ Node
 	    
 Node
     Key
-    	(character,Ring,ZZ,ZZ,HashTable)
-    	(character,PolynomialRing,ZZ,HashTable)
+    	(character,PolynomialRing,HashTable)
     Headline
     	construct a character
     Usage
-    	character(F,dl,cl,H)
+    	character(R,H)
     Inputs
-    	F:Ring
-	    a field
-    	dl:ZZ
-	    degree length
-    	cl:ZZ
-	    character length
+    	R:PolynomialRing
+	    a polynomial ring over a field
     	H:HashTable
 	    raw character data
     Outputs
@@ -2816,25 +2811,19 @@ Node
 	    The user who wishes to define characters by hand
 	    may do so with this particular application of the method.
 	    
-	    The first argument is the field the character
-	    values will live in; this makes it possible to compare or
-	    combine the hand-constructed character with other
-	    characters over the same field. The second argument is
-	    the length of the degrees used for the internal (multi)grading
-	    of the characters. The third argument is
-	    the length of the character, i.e., the number of conjugacy
-	    classes of the group whose representations the character
-	    is coming from. The fourth argument is a hash table
+	    The first argument is a polynomial ring over a field. The
+	    character inherits the grading of this polynomial ring
+	    and takes values in the field of coefficients.
+	    The second argument is a hash table
 	    containing the "raw" character data. The hash table
 	    entries are in the format @TT "(i,d) => c"@, where @TT "i"@
 	    is an integer representing homological degree, @TT "d"@
 	    is a list representing the internal (multi)degree, and
-	    @TT "c"@ is a list containing the values of the character
-	    in the given degrees. Note that the values of the character
-	    are elements in the field given as the first argument.
+	    @TT "c"@ is a one-row matrix containing the values of the
+	    character in the given degrees.
 	Example
 	    R = QQ[x_1..x_3]
-	    regRep = character(QQ,1,3, hashTable {
+	    regularRepresentation = character(R, hashTable {
 		    (0,{0}) => matrix{{1,1,1}},
 		    (0,{1}) => matrix{{-1,0,2}},
 		    (0,{2}) => matrix{{-1,0,2}},
@@ -2846,20 +2835,7 @@ Node
 		  matrix{{x_1,x_2,x_3}} }
 	    Q = R/I
 	    A = action(Q,S3)
-	    character(A,0,3) === regRep
-    	Text
-	    The other version of this command replaces the first two
-	    arguments with a polynomial ring from which the field
-	    of coefficients and the degree length are inherited.
-	    This was the only construction available in version 2.1
-	    and earlier, and is maintained for backward compatibility.
-	Example
-	    character(R,3, hashTable {
-		    (0,{0}) => matrix{{1,1,1}},
-		    (0,{1}) => matrix{{-1,0,2}},
-		    (0,{2}) => matrix{{-1,0,2}},
-		    (0,{3}) => matrix{{1,-1,1}},
-		    })
+	    character(A,0,3) == regularRepresentation
     Caveat
     	This constructor implements basic consistency checks, but
 	it is still possible to construct objects that are not
