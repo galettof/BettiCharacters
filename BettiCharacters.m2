@@ -3335,6 +3335,8 @@ Node
     Key
     	Semidirect
 	[action, Semidirect]
+	[character, Semidirect]
+	[(symbol *, CharacterDecomposition, CharacterTable), Semidirect]
 	degreeOrbit
 	degreeRepresentative
     Headline
@@ -3569,6 +3571,16 @@ Node
     	Example
 	    sign = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
 	    dual(a,{1,2,3}) ** sign === a
+    Synopsis
+    	Usage
+	    c ^** m
+    	Inputs
+	    A:Character
+    	    m:ZZ
+    	Outputs
+	    :Character
+	    	the m-th tensor power of c
+    Description
 	Text
 	    Starting with version 2.5, this package allows nonnegative
 	    tensor powers of characters using @TO (symbol ^**,Character,ZZ)@.
