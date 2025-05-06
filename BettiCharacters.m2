@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- Copyright 2021-2024  Federico Galetto
+-- Copyright 2021-2025  Federico Galetto
 --
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -18,14 +18,29 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.4",
-     Date => "July 13, 2024",
+     Version => "2.5",
+     Date => "May 6, 2025",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
 	       HomePage => "http://math.galetto.org"}},
      Headline => "finite group characters on free resolutions and graded modules",
-     DebuggingMode => false
+     DebuggingMode => false,
+     Keywords => {"Commutative Algebra"},
+     Certification => {
+	 "journal name" => "Journal of Software for Algebra and Geometry",
+	 "journal URI" => "https://msp.org/jsag/",
+	 "article title" => "Setting the scene for Betti characters",
+	 "acceptance date" => "2023-05-30",
+	 "published article URI" => "https://msp.org/jsag/2023/13-1/p04.xhtml",
+	 "published article DOI" => "10.2140/jsag.2023.13.45",
+	 "published code URI" => "https://msp.org/jsag/2023/13-1/jsag-v13-n1-x04-BettiCharacters.m2",
+	 "repository code URI" => "https://github.com/Macaulay2/M2/blob/master/M2/Macaulay2/packages/BettiCharacters.m2",
+	 "release at publication" => "a446af4424af33c06ab97694761a4d5bbc4d535f",
+	 "version at publication" => "2.1",
+	 "volume number" => "13",
+	 "volume URI" => "https://msp.org/jsag/2023/13-1/"
+	 }
      )
 
 export {
@@ -43,7 +58,6 @@ export {
     "degreeOrbit",
     "degreeRepresentative",
     "Labels",
-    "numActors",
     "ringActors",
     "Semidirect",
     "Sub",
@@ -63,36 +77,29 @@ Action = new Type of HashTable
 ActionOnComplex = new Type of Action
 ActionOnGradedModule = new Type of Action
 
--- equality check for actions implemented below
-
--- equality for characters as raw hash tables
-Character == Character := (A,B) -> A === B
-
 ----------------------------------------------------------------------
 -- Characters and character tables -----------------------------------
 ----------------------------------------------------------------------
 
+-- function to take a single degree and make it into a list
+-- this is the default degreeOrbit function to be used by
+-- all actions GxT where T is the torus that gives the grading
+-- actions by semidirect products G⋉T need a different function
+bracketize := d -> {d}
+
 -- method for returning characters of various action types
-character = method(TypicalValue=>Character)
+character = method(TypicalValue=>Character,Options=>{Semidirect=>(bracketize,identity)})
 
 -- construct a finite dimensional character by hand
--- this constructor is new after v2.1
--- it is intended to make characters independent of a
--- particular polynomial ring, relying instead on the
--- field of definition and degree length of the grading
+-- new constructor with v2.5
 -- INPUT:
--- 1) coefficient ring (must be a field)
--- 2) degree length (must be a positive integer)
--- 3) integer: character length (or number of actors)
--- 4) hash table for raw character: (homdeg,deg) => character matrix
-character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
-    -- check first argument is a field
+-- 1) polynomial ring (over a field)
+-- 2) hash table for raw character: (homdeg,deg) => character matrix
+character(PolynomialRing,HashTable) := Character => op -> (R,H) -> (
+    -- check polynomial ring is over a field
+    F := coefficientRing R;
     if not isField F then (
-	error "character: expected first argument to be a field";
-	);
-    -- check degree length is a positive integer
-    if dl <= 0 then (
-	error "character: second argument must be a positive integer";
+	error "character: expected degree ring over a field";
 	);
     -- check keys are in the right format
     k := keys H;
@@ -100,6 +107,15 @@ character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
 	class i#0 =!= ZZ or class i#1 =!= List) then (
 	error "character: expected keys of the form (ZZ,List)";
 	);
+    -- check if character ring is already present
+    -- if not, construct it and cache it
+    if not R#?cache then R#cache = new CacheTable;
+    if not R#cache#?degreesRing then (
+	R#cache#degreesRing = F degreesMonoid R;
+	);
+    DR := R#cache#degreesRing;
+    -- get degree length
+    dl := numgens DR;
     -- check degree vectors are allowed
     degs := apply(k,last);
     if any(degs, i -> #i != dl or any(i, j -> class j =!= ZZ)) then (
@@ -110,28 +126,36 @@ character(Ring,ZZ,ZZ,HashTable) := Character => (F,dl,cl,H) -> (
     if any(v, i -> class i =!= Matrix) then (
 	error "character: expected characters to be matrices";
 	);
+    if any(v, i -> numRows i != 1) then (
+	error ("character: expected characters to be one-row matrices");
+	);
+    cl := numColumns first v;
     if any(v, i -> numColumns i != cl) then (
-	error ("character: expected characters to be one-row matrices with " | toString(cl) | " columns");
+	error ("character: expected matrices to have the same number of columns");
 	);
     -- move character values into given ring
-    H2 := try applyValues(H, v -> promote(v,F)) else (
-	error "character: could not promote characters to given ring";
+    H = try applyValues(H, v -> promote(v,F)) else (
+	error "character: could not promote characters to field of coefficients";
 	);
+    -- partition keys by hom degree, then extract internal degree
+    -- so {(0,{0}),(0,{1})} goes to 0=>{(0,{0}),(0,{1})}
+    pk := partition(i -> i#0,k);
+    -- for each hom degree, multiply each char matrix with degree monomial
+    -- then add them all
+    H' := applyValues(pk, l -> sum apply(l, d -> (H#d) * DR_(d#1)) );
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => F,
-	(symbol degreeLength) => dl,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => first op.Semidirect,
+	(symbol degreeRepresentative) => last op.Semidirect,
 	(symbol numActors) => cl,
-	(symbol characters) => H2,
+	(symbol characters) => H',
 	}
     )
 
--- constructor over polynomial rings
--- (default before v2.1, kept for compatibility)
-character(PolynomialRing,ZZ,HashTable) := Character => (R,cl,H) -> (
-    character(coefficientRing R,degreeLength R,cl,H)
-    )
 
+-- equality for characters as raw hash tables
+Character == Character := (A,B) -> A === B
 
 -- direct sum of characters
 -- modeled after code in Macaulay2/Core/matrix.m2
@@ -141,83 +165,130 @@ plus(Character,Character) := Character => directSum
 Character ++ Character := Character => directSum
 directSum Character := c -> Character.directSum (1 : c)
 Character.directSum = args -> (
-    -- check ring is the same for all summands
-    R := (args#0).ring;
-    if any(args, c -> c.ring =!= R)
-    then error "directSum: expected characters all over the same field";
-    -- check degree length is the same for all summands
-    dl := (args#0).degreeLength;
-    if any(args, c -> c.degreeLength != dl)
-    then error "directSum: expected characters all with the same degree length";
+    -- check degreesRing is the same for all summands
+    DR := (args#0).degreesRing;
+    if any(args, c -> c.degreesRing =!= DR)
+    then error "directSum: expected characters over the same ring";
     -- check character length is the same for all summands
     cl := (args#0).numActors;
     if any(args, c -> c.numActors != cl)
     then error "directSum: expected characters all of the same length";
+    -- check degreeOrbit is the same for all summands
+    degOrb := (args#0).degreeOrbit;
+    if any(args, c -> c.degreeOrbit =!= degOrb)
+    then error "directSum: characters have different degree orbit functions";
+    -- check degreeRepresentative is the same for all summands
+    degRep := (args#0).degreeRepresentative;
+    if any(args, c -> c.degreeRepresentative =!= degRep)
+    then error "directSum: characters have different degree representative functions";
     -- raw character of direct sum (could have zero entries)
     H := fold( (c1,c2) -> merge(c1,c2,plus), apply(args, c -> c.characters) );
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
-	(symbol degreeLength) => dl,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => degOrb,
+	(symbol degreeRepresentative) => degRep,
 	(symbol numActors) => cl,
 	-- add raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v)),
 	}
     )
 
--- tensor product of characters (auxiliary functions)
--- function to add sequences (homological,internal) degrees
-addDegrees = (d1,d2) -> apply(d1,d2,plus)
-
 -- function to multiply character matrices (Hadamard product)
 multiplyCharacters = (c1,c2) -> (
     e1 := flatten entries c1;
     e2 := flatten entries c2;
     m := apply(e1,e2,times);
-    matrix{m}
+    -- ensure char matrix has right degrees
+    map(target c1,source c1,matrix{m})
     )
 
 -- tensor product of characters
 -- modeled after directSum, but only works for two characters
 Character ** Character := Character => tensor
 tensor(Character,Character) := Character => {} >> opts -> (c1,c2) -> (
-    -- check ring is the same for all factors
-    R := c1.ring;
-    if (c2.ring =!= R)
-    then error "tensor: expected characters all over the same field";
-    -- check degree length is the same for all summands
-    dl := c1.degreeLength;
-    if (c2.degreeLength != dl)
-    then error "tensor: expected characters all with the same degree length";
+    -- check degreesRing is the same for all factors
+    DR := c1.degreesRing;
+    if (c2.degreesRing =!= DR)
+    then error "tensor: expected characters all over the same ring";
     -- check character length is the same for all summands
     cl := c1.numActors;
     if (c2.numActors != cl)
     then error "tensor: expected characters all of the same length";
+    -- check degreeOrbit is the same for all summands
+    degOrb := c1.degreeOrbit;
+    if (c2.degreeOrbit =!= degOrb)
+    then error "tensor: characters have different degree orbit functions";
+    -- check degreeRepresentative is the same for all summands
+    degRep := c1.degreeRepresentative;
+    if (c2.degreeRepresentative =!= degRep)
+    then error "tensor: characters have different degree representative functions";
     -- raw character of tensor product (may contain zeros)
-    H := combine(c1.characters,c2.characters,addDegrees,multiplyCharacters,plus);
+    -- homological degrees should be added, hence the first plus
+    -- raw characters should be Hadamard multiplied
+    -- if different homological degrees add up to the same value,
+    -- the corresponding characters should be added, hence the last plus
+    H := combine(c1.characters,c2.characters,plus,multiplyCharacters,plus);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => R,
-	(symbol degreeLength) => dl,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => degOrb,
+	(symbol degreeRepresentative) => degRep,
 	(symbol numActors) => cl,
 	-- multiply raw characters
 	(symbol characters) => applyPairs(H,(k,v)->if not zero v then (k,v))
 	}
     )
 
+-- tensor power (new in v2.5)
+-- M2 uses BinaryPowerMethod in M2/Macaulay2/d/actors.d
+-- to construct tensor powers of rings, modules, etc.
+-- however, this requires a constructor for the inverse/dual
+-- which in the case of characters requires additional user input
+-- we define a recursive tensor power only for positive exponents
+Character ^** ZZ := Character => (c,n) -> (
+    -- return error for negative exponents
+    if n < 0 then (
+	error "Character ^** ZZ: not implemented for negative exponents; use dual";
+	)
+    -- for n=0, return trivial character in hom degree zero
+    else if n == 0 then (
+	H := hashTable {
+	    (0,matrix{toList(c.numActors:1_(c.degreesRing))})
+	    };
+	new Character from {
+	    cache => new CacheTable,
+	    (symbol degreesRing) => c.degreesRing,
+	    (symbol degreeOrbit) => c.degreeOrbit,
+	    (symbol degreeRepresentative) => c.degreeRepresentative,
+	    (symbol numActors) => c.numActors,
+	    (symbol characters) => H
+	    }
+	)
+    -- for n=1, return original character
+    else if n == 1 then (
+	c
+	)
+    -- for n>=2, then reduce to lower power
+    else (
+	tensor(c, c ^** (n-1) )
+	)
+    )
+
 -- shift homological degree of characters
-Character Array := Character => (C,A) -> (
+Character Array := Character => (c,A) -> (
     if # A =!= 1 then error "Character Array: expected array of length 1";
     n := A#0;
     if not instance(n,ZZ) then error "Character Array: expected an integer";
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => C.ring,
-	(symbol degreeLength) => C.degreeLength,
-	(symbol numActors) => C.numActors,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
+	(symbol numActors) => c.numActors,
 	-- homological shift raw characters
-	(symbol characters) => applyKeys(C.characters,
-	    k -> (k#0 - n, k#1))
+	(symbol characters) => applyKeys(c.characters,
+	    k -> k - n)
 	}
     )
 
@@ -228,7 +299,8 @@ alexopts = {Strategy=>0};
 -- character of dual/contragredient representation with conjugation
 dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     -- check characteristic
-    F := c.ring;
+    DR := c.degreesRing;
+    F := coefficientRing DR;
     if char(F) != 0 then (
 	error "dual: use permutation constructor in positive characteristic";
 	);
@@ -236,18 +308,25 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
     if (source phi =!= F or target phi =!= F or phi^2 =!= id_F) then (
 	error "dual: expected an order 2 automorphism of the base field";
 	);
-    -- error if characters cannot be lifted to coefficient field
-    H := try applyValues(c.characters, v -> lift(v,F)) else (
-	error "dual: could not lift characters to base field";
+    -- ring map that inverts variables in degree ring
+    -- this sends a degree T^d to its opposite T^(-d)
+    inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
+    -- create hash table for raw dual
+    H := applyPairs(c.characters,
+	(k,v) -> (
+	    (M,C) := coefficients v;
+	    M = inv M;
+	    C = promote(phi(lift(C,F)),DR);
+	    (-k, M*C)
+	    )
 	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => F,
-	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
-	(symbol characters) => applyPairs(H,
-	    (k,v) -> ( apply(k,minus), phi v )
-	    )
+	(symbol characters) => H
 	}
     )
 
@@ -261,24 +340,33 @@ dual(Character,List) := Character => alexopts >> o -> (c,perm) -> (
     if set perm =!= set(1..n) then (
 	error ("dual: expected a permutation of {1,..," | toString(n) | "}");
 	);
+    -- ring map that inverts variables in degree ring
+    -- this sends a degree T^d to its opposite T^(-d)
+    DR := c.degreesRing;
+    inv := map(DR,DR,apply(gens DR, T -> T^(-1)));
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => n,
+	-- dual lives in opposite homological dimension
+	-- for internal degrees apply the inversion map
+	-- permute columns for values of dual character
 	(symbol characters) => applyPairs(c.characters,
-	    (k,v) -> ( apply(k,minus), v_(apply(perm, i -> i-1)) )
+	    (k,v) -> (-k, (inv v)_(apply(perm, i -> i-1)))
 	    )
 	}
     )
 
 -- extract character by homological dimension (added after v2.1)
 Character _ ZZ := Character => (c,i) -> (
-    H := select(pairs c.characters, p -> first first p == i);
+    H := select(pairs c.characters, p -> first p == i);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => hashTable H
 	}    
@@ -289,7 +377,8 @@ Character _ List := Character => (c,l) -> (
     if any(l, i -> not instance(i,ZZ)) then (
 	error "Character_List: expected a list of integers";
 	);
-    directSum(apply(l, i -> c_i))
+    -- unique avoids adding pieces of the character multiple times
+    directSum(apply(unique l, i -> c_i))
     )
 
 -- extract characters by degree (added after v2.1)
@@ -299,17 +388,29 @@ Character ^ List := Character => (c,degs) -> (
 	degs = {degs};
 	);
     -- check all degrees are compatible
-    if all(degs,d->all(d,i->instance(i,ZZ)) and #d==c.degreeLength) then (
-	H := select(pairs c.characters, p -> member(last first p,degs));
+    dl := numgens c.degreesRing;
+    if all(degs,d->all(d,i->instance(i,ZZ)) and #d==dl) then (
+	-- find all degrees in the orbit of degs and remove duplicates
+	exps := unique flatten apply(degs, d -> c.degreeOrbit d);
+	-- get corresponding monomials in character ring
+	DR := c.degreesRing;
+	mons := apply(exps, e -> DR_e);
+	-- extract those monomials from character
+	H := applyValues(c.characters, v -> (
+		(M,C) := coefficients(v,Monomials=>mons);
+		M*C
+		)
+	    );
     	return new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => c.ring,
-	    (symbol degreeLength) => c.degreeLength,
+	    (symbol degreesRing) => c.degreesRing,
+	    (symbol degreeOrbit) => c.degreeOrbit,
+	    (symbol degreeRepresentative) => c.degreeRepresentative,
 	    (symbol numActors) => c.numActors,
-	    (symbol characters) => hashTable H
+	    (symbol characters) => H
 	    }    
 	) else (
-	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(c.degreeLength));
+	error ("Character^List: expected a (list of) (multi)degree(s) of length " | toString(dl));
 	);
     )
 
@@ -317,7 +418,7 @@ Character ^ List := Character => (c,degs) -> (
 ZZ * Character :=
 QQ * Character :=
 RingElement * Character := Character => (r,c) -> (
-    try a := promote(r,ring c) else (
+    try a := promote(r,c.degreesRing) else (
 	error "RingElement*Character: could not promote scalar to field of character";
 	);
     H := applyPairs(c.characters,(k,v)->(
@@ -327,8 +428,9 @@ RingElement * Character := Character => (r,c) -> (
 	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => H
 	}    
@@ -344,8 +446,9 @@ Character * RingElement := Character => (c,r) -> r*c
 minus Character := Character => c -> (
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => c.ring,
-	(symbol degreeLength) => c.degreeLength,
+	(symbol degreesRing) => c.degreesRing,
+	(symbol degreeOrbit) => c.degreeOrbit,
+	(symbol degreeRepresentative) => c.degreeRepresentative,
 	(symbol numActors) => c.numActors,
 	(symbol characters) => applyValues(c.characters,v->-v)
 	}    
@@ -355,6 +458,12 @@ minus Character := Character => c -> (
 Character - Character :=
 difference(Character,Character) := Character =>
 (c1,c2) -> directSum(c1,-c2)
+
+
+
+----------------------------------------------------------------------
+-- Character tables and decompositions -------------------------------
+----------------------------------------------------------------------
     
 -- method to construct character tables
 characterTable = method(TypicalValue=>CharacterTable,Options=>{Labels => {}});
@@ -510,6 +619,9 @@ o -> (conjSize,charTable,F,perm) -> (
 	}
     )
 
+-- equality for character tables as raw hash tables
+CharacterTable == CharacterTable := (A,B) -> A === B
+
 -- new method for character decomposition
 decomposeCharacter = method(TypicalValue=>CharacterDecomposition);
 
@@ -517,27 +629,26 @@ decomposeCharacter = method(TypicalValue=>CharacterDecomposition);
 decomposeCharacter(Character,CharacterTable) :=
 CharacterDecomposition => (C,T) -> (
     -- check character and table are over same ring
-    R := C.ring;
-    if T.ring =!= R then (
+    F := coefficientRing C.degreesRing;
+    if T.ring =!= F then (
 	error "decomposeCharacter: expected character and table over the same field";
 	);
     -- check number of actors is the same
     if C.numActors != T.numActors then (
 	error "decomposeCharacter: character length does not match table";
 	);
+    -- order of the group = sum of conjugacy class sizes
     ord := sum T.size;
     -- create decomposition hash table
     D := applyValues(C.characters, char -> 1/ord*char*T.matrix);
-    -- find non zero columns of table for printing
-    M := matrix apply(values D, m -> flatten entries m);
-    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     new CharacterDecomposition from {
+	cache => new CacheTable,
 	(symbol numActors) => C.numActors,
-	(symbol ring) => R,
-	(symbol degreeLength) => C.degreeLength,
-	(symbol Labels) => T.Labels,
+	(symbol degreesRing) => C.degreesRing,
+	(symbol degreeOrbit) => C.degreeOrbit,
+	(symbol degreeRepresentative) => C.degreeRepresentative,
 	(symbol decompose) => D,
-	(symbol positions) => p
+	(symbol Labels) => T.Labels
 	}
     )
 
@@ -546,11 +657,21 @@ Character / CharacterTable := CharacterDecomposition => decomposeCharacter
 
 -- recreate a character from decomposition
 character(CharacterDecomposition,CharacterTable) :=
-Character => (D,T) -> (
+Character => op -> (D,T) -> (
+    -- check decomposition and table are over same ring
+    F := coefficientRing D.degreesRing;
+    if T.ring =!= F then (
+	error "character: expected decomposition and table over the same field";
+	);
+    -- check number of actors is the same
+    if D.numActors != T.numActors then (
+	error "character: decomposition and table have different number of actors";
+	);
     new Character from {
 	cache => new CacheTable,
-	(symbol ring) => D.ring,
-	(symbol degreeLength) => D.degreeLength,
+	(symbol degreesRing) => D.degreesRing,
+	(symbol degreeOrbit) => D.degreeOrbit,
+	(symbol degreeRepresentative) => D.degreeRepresentative,
 	(symbol numActors) => D.numActors,
 	(symbol characters) => applyValues(D.decompose, i -> i*T.table),
 	}
@@ -558,6 +679,9 @@ Character => (D,T) -> (
 
 -- shortcut to recreate character from decomposition
 CharacterDecomposition * CharacterTable := Character => character
+
+-- equality for character decompositions as raw hash tables
+CharacterDecomposition == CharacterDecomposition := (A,B) -> A === B
 
 ----------------------------------------------------------------------
 -- Actions on complexes and characters of complexes ------------------
@@ -568,7 +692,8 @@ CharacterDecomposition * CharacterTable := Character => character
 -- as one-row matrices of substitutions, Sub=>false means
 -- ring actors are passed as matrices
 -- Semidirect option (added after v2.2)
-action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},identity)})
+action = method(TypicalValue=>Action,
+    Options=>{Sub=>true,Semidirect=>(bracketize,identity)})
 
 -- constructor for action on resolutions
 -- INPUT:
@@ -576,13 +701,15 @@ action = method(TypicalValue=>Action,Options=>{Sub=>true,Semidirect=>(d -> {d},i
 -- 2) a list of actors on the ring variables
 -- 3) a list of actors on the i-th module of the resolution
 -- 4) homological index i
-action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
-    --check C is a homogeneous min free res over a poly ring over a field
+action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
+    --check C is a homogeneous complex over a poly ring over a field
+    --NOTE: minimality is necessary, but assumed
     R := ring C;
     if not isPolynomialRing R then (
 	error "action: expected a complex over a polynomial ring";
 	);
-    if not isField coefficientRing R then (
+    F := coefficientRing R;
+    if not isField F then (
 	error "action: expected coefficients in a field";
 	);
     if not all(length C,i -> isFreeModule C_(i+min(C))) then (
@@ -592,16 +719,18 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	error "action: complex is not homogeneous";
 	);
     --check the matrix of the action on the variables has right size
-    n := dim R;
+    n := numgens R;
     if not all(l,g->numColumns(g)==n) then (
 	error "action: ring actor matrix has wrong number of columns";
 	);
     --move ring actors to ring for uniformity
-    l = apply(l, g -> promote(g,R));
+    l = try apply(l, g -> promote(g,R)) else (
+	error "action: could not promote actors to ring of complex";
+	);
     if op.Sub then (
 	--if ring actors are substitutions, they must be one-row matrices
 	if not all(l,g->numRows(g)==1) then (
-	    error "action: expected ring actor matrix to be a one-row substitution matrix";
+	    error "action: expected ring actors to be a one-row matrices";
 	    );
 	) else (
 	--if ring actors are matrices, they must be square
@@ -615,6 +744,13 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
     if #l != #l0 then (
 	error "action: lists of actors must have equal length";
 	);
+    -- check if character ring is already present
+    -- if not, construct it and cache it
+    if not R#?cache then R#cache = new CacheTable;
+    if not R#cache#?degreesRing then (
+	R#cache#degreesRing = F degreesMonoid R;
+	);
+    DR := R#cache#degreesRing;
     --check size of module actors matches rank of starting module
     r := rank C_i;
     if not all(l0,g->numColumns(g)==r and numRows(g)==r) then (
@@ -629,6 +765,7 @@ action(ChainComplex,List,List,ZZ):=ActionOnComplex=>op->(C,l,l0,i) -> (
 	(symbol target) => C,
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
+	(symbol degreesRing) => DR,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
@@ -665,7 +802,7 @@ numActors(Action) := ZZ => A -> A.numActors
 ringActors = method(TypicalValue=>List,Options=>{Sub=>true})
 ringActors(Action) := List => op -> A -> (
     if not op.Sub then (
-	GB := gb(vars ring A,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	GB := gb(vars A.ring,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	apply(A.ringActors,g->g//GB)
 	)
     else A.ringActors
@@ -675,7 +812,7 @@ ringActors(Action) := List => op -> A -> (
 actors = method(TypicalValue=>List)
 
 -- returns actors on resolution in a given homological degree
--- if homological degree is not the one passed by user,
+-- if homological degree is not the one passed by user upon construction,
 -- the actors are computed and stored
 actors(ActionOnComplex,ZZ) := List => (A,i) -> (
     -- if not cached, compute
@@ -683,9 +820,9 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	-- homological degrees where action is already cached
 	places := apply(select(keys A.cache, k -> instance(k,Sequence) and k#0 == symbol actors), k -> k#1);
 	-- get the complex
-	C := target A;
+	C := A.target;
 	-- if zero in that hom degree, return zeros
-	if zero(C_i) then return toList(numActors(A):map(C_i));
+	if zero(C_i) then return toList(A.numActors:map(C_i));
 	-- if hom degree is to the right of previously computed
 	if i > max places then (
 	    -- compute GB of differential but only up to min gens
@@ -705,7 +842,7 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 	    if not A.cache.?inverse then (
 		--convert variable substitutions to matrices
 		--then invert and convert back to substitutions
-		R := ring A;
+		R := A.ring;
 		b := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 		A.cache.inverse = apply(A.ringActors, g ->
 		    (vars R) * (inverse lift(g//b,coefficientRing R))
@@ -729,37 +866,42 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> (
 
 -- return the character of one free module of a resolution
 -- in a given homological degree
-character(ActionOnComplex,ZZ) := Character => (A,i) -> (
+character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
     -- if not cached, compute
     if not A.cache#?(symbol character,i) then (
-	F := coefficientRing ring A;
+	F := coefficientRing A.ring;
+	DR := A.degreesRing;
+	n := A.numActors;
 	-- if complex is zero in hom degree i, return empty character, don't cache
-	if zero (target A)_i then (
+	if zero (A.target)_i then (
 	    return new Character from {
 		cache => new CacheTable,
-		(symbol ring) => F,
-		(symbol degreeLength) => degreeLength ring A,
-		(symbol numActors) => numActors A,
+		(symbol degreesRing) => DR,
+		(symbol degreeOrbit) => A.degreeOrbit,
+		(symbol degreeRepresentative) => A.degreeRepresentative,
+		(symbol numActors) => n,
 		(symbol characters) => hashTable {},
 		};
 	    );
-	-- record position of degrees of i-th free module
-	-- based on their unique degree orbit rep
-	degs := partition(j -> A.degreeRepresentative degree ((target A)_i)_j,
-	    toList(0..rank((target A)_i)-1));
 	-- create raw character from actors
-	H := applyPairs(degs,
-	    (d,indx) -> ((i,d),
-		lift(matrix{apply(actors(A,i), g -> trace g_indx^indx)},F)
+	a := actors(A,i);
+	r := rank((A.target)_i) - 1;
+	-- for each basis element extract corresponding diagonal entry
+	-- put it in a row matrix and multiply by degree, then add
+	-- this will give the graded raw character as a matrix
+	raw := sum parallelApply(toList(0..r), j -> (
+		d := degree( ((A.target)_i)_j );
+		lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d)
 		)
 	    );
 	-- cache character
 	A.cache#(symbol character,i) = 	new Character from {
 	    cache => new CacheTable,
-	    (symbol ring) => F,
-	    (symbol degreeLength) => degreeLength ring A,
-	    (symbol numActors) => numActors A,
-	    (symbol characters) => H,
+	    (symbol degreesRing) => DR,
+	    (symbol degreeOrbit) => A.degreeOrbit,
+	    (symbol degreeRepresentative) => A.degreeRepresentative,
+	    (symbol numActors) => A.numActors,
+	    (symbol characters) => hashTable {i=>raw},
 	    };
 	);
     -- return cached value
@@ -768,8 +910,8 @@ character(ActionOnComplex,ZZ) := Character => (A,i) -> (
 
 -- return characters of all free modules in a resolution
 -- by repeatedly using previous function
-character ActionOnComplex := Character => A -> (
-    C := target A;
+character ActionOnComplex := Character => op -> A -> (
+    C := A.target;
     directSum for i from min(C) to min(C)+length(C) list character(A,i)
     )
 
@@ -785,7 +927,7 @@ character ActionOnComplex := Character => A -> (
 action(PolynomialRing,List,List) :=
 action(QuotientRing,List,List) :=
 action(Ideal,List,List) :=
-action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
+action(Module,List,List) := ActionOnGradedModule => op -> (M,l,l0) -> (
     -- check M is graded over a poly ring over a field
     -- the way to get the ring depends on the class of M
     if instance(M,Ring) then (
@@ -796,23 +938,26 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
     if not isPolynomialRing R then (
 	error "action: expected a module/ideal/quotient over a polynomial ring";
 	);
-    if not isField coefficientRing R then (
+    F := coefficientRing R;
+    if not isField F then (
 	error "action: expected coefficients in a field";
 	);
     if not isHomogeneous M then (
 	error "action: module/ideal/quotient is not graded";
 	);
     --check matrix of action on variables has right size
-    n := dim R;
+    n := numgens R;
     if not all(l,g->numColumns(g)==n) then (
 	error "action: ring actor matrix has wrong number of columns";
 	);
     --move ring actors to ring for uniformity
-    l = apply(l, g -> promote(g,R));
+    l = try apply(l, g -> promote(g,R)) else (
+	error "action: could not promote actors to ring of module";
+	);
     if op.Sub then (
 	--if ring actors are substitutions, they must be one-row matrices
     	if not all(l,g->numRows(g)==1) then (
-	    error "action: expected ring actor matrix to be a one-row substitution matrix";
+	    error "action: expected ring actors to be a one-row matrices";
 	    );
 	) else (
 	--if ring actors are matrices, they must be square
@@ -828,9 +973,9 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	);
     --check size of module actors matches rank of ambient module
     if instance(M,Module) then (
-    	F := ambient M;
-	) else ( F = R^1; );
-    r := rank F;
+    	A := ambient M;
+	) else ( A = R^1; );
+    r := rank A;
     if not all(l0,g->numColumns(g)==r and numRows(g)==r) then (
 	error "action: module actor matrix has wrong number of rows or columns";
 	);
@@ -842,16 +987,24 @@ action(Module,List,List):=ActionOnGradedModule=>op->(M,l,l0) -> (
 	) else (
 	M' = module M;
 	);
+    -- check if character ring is already present
+    -- if not, construct it and cache it
+    if not R#?cache then R#cache = new CacheTable;
+    if not R#cache#?degreesRing then (
+	R#cache#degreesRing = F degreesMonoid R;
+	);
+    DR := R#cache#degreesRing;
     --store everything into a hash table
     new ActionOnGradedModule from {
 	cache => new CacheTable,
 	(symbol ring) => R,
 	(symbol target) => M,
+	(symbol module) => M',
 	(symbol numActors) => #l,
 	(symbol ringActors) => l,
-	(symbol actors) => apply(l0,g->map(F,F,g)),
-	(symbol module) => M',
+	(symbol actors) => apply(l0,g->map(A,A,g)),
 	(symbol relations) => gb image relations M',
+	(symbol degreesRing) => DR,
 	(symbol degreeOrbit) => first op.Semidirect,
 	(symbol degreeRepresentative) => last op.Semidirect,
 	}
@@ -896,7 +1049,7 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	-- this sorting was made necessary after introducing semidirect options
 	-- actors matrix would be useless without out as it may not match basis
 	if zero b then (
-	    A.cache#(symbol actors,degRep) = toList(numActors(A):map(source b));
+	    A.cache#(symbol actors,degRep) = toList(A.numActors:map(source b));
 	    )
 	else (
 	    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
@@ -918,30 +1071,33 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 
 -- return character of component of given multidegree
-character(ActionOnGradedModule,List) := Character => (A,d) -> (
+character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
     -- ensure function is computed with rep of degree orbit
     degRep := A.degreeRepresentative d;
     -- if not cached, compute
     if not A.cache#?(symbol character,degRep) then (
-	F := coefficientRing ring A;
+	F := coefficientRing A.ring;
+	DR := A.degreesRing;
 	-- zero action, return empty character and don't cache
 	acts := actors(A,degRep);
 	if all(acts,zero) then (
 	    return new Character from {
 		cache => new CacheTable,
-		(symbol ring) => F,
-		(symbol degreeLength) => degreeLength ring A,
-		(symbol numActors) => numActors A,
+		(symbol degreesRing) => DR,
+		(symbol degreeOrbit) => A.degreeOrbit,
+		(symbol degreeRepresentative) => A.degreeRepresentative,
+		(symbol numActors) => A.numActors,
 		(symbol characters) => hashTable {},
 		};
 	    );
 	-- otherwise make character of A in degree d
 	A.cache#(symbol character,degRep) = new Character from {
 		cache => new CacheTable,
-		(symbol ring) => F,
-		(symbol degreeLength) => degreeLength ring A,
-		(symbol numActors) => numActors A,
-		(symbol characters) => hashTable {(0,degRep) => lift(matrix{apply(acts, trace)},F)},
+		(symbol degreesRing) => DR,
+		(symbol degreeOrbit) => A.degreeOrbit,
+		(symbol degreeRepresentative) => A.degreeRepresentative,
+		(symbol numActors) => A.numActors,
+		(symbol characters) => hashTable {0 => lift(matrix{apply(acts, trace)},F) * (DR_degRep)},
 		};
 	);
     -- return cached value
@@ -949,14 +1105,14 @@ character(ActionOnGradedModule,List) := Character => (A,d) -> (
     )
 
 -- return character of component of given degree
-character(ActionOnGradedModule,ZZ) := Character => (A,d) -> (
+character(ActionOnGradedModule,ZZ) := Character => op -> (A,d) -> (
     character(A,{d})
     )
 
 -- return character of components in a range of degrees
-character(ActionOnGradedModule,ZZ,ZZ) := Character => (A,lo,hi) -> (
-    if not all(gens ring A, v->(degree v)=={1}) then (
-	error "character: expected a ZZ-graded polynomial ring";
+character(ActionOnGradedModule,ZZ,ZZ) := Character => op -> (A,lo,hi) -> (
+    if degreeLength A.ring != 1 then (
+	error "character: expected module over a ZZ-graded polynomial ring";
     	);
     directSum for d from lo to hi list character(A,d)
     )
@@ -1058,7 +1214,7 @@ symmetricGroupTable(ZZ,Ring) := (n,F) -> (
 
 -- symmetric group table for backwards compatibility
 symmetricGroupTable PolynomialRing := R -> (
-    symmetricGroupTable(dim R,coefficientRing R)
+    symmetricGroupTable(numgens R,coefficientRing R)
     )
 
 -- symmetric group variable permutation action
@@ -1069,7 +1225,7 @@ symmetricGroupActors PolynomialRing := R -> (
 	error "symmetricGroupActors: expected polynomial ring over a field";
 	);
     -- check number of variables
-    n := dim R;
+    n := numgens R;
     if n < 1 then (
 	error "symmetricGroupActors: expected a positive number of variables";
 	);
@@ -1084,47 +1240,52 @@ symmetricGroupActors PolynomialRing := R -> (
     	)
     )
 
-
-----------------------------------------------------------------------
--- Overloaded Methods
-----------------------------------------------------------------------
-
--- get object acted upon
-target(Action) := A -> A.target
-
--- get polynomial ring acted upon
-ring Action := PolynomialRing => A -> A.ring
-
--- get field of a character (or table or decomposition)
-ring Character :=
-ring CharacterTable :=
-ring CharacterDecomposition :=
-Ring => X -> X.ring
-
--- get degree length of a character (or decomposition)
-degreeLength Character :=
-degreeLength CharacterDecomposition :=
-ZZ => X -> X.degreeLength
-
-
 ---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
 ---------------------------------------------------------------------
 
 -- printing for characters
+-- the next function preps a character for printing by caching
+-- a bigraded hash table of its data as before v2.5
+prepCharacter := c -> (
+    DR := c.degreesRing;
+    F := coefficientRing DR;
+    -- go through homological degrees
+    -- collect multidegrees in the same orbit of the group action
+    -- and save a single character with the degree representative
+    h := new MutableHashTable;
+    for k in keys c.characters do (
+	raw := c.characters#k;
+	mons := flatten entries monomials raw;
+	while mons =!= {} do (
+	    m := first mons;
+	    d := c.degreeRepresentative first exponents m;
+	    orbit := select(mons, f -> c.degreeRepresentative first exponents f == d);
+	    C := lift(last coefficients(raw, Monomials=>orbit),F);
+	    h#(k,d) = matrix{toList (numRows C:1_F)} * C;
+	    mons = mons - set(orbit);
+	    );
+	);
+    c.cache.print = new HashTable from h;
+    )
+
+-- create net for pretty printing of character
 net Character := c -> (
-    bottom := apply(sort pairs c.characters,
+    if not c.cache.?print then prepCharacter c;
+    bottom := apply(sort pairs c.cache.print,
 	(k,v) -> {net k} | apply(flatten entries v,net));
-    stack("Character over "|(net c.ring)," ",
+    F := coefficientRing c.degreesRing;
+    stack("Character over "|(net F)," ",
 	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
     )
 
--- tex string for characters
+-- create tex string for characters
 texMath Character := c -> (
+    if not c.cache.?print then prepCharacter c;
     -- make table headers, one column per actor
     s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
     -- character entries
-    rows := apply(sort pairs c.characters,
+    rows := apply(sort pairs c.cache.print,
 	(k,v) -> concatenate(texMath k,"&",
 	    between("&",apply(flatten entries v,texMath))
 	    )
@@ -1161,26 +1322,58 @@ texMath CharacterTable := T -> (
     )
 
 -- printing character decompositions
+-- the next function preps a character for printing by caching
+-- a bigraded hash table of its data as before v2.5
+prepDecomposition := D -> (
+    DR := D.degreesRing;
+    F := coefficientRing DR;
+    -- go through homological degrees
+    -- collect multidegrees in the same orbit of the group action
+    -- and save a single character with the degree representative
+    h := new MutableHashTable;
+    for k in keys D.decompose do (
+	raw := D.decompose#k;
+	mons := flatten entries monomials raw;
+	while mons =!= {} do (
+	    m := first mons;
+	    d := D.degreeRepresentative first exponents m;
+	    orbit := select(mons, f -> D.degreeRepresentative first exponents f == d);
+	    C := lift(last coefficients(raw, Monomials=>orbit),F);
+	    h#(k,d) = matrix{toList (numRows C:1_F)} * C;
+	    mons = mons - set(orbit);
+	    );
+	);
+    D.cache.print = new HashTable from h;
+    )
+
+-- create net for pretty printing of character decomposition
 net CharacterDecomposition := D -> (
-    p := D.positions;
+    if not D.cache.?print then prepDecomposition D;
+    -- find non zero columns of table for printing
+    M := matrix apply(values D.decompose, m -> flatten entries m);
+    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     -- top row of decomposition table
     a := {{""} | (first D.Labels)_p };
     -- body of decomposition table
-    b := apply(sort pairs D.decompose,(k,v) -> {k} | (flatten entries v)_p );
+    b := apply(sort pairs D.cache.print,
+	(k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
-    	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
+	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
     )
 
 -- tex string for character decompositions
 texMath CharacterDecomposition := D -> (
-    p := D.positions;
+    if not D.cache.?print then prepDecomposition D;
+    -- find non zero columns of table for printing
+    M := matrix apply(values D.decompose, m -> flatten entries m);
+    p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     -- make table headers, one column per nonzero irrrep
     s := concatenate("\\begin{array}{c|",#p:"r","}\n");
     -- top row with labels of characters appearing in decomposition
     s = s | concatenate("&",between("&",(last D.Labels)_p),"\\\\ \\hline\n");
     -- decomposition table entries
-    rows := apply(sort pairs D.decompose,
+    rows := apply(sort pairs D.cache.print,
 	(k,v) -> concatenate(texMath k,"&",
 	    between("&",apply((flatten entries v)_p,texMath))
 	    )
@@ -1191,7 +1384,7 @@ texMath CharacterDecomposition := D -> (
 
 -- printing for Action type
 net Action := A -> (
-    (net class target A)|" with "|(net numActors A)|" actors"
+    (net class A.target)|" with "|(net (A.numActors))|" actors"
     )
 
 
@@ -1262,13 +1455,19 @@ Node
 		    Improved caching and removed calls to deprecated functions."),
 		(BOLD "2.4: ", "Introduces significant optizimations to the core
 		    algorithm for computing Betti characters. Removed the ",
-		    TT "inverseRingActors", " method since it is not used anymore.")
+		    TT "inverseRingActors", " method since it is not used anymore."),
+		(BOLD "2.5: ", "Overhauls the internal representation of characters
+		    to better handle actions of semidirect products; v2.5 characters
+		    are incompatible with those from previous versions. Adds tensor
+		    powers of characters. Removes some less used methods to access
+		    keys of actions and characters. Requires Macaulay2 1.24.05.")
 		}@
     Subnodes
     	:Defining and computing actions
       	action
 	actors
       	:Characters and related operations
+	"Character class"
         character
 	"Character operations"
 	:Character tables and decompositions
@@ -1285,6 +1484,96 @@ Node
       	"BettiCharacters Example 4"
 	"BettiCharacters Example 5"
 
+Node
+    Key
+	"Character class"
+    Headline
+	internal representation of graded characters
+    Description
+	Text
+	   Version 2.5 of the @TO "BettiCharacters"@ package introduces
+	   a new internal representation of graded characters.
+	   Although character printouts look the same as in
+	   previous versions, this new
+	   representation is incompatible with the one from earlier
+	   versions of the package. The earlier representation was
+	   not sufficient to compute tensor products of characters of
+	   the semidirect product of a finite group with a torus
+	   (see @TO "Semidirect"@). Not only the new representation
+	   makes this possible, it also generally makes character
+	   operations more natural and sets the groundwork for
+	   functionality to be added in future versions.
+
+	   To understand how characters are stored, consider the
+	   following example.
+	Example
+	    R = QQ[x,y,z]
+	    I = ideal(x+y+z,x*y+x*z+y*z,x*y*z)
+	    Q = R/I
+	    S2 = symmetricGroupActors R
+	    A = action(Q,S2)
+	    a = character(A,0,10)
+	Text
+	    The quotient ring @TT "Q"@ is a module concentrated in
+	    homological degree zero. It is an Artinian ring with
+	    nonzero components in degrees zero, one, two, and three.
+	    Hence, the printout of the character of @TT "Q"@
+	    shows four rows indexed by pairs @TT "(h,d)"@, with
+	    @TT "h"@ the homological degree and @TT "d"@ the
+	    internal degree.
+
+	    Internally, the character stores a single matrix for
+	    each homological degree. To separate the internal
+	    degrees, the character uses elements from the
+	    @TO "degreesMonoid"@ of the ambient ring of @TT "Q"@.
+	    Factoring out the monomials of the monoid of degrees,
+	    gives the characters of the graded components.
+	Example
+	    a.characters
+	    coefficients a.characters#0
+	Text
+	    With this setup, the character in each homological
+	    degree is a matrix with values in a "character ring".
+	    This character ring is constructed as @TT "F[M]"@,
+	    where @TT "F"@ is the field of coefficients of @TT "R"@
+	    and @TT "M"@ is the @TO "degreesMonoid"@ of @TT "R"@.
+	    The character ring is stored with each action and
+	    character, and in the cache table of the polynomial
+	    ring under the key @TT "degreesRing"@.
+	Example
+	    A.degreesRing
+	    a.degreesRing
+	    R.cache#degreesRing
+	Text
+	    When different characters are combined with methods
+	    such as @TO "BettiCharacters::directSum(Character)"@ or
+	    @TO "BettiCharacters::tensor(Character,Character)"@, the package
+	    checks that all characters have values in the same
+	    character ring. All actions and characters of
+	    objects (rings, ideals, modules, resolutions) over
+	    the same ambient ring automatically share the
+	    same character ring.
+
+	    The character ring can be defined just as well
+	    when the ambient ring is multigraded and in the
+	    presence of actions by the semidirect product of
+	    a finite group and the torus responsible for the
+	    multigrading.
+	Example
+	    S = QQ[u,v,w,Degrees=>{{1,0,0},{0,1,0},{0,0,1}}]
+	    J = ideal(u^2,v^2,w^2,u*v*w)
+	    RJ = res J
+	    S3 = symmetricGroupActors(S)
+	    B = action(RJ,S3,Semidirect=>{uniquePermutations,rsort})
+	    b = character B
+	    b.characters
+	    b.degreesRing
+    Caveat
+	To avoid issues such as incompatible character rings
+	or character rings being recreated over and over,
+	the handling of character rings is currently not
+	exposed to the user.
+	
 Node
     Key
     	"Character operations"
@@ -1318,8 +1607,8 @@ Node
 	Specht ideal associated	with the partition (5,2).
 	The action of the symmetric group on the resolution of
 	this ideal is described in	
-	@arXiv("2010.06522",
-	    "K. Shibata, K. Yanagawa - Minimal free resolutions of the Specht ideals of shapes (n−2,2) and (d,d,1)")@.
+	@HREF("https://doi.org/10.1142/S0219498823501992",
+	    "K. Shibata, K. Yanagawa - Elementary construction of minimal free resolutions of the Specht ideals of shapes (n−2,2) and (d,d,1)")@.
 	The same ideal is also the ideal of the 6-equals
 	subspace arrangement in a 7-dimensional affine space.
 	This point of view is explored in
@@ -1377,9 +1666,9 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(QQ,1,15,hashTable {(0,{7}) =>
+    	sign = character(R,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
-	dual(c,id_QQ)[-5] ** sign === c
+	dual(c,id_QQ)[-5] ** sign == c
     Text
     	The second argument in the @TT "dual"@ command is the
 	restriction of complex conjugation to the field of
@@ -1662,7 +1951,7 @@ Node
 	    complex to the left. Finally, the resulting character is
 	    decomposed against the character table of $\mathfrak{S}_3$.
     	Example
-	    c = (c - character(R,3,hashTable{(0,{0,0,0})=>matrix{{1,1,1}}}))[1]
+	    c = (c - c_0)[1]
     	    T = symmetricGroupTable(3,QQ)
 	    decomposeCharacter(c,T)
 	Text
@@ -1683,10 +1972,8 @@ Node
     Subnodes
     	ActionOnComplex
 	ActionOnGradedModule
-	(net,Action)
-	(ring,Action)
 	ringActors
-	(target,Action)
+	(net,Action)
 	    
 Node
     Key
@@ -1719,12 +2006,10 @@ Node
 	    This class is provided by the package
 	    @TO BettiCharacters@.
     Subnodes
-    	(ring,Character)
-    	(degreeLength,Character)
     	(symbol SPACE,Character,Array)
-    	(symbol _,Character,ZZ)
-    	(symbol ^,Character,List)
     	(symbol *,RingElement,Character)
+    	(symbol ^,Character,List)
+    	(symbol _,Character,ZZ)
     	(minus,Character)
 	(directSum,Character)
     	(difference,Character,Character)
@@ -1813,7 +2098,15 @@ Node
 	    c = character(A,0,10)
 	    2*c
 	    c*(1/3)
-        	    
+	Text
+	    As of version 2.5, it is possible to multiply
+	    characters by elements of their degrees ring,
+	    which will result in an internal degree shift.
+	Example
+	    DR = c.degreesRing
+	    T = DR_0
+	    c * T^10
+
 Node
     Key
     	(minus,Character)
@@ -1877,49 +2170,6 @@ Node
 	(net,CharacterDecomposition)
     	(texMath,CharacterDecomposition)
 
-Node
-    Key
-    	(ring,Character)
-    	(ring,CharacterTable)
-    	(ring,CharacterDecomposition)
-    Headline
-    	get field of a character
-    Usage
-    	ring(X)
-    Inputs
-    	X:
-    Outputs
-    	:Ring
-	    associated with the object acted upon
-    Description
-    	Text
-	    Returns the field over which a character
-	    (or character table) is defined.
-    SeeAlso
-    	character
-	characterTable
-	decomposeCharacter
-
-Node
-    Key
-    	(degreeLength,Character)
-    	(degreeLength,CharacterDecomposition)
-    Headline
-    	get the degree length of a character
-    Usage
-    	degreeLength(X)
-    Inputs
-    	X:
-    Outputs
-    	:ZZ
-	    degree length
-    Description
-    	Text
-	    Returns the degree length of a character.
-    SeeAlso
-    	character
-	decomposeCharacter
-    	    
 Node
     Key
     	action
@@ -1998,11 +2248,8 @@ Node
 	Text
 	    The group elements acting on the ring can be recovered
 	    using @TO ringActors@.
-	    To recover just the number of group elements,
-	    use @TO numActors@.
 	Example
 	    ringActors A
-	    numActors A
 	Text
 	    The simplified version of this function suffices when
 	    dealing with resolutions of quotients of the ring
@@ -2055,8 +2302,8 @@ Node
 	    G'' = toList(5:id_(R^1))
 	    action(RE,G,G'',3)
     Caveat
-    	This function does not check if the complex @TT "C"@ is a
-	free resolution. If the user passes a complex that is not a
+    	This function does not check if the complex @TT "C"@ is a minimal
+	free resolution. If the user passes a complex that is not a minimal
 	free resolution, then later computations (i.e., Betti characters)
 	may fail or return meaningless results.
 
@@ -2132,11 +2379,8 @@ Node
 	Text
 	    The group elements acting on the ring can be recovered
 	    using @TO ringActors@.
-	    To recover just the number of group elements,
-	    use @TO numActors@.
 	Example
 	    ringActors A
-	    numActors A
 	Text
 	    The simplified version of this function assumes that
 	    the group acts trivially on the generator of the
@@ -2187,8 +2431,10 @@ Node
 	    In the case of actions on modules, the @TT "=="@ operator
 	    compares the group action on the module generators.
 	    
-	    For characters, the underlying ring must be the same,
-	    as well as the number of entries in each character.
+	    For characters, the underlying ring must be the same
+	    (see @TO "Character class"@),
+	    as well as the degree orbit and representative functions
+	    (see @TO "Semidirect"@).
 	    Characters are compared across all homological and
 	    internal degrees.
     	Example
@@ -2223,7 +2469,6 @@ Node
     Subnodes
  	(actors,ActionOnComplex,ZZ)  
  	(actors,ActionOnGradedModule,List)
-     	numActors
 	    
 Node
     Key
@@ -2354,13 +2599,13 @@ Node
 	    be concentrated in homological degree zero.
 	    
 	    Characters may also be constructed by hand using
-	    @TO (character,Ring,ZZ,ZZ,HashTable)@.
+	    @TO (character,PolynomialRing,HashTable)@.
     Subnodes
     	Character
     	(character,ActionOnComplex)
     	(character,ActionOnComplex,ZZ)
      	(character,ActionOnGradedModule,List)
-	(character,Ring,ZZ,ZZ,HashTable)
+	(character,PolynomialRing,HashTable)
 	(character,CharacterDecomposition,CharacterTable)
 	    
 Node
@@ -2567,19 +2812,14 @@ Node
 	    
 Node
     Key
-    	(character,Ring,ZZ,ZZ,HashTable)
-    	(character,PolynomialRing,ZZ,HashTable)
+    	(character,PolynomialRing,HashTable)
     Headline
     	construct a character
     Usage
-    	character(F,dl,cl,H)
+    	character(R,H)
     Inputs
-    	F:Ring
-	    a field
-    	dl:ZZ
-	    degree length
-    	cl:ZZ
-	    character length
+    	R:PolynomialRing
+	    a polynomial ring over a field
     	H:HashTable
 	    raw character data
     Outputs
@@ -2591,25 +2831,19 @@ Node
 	    The user who wishes to define characters by hand
 	    may do so with this particular application of the method.
 	    
-	    The first argument is the field the character
-	    values will live in; this makes it possible to compare or
-	    combine the hand-constructed character with other
-	    characters over the same field. The second argument is
-	    the length of the degrees used for the internal (multi)grading
-	    of the characters. The third argument is
-	    the length of the character, i.e., the number of conjugacy
-	    classes of the group whose representations the character
-	    is coming from. The fourth argument is a hash table
+	    The first argument is a polynomial ring over a field. The
+	    character inherits the grading of this polynomial ring
+	    and takes values in the field of coefficients.
+	    The second argument is a hash table
 	    containing the "raw" character data. The hash table
 	    entries are in the format @TT "(i,d) => c"@, where @TT "i"@
 	    is an integer representing homological degree, @TT "d"@
 	    is a list representing the internal (multi)degree, and
-	    @TT "c"@ is a list containing the values of the character
-	    in the given degrees. Note that the values of the character
-	    are elements in the field given as the first argument.
+	    @TT "c"@ is a one-row matrix containing the values of the
+	    character in the given degrees.
 	Example
 	    R = QQ[x_1..x_3]
-	    regRep = character(QQ,1,3, hashTable {
+	    regularRepresentation = character(R, hashTable {
 		    (0,{0}) => matrix{{1,1,1}},
 		    (0,{1}) => matrix{{-1,0,2}},
 		    (0,{2}) => matrix{{-1,0,2}},
@@ -2621,20 +2855,7 @@ Node
 		  matrix{{x_1,x_2,x_3}} }
 	    Q = R/I
 	    A = action(Q,S3)
-	    character(A,0,3) === regRep
-    	Text
-	    The other version of this command replaces the first two
-	    arguments with a polynomial ring from which the field
-	    of coefficients and the degree length are inherited.
-	    This was the only construction available in version 2.1
-	    and earlier, and is maintained for backward compatibility.
-	Example
-	    character(R,3, hashTable {
-		    (0,{0}) => matrix{{1,1,1}},
-		    (0,{1}) => matrix{{-1,0,2}},
-		    (0,{2}) => matrix{{-1,0,2}},
-		    (0,{3}) => matrix{{1,-1,1}},
-		    })
+	    character(A,0,3) == regularRepresentation
     Caveat
     	This constructor implements basic consistency checks, but
 	it is still possible to construct objects that are not
@@ -2677,7 +2898,7 @@ Node
 	    A = action(R,acts)
 	    c = character(A,0,10)
 	    d = c/T
-	    c === d*T
+	    c == d*T
     SeeAlso
     	characterTable
 	decomposeCharacter
@@ -2780,7 +3001,7 @@ Node
     	Example
 	    perm = {1,2,4,3}
 	    T' = characterTable(s,M,F,perm)
-	    T' === T
+	    T' == T
     Caveat
     	This constructor checks orthonormality of the table
 	matrix under the standard scalar product of characters.
@@ -2930,7 +3151,7 @@ Node
 	    F = toField(QQ[w]/ideal(1+w+w^2))
 	    R = F[x_1..x_4]
 	    conj = map(F,F,{w^2})
-	    X = character(F,1,4,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
+	    X = character(R,hashTable {(1,{2}) => matrix{{1,1,w,w^2}}})
 	    X' = dual(X,conj)
     	Text
     	    If working over coefficient fields of positive characteristic
@@ -3022,7 +3243,9 @@ Node
 	    tex d
     	Text
 	    The labels are stored in the character table under the
-	    key @TT "Labels"@.
+	    key @TT "Labels"@. In particular, two character tables
+	    of the same group that are equal in all aspects except
+	    for their labels will fail an equality check.
     SeeAlso
     	characterTable
 	decomposeCharacter
@@ -3101,51 +3324,6 @@ Node
 	    for printing in TeX format.
 	    See @TO texMath@ for more information.
 
-
-Node
-    Key
-    	numActors
-    	(numActors,Action)
-    Headline
-    	number of acting elements
-    Usage
-    	numActors(A)
-    Inputs
-    	A:Action
-    Outputs
-    	:ZZ
-    Description
-    	Text
-	    Returns the number of group elements passed by the user
-	    when defining the given action.
-	    This number is not necessarily the order of the acting
-	    group because in order to compute characters it is
-	    enough to work with a representative of each conjugacy
-	    class of the group.
-    SeeAlso
-    	action
-
-
-Node
-    Key
-    	(ring,Action)
-    Headline
-    	get ring of object acted upon
-    Usage
-    	ring(A)
-    Inputs
-    	A:Action
-    Outputs
-    	:PolynomialRing
-	    associated with the object acted upon
-    Description
-    	Text
-	    Returns the polynomial ring associated with the object
-	    being acted upon.
-    SeeAlso
-    	action
-
-
 Node
     Key
     	ringActors
@@ -3180,6 +3358,8 @@ Node
     Key
     	Semidirect
 	[action, Semidirect]
+	[character, Semidirect]
+	[(symbol *, CharacterDecomposition, CharacterTable), Semidirect]
 	degreeOrbit
 	degreeRepresentative
     Headline
@@ -3256,14 +3436,6 @@ Node
 	    RI = res I
 	    C = action(RI,S4,Semidirect=>{uniquePermutations,rsort})
 	    character C
-    Caveat
-	Characters of actions with the semidirect option are indexed
-	by user-chosen representatives of degree orbits as explained
-	above. However, the duals of these characters and characters
-	constructed directly by the user may not follow this choice
-	of representatives. Applying further operations to such
-	characters may result in a mix of different orbit
-	representatives for the same degree orbits.
     SeeAlso
 	action
 	
@@ -3379,7 +3551,7 @@ Node
     	Text
 	    If @TT "R"@ is a polynomial ring, then
 	    @TT "symmetricGroupTable R"@ calls
-	    @TT "symmetricGroupTable(dim R,coefficientRing R)"@.
+	    @TT "symmetricGroupTable(numgens R,coefficientRing R)"@.
 	    This is kept for compatibility with versions 2.1 and earlier
 	    of the package to create the character table of the symmetric
 	    group acting on the variables of @TT "R"@ over the
@@ -3390,26 +3562,9 @@ Node
 
 Node
     Key
-    	(target,Action)
-    Headline
-    	get object acted upon
-    Usage
-    	target(A)
-    Inputs
-    	A:Action
-    Description
-    	Text
-	    Returns the object being acted upon.
-	    Depending on the action, this object may be a
-	    @TO ChainComplex@, a @TO PolynomialRing@, a
-	    @TO QuotientRing@, an @TO Ideal@, or a @TO Module@.
-    SeeAlso
-    	action
-
-Node
-    Key
     	(tensor,Character,Character)
 	(symbol **,Character,Character)
+	(symbol ^**,Character,ZZ)
     Headline
     	tensor product of characters
     Usage
@@ -3437,8 +3592,23 @@ Node
 	    observed by tensoring with the character of the
 	    sign representation concentrated in degree 3.
     	Example
-	    sign = character(QQ,1,3, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    sign = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
 	    dual(a,{1,2,3}) ** sign === a
+    Synopsis
+    	Usage
+	    c ^** m
+    	Inputs
+	    A:Character
+    	    m:ZZ
+    	Outputs
+	    :Character
+	    	the m-th tensor power of c
+    Description
+	Text
+	    Starting with version 2.5, this package allows nonnegative
+	    tensor powers of characters using @TO (symbol ^**,Character,ZZ)@.
+	Example
+	    a ^** 3
 
 ///
 	    
@@ -3455,51 +3625,49 @@ RI = res I
 S3 = {matrix{{y,z,x}},matrix{{y,x,z}},matrix{{x,y,z}}}
 assert(S3 == symmetricGroupActors(R))
 A = action(RI,S3)
-a = character(R,3,hashTable {
+a = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1}}),
     ((1,{2}), matrix{{0,1,3}}),
     ((2,{3}), matrix{{-1,0,2}})
     })
-assert((character A) === a)
+assert((character A) == a)
 B = action(R,S3)
-b = character(R,3,hashTable {
+b = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1}}),
     ((0,{1}), matrix{{0,1,3}}),
     ((0,{2}), matrix{{0,2,6}}),
     ((0,{3}), matrix{{1,2,10}})
     })
-assert(character(B,0,3) === b)
+assert(character(B,0,3) == b)
 C = action(I,S3)
-c = character(R,3,hashTable {
+c = character(R,hashTable {
     ((0,{2}), matrix{{0,1,3}}),
     ((0,{3}), matrix{{1,1,7}})
     })
-assert(character(C,0,3) === c)
+assert(character(C,0,3) == c)
 D = action(R/I,S3)
-d = character(R,3,hashTable {
+d = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1}}),
     ((0,{1}), matrix{{0,1,3}}),
     ((0,{2}), matrix{{0,1,3}}),
     ((0,{3}), matrix{{0,1,3}})
     })
-assert(character(D,0,3) === d)
-assert(b === c++d)
+assert(character(D,0,3) == d)
+assert(b == c++d)
 cS3 = symmetricGroupTable(3,QQ)
 assert( cS3.table ==
     matrix{{1_QQ,1,1},{-1,0,2},{1,-1,1}})
 adec = a/cS3
-assert( set keys adec.decompose ===
-    set {(0,{0}),(1,{2}),(2,{3})})
-assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{1_QQ,1,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,1_QQ,0}})
+assert( set keys adec.decompose == set {0,1,2})
+CR = a.degreesRing
+T = CR_0
+assert( adec.decompose#0 == matrix{{1_QQ,0,0}} * T^0)
+assert( adec.decompose#1 == matrix{{1_QQ,1,0}} * T^2)
+assert( adec.decompose#2 == matrix{{0,1_QQ,0}} * T^3)
 ddec = d/cS3
-assert( set keys ddec.decompose ===
-    set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{1_QQ,1,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{1_QQ,1,0}})
+assert( set keys ddec.decompose == set {0})
+assert( ddec.decompose#0 == matrix{{1_QQ,0,0}} * T^0
+    + matrix{{1_QQ,1,0}} * (T^1+T^2+T^3))
 ///
 
 -- Test 1 (non-monomial ideal, symmetric group)
@@ -3525,36 +3693,36 @@ S5 = for p in partitions(5) list (
     )
 assert(S5 == symmetricGroupActors(R))
 A = action(RI,S5)
-a = character(R,7,hashTable {
+a = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
     ((1,{2}), matrix{{0,-1,1,-1,1,1,5}}),
     ((2,{3}), matrix{{0,1,-1,-1,1,-1,5}}),
     ((3,{5}), matrix{{1,-1,-1,1,1,-1,1}})
     })
-assert((character A) === a)
+assert((character A) == a)
 B = action(R,S5)
-b = character(R,7,hashTable {
+b = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
     ((0,{1}), matrix{{0,1,0,2,1,3,5}}),
     ((0,{2}), matrix{{0,1,1,3,3,7,15}}),
     ((0,{3}), matrix{{0,1,1,5,3,13,35}})
     })
-assert(character(B,0,3) === b)
+assert(character(B,0,3) == b)
 C = action(I,S5)
-c = character(R,7,hashTable {
+c = character(R,hashTable {
     ((0,{2}), matrix{{0,-1,1,-1,1,1,5}}),
     ((0,{3}), matrix{{0,-2,1,-1,0,4,20}})
     })
-assert(character(C,0,3) === c)
+assert(character(C,0,3) == c)
 D = action(R/I,S5)
-d = character(R,7,hashTable {
+d = character(R,hashTable {
     ((0,{0}), matrix{{1,1,1,1,1,1,1}}),
     ((0,{1}), matrix{{0,1,0,2,1,3,5}}),
     ((0,{2}), matrix{{0,2,0,4,2,6,10}}),
     ((0,{3}), matrix{{0,3,0,6,3,9,15}})
     })
-assert(character(D,0,3) === d)
-assert(b === c++d)
+assert(character(D,0,3) == d)
+assert(b == c++d)
 cS5 = symmetricGroupTable(5,QQ)
 assert( cS5.table ==
     matrix{{1_QQ,1,1,1,1,1,1},
@@ -3566,19 +3734,19 @@ assert( cS5.table ==
 	{1,-1,-1,1,1,-1,1}}
     )
 adec = a/cS5
-assert( set keys adec.decompose ===
-    set {(0,{0}),(1,{2}),(2,{3}),(3,{5})})
-assert( adec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
-assert( adec.decompose#(1,{2}) == matrix{{0,0,1_QQ,0,0,0,0}})
-assert( adec.decompose#(2,{3}) == matrix{{0,0,0,0,1_QQ,0,0}})
-assert( adec.decompose#(3,{5}) == matrix{{0,0,0,0,0,0,1_QQ}})
+assert( set keys adec.decompose == set {0,1,2,3})
+CR = a.degreesRing
+T = CR_0
+assert( adec.decompose#0 == matrix{{1_QQ,0,0,0,0,0,0}} * T^0)
+assert( adec.decompose#1 == matrix{{0,0,1_QQ,0,0,0,0}} * T^2)
+assert( adec.decompose#2 == matrix{{0,0,0,0,1_QQ,0,0}} * T^3)
+assert( adec.decompose#3 == matrix{{0,0,0,0,0,0,1_QQ}} * T^5)
 ddec = d/cS5
-assert( set keys ddec.decompose ===
-    set {(0,{0}),(0,{1}),(0,{2}),(0,{3})})
-assert( ddec.decompose#(0,{0}) == matrix{{1_QQ,0,0,0,0,0,0}})
-assert( ddec.decompose#(0,{1}) == matrix{{1_QQ,1,0,0,0,0,0}})
-assert( ddec.decompose#(0,{2}) == matrix{{2_QQ,2,0,0,0,0,0}})
-assert( ddec.decompose#(0,{3}) == matrix{{3_QQ,3,0,0,0,0,0}})
+assert( set keys ddec.decompose == set {0})
+assert( ddec.decompose#0 == matrix{{1_QQ,0,0,0,0,0,0}} * T^0
+    + matrix{{1_QQ,1,0,0,0,0,0}} * T^1
+    + matrix{{2_QQ,2,0,0,0,0,0}} * T^2
+    + matrix{{3_QQ,3,0,0,0,0,0}} * T^3)
 ///
 
 -- Test 2 (non symmetric group, tests actors)
@@ -3599,25 +3767,25 @@ a = {
     map(R^{4:-3},R^{4:-3},{{w,0,0,0},{0,w^2,0,0},{0,0,w^3,0},{0,0,0,w^4}}),
     map(R^{4:-3},R^{4:-3},{{0,0,0,1},{0,0,1,0},{0,1,0,0},{1,0,0,0}})
     }
-assert(actors(A,3) === a)
-ca = character(kk,1,4, hashTable {((0,{3}), lift(matrix{apply(a,trace)},kk))})
-assert(character(A,3) === ca)
+assert(actors(A,3) == a)
+ca = character(R, hashTable {((0,{3}), lift(matrix{apply(a,trace)},kk))})
+assert(character(A,3) == ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
 Rm=chainComplex(d1,d2)
 B = action(Rm,D5)
-assert(actors(B,1) === a)
-cb1 = character(R,4, hashTable {((1,{3}), lift(matrix{apply(a,trace)},kk))})
-assert(character(B,1) === cb1)
+assert(actors(B,1) == a)
+cb1 = character(R, hashTable {((1,{3}), lift(matrix{apply(a,trace)},kk))})
+assert(character(B,1) == cb1)
 b = {
     map(R^{3:-4},R^{3:-4},{{1,0,0},{0,1,0},{0,0,1}}),
     map(R^{3:-4},R^{3:-4},{{w^2,0,0},{0,1,0},{0,0,w^3}}),
     map(R^{3:-4},R^{3:-4},{{w^4,0,0},{0,1,0},{0,0,w}}),
     map(R^{3:-4},R^{3:-4},{{0,0,-1},{0,-1,0},{-1,0,0}})
     }
-assert(actors(B,2) === b)
-cb2 = character(R,4, hashTable {((2,{4}), lift(matrix{apply(b,trace)},kk))})
-assert(character(B,2) === cb2)
+assert(actors(B,2) == b)
+cb2 = character(R, hashTable {((2,{4}), lift(matrix{apply(b,trace)},kk))})
+assert(character(B,2) == cb2)
 ///
 
 -- Test 3 (multigraded ideal, product of symmetric groups)
@@ -3633,7 +3801,7 @@ G = {
     matrix{{x_1,x_2,y_1,y_2}}
     }
 A = action(RI,G)
-a = character(R,4,hashTable {
+a = character(R,hashTable {
     ((0,{0,0}), matrix{{1,1,1,1}}),
     ((1,{1,1}), matrix{{0,0,0,4}}),
     ((2,{1,2}), matrix{{0,0,-2,2}}),
@@ -3642,7 +3810,7 @@ a = character(R,4,hashTable {
     })
 assert((character A) == a)
 B = action(R,G)
-b = character(R,4,hashTable {
+b = character(R,hashTable {
     ((0,{0,2}), matrix{{1,3,1,3}}),
     ((0,{2,0}), matrix{{1,1,3,3}})
     })
@@ -3659,7 +3827,7 @@ K = res ideal vars R
 S4 = symmetricGroupActors(R)
 A = action(K,S4)
 c = character A
-sign = character(R,5, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
+sign = character(R, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
 -- check duality of representations in Koszul complex
 -- which is true up to a twist by a sign representation
 assert(dual(c,id_QQ) == c ** sign)
@@ -3678,7 +3846,7 @@ c1 = character(A1,0,10)
 c2 = character(A2,0,10)
 assert(-c1 == (-1)*c1)
 assert(c1 ++ c1 == 2*c1)
-c = character(R,3, hashTable {
+c = character(R, hashTable {
 	(0,{5}) => matrix{{0,1,3}},
 	(0,{6}) => matrix{{1,1,1}}
 	})
@@ -3694,19 +3862,23 @@ RI = res I
 S3 = symmetricGroupActors R
 A1 = action(RI,S3,Semidirect=>{uniquePermutations,rsort})
 c1 = character(A1)
-d1 = character(R,3, hashTable {
+d1 = character(R, hashTable {
 	(0,{0,0,0}) => matrix{{1,1,1}},
-	(1,{1,1,0}) => matrix{{0,1,3}},
+	(1,{1,1,0}) => matrix{{0,1,1}},
+	(1,{1,0,1}) => matrix{{0,0,1}},
+	(1,{0,1,1}) => matrix{{0,0,1}},
 	(2,{1,1,1}) => matrix{{-1,0,2}}
-	})
-assert( c1 == d1)
+	},
+    Semidirect=>{uniquePermutations,rsort})
+assert( c1 === d1)
 A2 = action(R,S3,Semidirect=>{uniquePermutations,rsort})
 c2 = character(A2,{0,3,0}) ++ character(A2,{1,0,2}) ++ character(A2,{1,1,1})
-d2 = character(R,3, hashTable {
+d2 = character(R, hashTable {
 	(0,{3,0,0}) => matrix{{0,1,3}},
 	(0,{2,1,0}) => matrix{{0,0,6}},
 	(0,{1,1,1}) => matrix{{1,1,1}}
-	})
+	},
+    Semidirect=>{uniquePermutations,rsort})
 assert( c2 == d2)
 ///
 
