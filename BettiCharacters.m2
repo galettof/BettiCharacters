@@ -1225,32 +1225,6 @@ symmetricGroupActors PolynomialRing := R -> (
     	)
     )
 
-
-----------------------------------------------------------------------
--- Overloaded Methods
-----------------------------------------------------------------------
-
--*
--- get object acted upon
-target(Action) := A -> A.target
-
--- get polynomial ring acted upon
-ring Action := PolynomialRing => A -> A.ring
-
--- get field of a character (or table or decomposition)
-ring Character :=
-ring CharacterTable :=
-ring CharacterDecomposition :=
-Ring => X -> X.ring
-*-
-
--*
--- get degree length of a character (or decomposition)
-degreeLength Character :=
-degreeLength CharacterDecomposition :=
-ZZ => X -> X.degreeLength
-*-
-
 ---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
 ---------------------------------------------------------------------
