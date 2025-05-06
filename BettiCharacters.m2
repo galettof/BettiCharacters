@@ -43,7 +43,6 @@ export {
     "degreeOrbit",
     "degreeRepresentative",
     "Labels",
-    --"numActors",
     "ringActors",
     "Semidirect",
     "Sub",
@@ -185,6 +184,7 @@ multiplyCharacters = (c1,c2) -> (
     e1 := flatten entries c1;
     e2 := flatten entries c2;
     m := apply(e1,e2,times);
+    -- ensure char matrix has right degrees
     map(target c1,source c1,matrix{m})
     )
 
