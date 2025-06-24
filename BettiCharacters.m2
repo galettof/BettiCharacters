@@ -702,7 +702,7 @@ action = method(TypicalValue=>Action,
 -- 2) a list of actors on the ring variables
 -- 3) a list of actors on the i-th module of the resolution
 -- 4) homological index i
-action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
+action(Complex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
     --check C is a homogeneous complex over a poly ring over a field
     --NOTE: minimality is necessary, but assumed
     R := ring C;
@@ -774,7 +774,7 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 
 -- shortcut constructor for resolutions of quotient rings
 -- actors on generator are assumed to be trivial
-action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
+action(Complex,List) := ActionOnComplex => op -> (C,l) -> (
     R := ring C;
     l0 := toList(#l:(id_(R^1)));
     action(C,l,l0,min C,Sub=>op.Sub,Semidirect=>op.Semidirect)
@@ -1667,9 +1667,9 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(R,hashTable {(0,{7}) =>
+    	signrep = character(R,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
-	dual(c,id_QQ)[-5] ** sign == c
+	dual(c,id_QQ)[-5] ** signrep == c
     Text
     	The second argument in the @TT "dual"@ command is the
 	restriction of complex conjugation to the field of
@@ -2183,22 +2183,22 @@ Node
 	    See the specific use cases for more details.
     Subnodes
     	Action
-	(action,ChainComplex,List,List,ZZ)
+	(action,Complex,List,List,ZZ)
 	(action,Module,List,List)
 	Semidirect
 	Sub
 	    
 Node
     Key
-    	(action,ChainComplex,List,List,ZZ)
-    	(action,ChainComplex,List)
+    	(action,Complex,List,List,ZZ)
+    	(action,Complex,List)
     Headline
     	define finite group action on a resolution
     Usage
     	A=action(C,G)
 	A=action(C,G,G',i)
     Inputs
-    	C:ChainComplex
+    	C:Complex
 	    a minimal free resolution over a polynomial ring @TT "R"@
 	G:List
 	    of group elements acting on the variables of @TT "R"@
@@ -3593,8 +3593,8 @@ Node
 	    observed by tensoring with the character of the
 	    sign representation concentrated in degree 3.
     	Example
-	    sign = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
-	    dual(a,{1,2,3}) ** sign === a
+	    signrep = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    dual(a,{1,2,3}) ** signrep === a
     Synopsis
     	Usage
 	    c ^** m
