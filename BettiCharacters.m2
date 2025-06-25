@@ -26,6 +26,7 @@ newPackage(
 	       HomePage => "http://math.galetto.org"}},
      Headline => "finite group characters on free resolutions and graded modules",
      DebuggingMode => false,
+     PackageExports => {"Complexes"},
      Keywords => {"Commutative Algebra"},
      Certification => {
 	 "journal name" => "Journal of Software for Algebra and Geometry",
@@ -701,7 +702,7 @@ action = method(TypicalValue=>Action,
 -- 2) a list of actors on the ring variables
 -- 3) a list of actors on the i-th module of the resolution
 -- 4) homological index i
-action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
+action(Complex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
     --check C is a homogeneous complex over a poly ring over a field
     --NOTE: minimality is necessary, but assumed
     R := ring C;
@@ -773,7 +774,7 @@ action(ChainComplex,List,List,ZZ) := ActionOnComplex => op -> (C,l,l0,i) -> (
 
 -- shortcut constructor for resolutions of quotient rings
 -- actors on generator are assumed to be trivial
-action(ChainComplex,List) := ActionOnComplex => op -> (C,l) -> (
+action(Complex,List) := ActionOnComplex => op -> (C,l) -> (
     R := ring C;
     l0 := toList(#l:(id_(R^1)));
     action(C,l,l0,min C,Sub=>op.Sub,Semidirect=>op.Semidirect)
@@ -1091,13 +1092,24 @@ character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
 		};
 	    );
 	-- otherwise make character of A in degree d
+	-- create raw character from actors
+	r := (numRows first acts) - 1;
+	degList := degrees source first acts;
+	-- for each basis element extract corresponding diagonal entry
+	-- put it in a row matrix and multiply by degree, then add
+	-- this will give the graded raw character as a matrix
+	raw := sum parallelApply(toList(0..r), j -> (
+		d := degList_j;
+		lift(matrix{apply(acts, g -> g_(j,j) )},F) * (DR_d)
+		)
+	    );
 	A.cache#(symbol character,degRep) = new Character from {
 		cache => new CacheTable,
 		(symbol degreesRing) => DR,
 		(symbol degreeOrbit) => A.degreeOrbit,
 		(symbol degreeRepresentative) => A.degreeRepresentative,
 		(symbol numActors) => A.numActors,
-		(symbol characters) => hashTable {0 => lift(matrix{apply(acts, trace)},F) * (DR_degRep)},
+		(symbol characters) => hashTable {0 => raw},
 		};
 	);
     -- return cached value
@@ -1666,9 +1678,9 @@ Node
 	the sign character just constructed: the result is the
 	same as the character of the resolution.
     Example
-    	sign = character(R,hashTable {(0,{7}) =>
+    	signrep = character(R,hashTable {(0,{7}) =>
 		matrix{{1,-1,-1,1,-1,1,-1,1,1,-1,1,-1,1,-1,1}}})
-	dual(c,id_QQ)[-5] ** sign == c
+	dual(c,id_QQ)[-5] ** signrep == c
     Text
     	The second argument in the @TT "dual"@ command is the
 	restriction of complex conjugation to the field of
@@ -2182,22 +2194,22 @@ Node
 	    See the specific use cases for more details.
     Subnodes
     	Action
-	(action,ChainComplex,List,List,ZZ)
+	(action,Complex,List,List,ZZ)
 	(action,Module,List,List)
 	Semidirect
 	Sub
 	    
 Node
     Key
-    	(action,ChainComplex,List,List,ZZ)
-    	(action,ChainComplex,List)
+    	(action,Complex,List,List,ZZ)
+    	(action,Complex,List)
     Headline
     	define finite group action on a resolution
     Usage
     	A=action(C,G)
 	A=action(C,G,G',i)
     Inputs
-    	C:ChainComplex
+    	C:Complex
 	    a minimal free resolution over a polynomial ring @TT "R"@
 	G:List
 	    of group elements acting on the variables of @TT "R"@
@@ -3592,8 +3604,8 @@ Node
 	    observed by tensoring with the character of the
 	    sign representation concentrated in degree 3.
     	Example
-	    sign = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
-	    dual(a,{1,2,3}) ** sign === a
+	    signrep = character(R, hashTable { (0,{3}) => matrix{{1,-1,1}} })
+	    dual(a,{1,2,3}) ** signrep === a
     Synopsis
     	Usage
 	    c ^** m
@@ -3772,7 +3784,7 @@ ca = character(R, hashTable {((0,{3}), lift(matrix{apply(a,trace)},kk))})
 assert(character(A,3) == ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
-Rm=chainComplex(d1,d2)
+Rm=complex({d1,d2})
 B = action(Rm,D5)
 assert(actors(B,1) == a)
 cb1 = character(R, hashTable {((1,{3}), lift(matrix{apply(a,trace)},kk))})
@@ -3827,10 +3839,10 @@ K = res ideal vars R
 S4 = symmetricGroupActors(R)
 A = action(K,S4)
 c = character A
-sign = character(R, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
+signrep = character(R, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
 -- check duality of representations in Koszul complex
 -- which is true up to a twist by a sign representation
-assert(dual(c,id_QQ) == c ** sign)
+assert(dual(c,id_QQ) == c ** signrep)
 ///
 
 -- Test 5 (additive inverse, scalar multiplication, difference, degree selection)
@@ -3873,13 +3885,10 @@ d1 = character(R, hashTable {
 assert( c1 === d1)
 A2 = action(R,S3,Semidirect=>{uniquePermutations,rsort})
 c2 = character(A2,{0,3,0}) ++ character(A2,{1,0,2}) ++ character(A2,{1,1,1})
-d2 = character(R, hashTable {
-	(0,{3,0,0}) => matrix{{0,1,3}},
-	(0,{2,1,0}) => matrix{{0,0,6}},
-	(0,{1,1,1}) => matrix{{1,1,1}}
-	},
-    Semidirect=>{uniquePermutations,rsort})
-assert( c2 == d2)
+T = c2.degreesRing
+d2 = map(T^{0},T^{0,0,0},matrix {{T_0*T_1*T_2, T_0*T_1*T_2+T_2^3,
+      T_0^3+T_0^2*T_1+T_0^2*T_2+T_0*T_1^2+T_0*T_1*T_2+T_0*T_2^2+T_1^3+T_1^2*T_2+T_1*T_2^2+T_2^3}})
+assert( c2.characters#0 == d2)
 ///
 
 end
