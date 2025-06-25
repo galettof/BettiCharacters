@@ -3773,7 +3773,7 @@ ca = character(R, hashTable {((0,{3}), lift(matrix{apply(a,trace)},kk))})
 assert(character(A,3) == ca)
 d1=map(R^1,R^{4:-3},{{x^3,x^2*y,x*y^2,y^3}})
 d2=map(R^{4:-3},R^{3:-4},{{-y,0,0},{x,-y,0},{0,x,-y},{0,0,x}})
-Rm=chainComplex(d1,d2)
+Rm=complex({d1,d2})
 B = action(Rm,D5)
 assert(actors(B,1) == a)
 cb1 = character(R, hashTable {((1,{3}), lift(matrix{apply(a,trace)},kk))})
@@ -3828,10 +3828,10 @@ K = res ideal vars R
 S4 = symmetricGroupActors(R)
 A = action(K,S4)
 c = character A
-sign = character(R, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
+signrep = character(R, hashTable { (-4,{-4}) => matrix{{-1,1,1,-1,1}} })
 -- check duality of representations in Koszul complex
 -- which is true up to a twist by a sign representation
-assert(dual(c,id_QQ) == c ** sign)
+assert(dual(c,id_QQ) == c ** signrep)
 ///
 
 -- Test 5 (additive inverse, scalar multiplication, difference, degree selection)
