@@ -1092,13 +1092,24 @@ character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
 		};
 	    );
 	-- otherwise make character of A in degree d
+	-- create raw character from actors
+	r := (numRows first acts) - 1;
+	degList := degrees source first acts;
+	-- for each basis element extract corresponding diagonal entry
+	-- put it in a row matrix and multiply by degree, then add
+	-- this will give the graded raw character as a matrix
+	raw := sum parallelApply(toList(0..r), j -> (
+		d := degList_j;
+		lift(matrix{apply(acts, g -> g_(j,j) )},F) * (DR_d)
+		)
+	    );
 	A.cache#(symbol character,degRep) = new Character from {
 		cache => new CacheTable,
 		(symbol degreesRing) => DR,
 		(symbol degreeOrbit) => A.degreeOrbit,
 		(symbol degreeRepresentative) => A.degreeRepresentative,
 		(symbol numActors) => A.numActors,
-		(symbol characters) => hashTable {0 => lift(matrix{apply(acts, trace)},F) * (DR_degRep)},
+		(symbol characters) => hashTable {0 => raw},
 		};
 	);
     -- return cached value
@@ -3874,13 +3885,10 @@ d1 = character(R, hashTable {
 assert( c1 === d1)
 A2 = action(R,S3,Semidirect=>{uniquePermutations,rsort})
 c2 = character(A2,{0,3,0}) ++ character(A2,{1,0,2}) ++ character(A2,{1,1,1})
-d2 = character(R, hashTable {
-	(0,{3,0,0}) => matrix{{0,1,3}},
-	(0,{2,1,0}) => matrix{{0,0,6}},
-	(0,{1,1,1}) => matrix{{1,1,1}}
-	},
-    Semidirect=>{uniquePermutations,rsort})
-assert( c2 == d2)
+T = c2.degreesRing
+d2 = map(T^{0},T^{0,0,0},matrix {{T_0*T_1*T_2, T_0*T_1*T_2+T_2^3,
+      T_0^3+T_0^2*T_1+T_0^2*T_2+T_0*T_1^2+T_0*T_1*T_2+T_0*T_2^2+T_1^3+T_1^2*T_2+T_1*T_2^2+T_2^3}})
+assert( c2.characters#0 == d2)
 ///
 
 end
