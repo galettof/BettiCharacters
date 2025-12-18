@@ -1256,6 +1256,80 @@ symmetricGroupActors PolynomialRing := R -> (
 -- Specialized functions for hyperoctahedral groups -----------------
 ---------------------------------------------------------------------
 
+-- auxiliary unexported function for the size of conjugacy classes of Hn
+-- a conjugacy class of Hn is indexed by a bipartition (alpha,beta)
+-- where alpha is the cycle type of balanced cycles and
+-- beta is the cycle type of unbalanced cycles
+hConjSize = (alpha, beta) -> (
+    -- convert to lists
+    p := toList alpha;
+    q := toList beta;
+    -- get total size
+    n := (sum p)+(sum q);
+    -- size of conjugacy class of alpha in symmetric group
+    a := (sum p)! / product apply(pairs tally p, (k,v) -> k^v*v! );
+    -- size of conjugacy class of beta in symmetric group
+    b := (sum q)! / product apply(pairs tally q, (k,v) -> k^v*v! );
+    -- get weight from first partition
+    binomial(n,sum p) * a * b * 2^(n-#p-#q)
+    )
+
+-- auxiliary unexported function for the value of an irreducible character of Hn
+-- the irreducible character of Hn indexed by a bipartition (lambda,mu)
+-- is evaluated at an element in the conjugacy class indexed by (alpha,beta)
+-- NOTE: this function requires the Permutations package
+hCharValue = (lambda,mu,alpha,beta) -> (
+    -- get weight of first partition
+    k := sum toList lambda;
+    -- get weight of bipartition
+    n := k + sum toList mu;
+    -- list 0 to n-1, used a few times
+    N := toList(0..n-1);
+    -- form element of cycle type alpha,beta
+    -- as a 01-vector s and a permutation sigma
+    s := toList((sum toList alpha):0);
+    s = s | flatten for u in beta list ( {1} | toList(u-1:0) );
+    L := N;
+    sigma := flatten for u in (toList alpha)|(toList beta) list (
+	l := take(L,u);
+	L = drop(L,u);
+	rotate(1,l)
+	);
+    -- get cosets of the Young subgroup Sk x S(n-k)
+    -- that contribute to the induced character
+    G := select(subsets(n,k), gamma -> isSubset(sigma_gamma,gamma));
+    -- for each conjugacy class, compute contribution to character
+    sum for gamma in G list (
+	-- restrict sigma to gamma
+	p := sigma_gamma;
+	-- and find its cycle type
+	cp := {};
+	if p =!= {} then (
+	    -- convert p to a permutation on 1 to #p
+	    H := new HashTable from pack(2,mingle {sort p,toList(1..#p)});
+	    -- use cycleType from Permutations package
+	    cp = toList cycleType permutation apply(p, i -> H#i);
+	    );
+	-- restrict sigma to the complement of gamma
+	q := sigma_(N-set(gamma));
+	-- and find its cycle type
+	cq := {};
+	if q =!= {} then (
+	    -- convert q to a permutation on 1 to #q
+	    H = new HashTable from pack(2,mingle {sort q,toList(1..#q)});
+	    -- use cycleType from Permutations package
+	    cq = toList cycleType permutation apply(q, i -> H#i);
+	    );
+	-- pad gamma to a permutation of 0..n-1
+	gammaN := gamma | (N-set(gamma));
+	-- weight vector for the Z_2^n-action
+	vk := toList(k:0) | toList(n-k:1);
+	-- dot product of s and vk
+	e := sum apply(s_gammaN,vk, (i,j) -> i*j);
+	(-1)^e * murnaghanNakayama(toList lambda,cp) * murnaghanNakayama(toList mu,cq)
+	)
+    )
+
 -- symmetric group character table
 hyperoctahedralGroupTable = method(TypicalValue=>CharacterTable);
 hyperoctahedralGroupTable(ZZ,Ring) := (n,F) -> (
@@ -1276,12 +1350,11 @@ hyperoctahedralGroupTable(ZZ,Ring) := (n,F) -> (
 	flatten table(partitions (n-i),partitions i, identity)
 	);
     -- make matrix of character table
-    X := matrix(F, table(B,B, (a,b) -> Hchi(a_0,a_1,b_0,b_1)));
+    X := matrix(F, table(B,B, (a,b) -> hCharValue(a_0,a_1,b_0,b_1)));
     -- compute size of conjugacy classes
-    conjSize := apply(B, b -> HconjSize(b_0,b_1));
+    conjSize := apply(B, b -> hConjSize(b_0,b_1));
     -- matrix for inner product
     m := diagonalMatrix(F,conjSize)*transpose(X);
-
     -- prepare labels
     bitallies := apply(B, b -> (tally toList b_0,tally toList b_1));
     -- turn tallies into powers, make empty tally into a single zero
