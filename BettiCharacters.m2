@@ -1383,6 +1383,10 @@ hyperoctahedralGroupTable(ZZ,Ring) := (n,F) -> (
 	}
     )
 
+-- hyperoctahedral group table for backwards compatibility
+hyperoctahedralGroupTable PolynomialRing := R -> (
+    hyperoctahedralGroupTable(numgens R,coefficientRing R)
+    )
 
 
 ---------------------------------------------------------------------
