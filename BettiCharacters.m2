@@ -1253,6 +1253,66 @@ symmetricGroupActors PolynomialRing := R -> (
     )
 
 ---------------------------------------------------------------------
+-- Specialized functions for hyperoctahedral groups -----------------
+---------------------------------------------------------------------
+
+-- symmetric group character table
+hyperoctahedralGroupTable = method(TypicalValue=>CharacterTable);
+hyperoctahedralGroupTable(ZZ,Ring) := (n,F) -> (
+    -- check n is at least one
+    if n < 1 then (
+	error "hyperoctahedralGroupTable: expected first argument to be a positive integer";
+	);
+    -- check second argument is a field
+    if not isField F then (
+	error "hyperoctahedralGroupTable: expected second argument to be a field";
+	);
+    -- check characteristic
+    if n! % (char F) == 0 then (
+	error ("hyperoctahedralGroupTable: expected field characteristic not dividing " | toString(n) | "!*2^" | toString(n));
+	);
+    -- list bipartitions of n
+    B := flatten for i to n list (
+	flatten table(partitions (n-i),partitions i, identity)
+	);
+    -- make matrix of character table
+    X := matrix(F, table(B,B, (a,b) -> Hchi(a_0,a_1,b_0,b_1)));
+    -- compute size of conjugacy classes
+    conjSize := apply(B, b -> HconjSize(b_0,b_1));
+    -- matrix for inner product
+    m := diagonalMatrix(F,conjSize)*transpose(X);
+
+    -- prepare labels
+    bitallies := apply(B, b -> (tally toList b_0,tally toList b_1));
+    -- turn tallies into powers, make empty tally into a single zero
+    pows := apply(bitallies, (a,b) ->
+	(if a === tally{} then ({Power(0,1)}) else (apply(rsort keys a, k -> Power(k,a#k))),
+	    if b === tally{} then ({Power(0,1)}) else (apply(rsort keys b, k -> Power(k,b#k))))
+	);
+    netLabels := apply(pows, (a,b) ->
+	"(" | horizontalJoin between(",",a/net) | ";" | horizontalJoin between(",",b/net) | ")"
+	);
+    texLabels := apply(pows,p -> (
+	    a := texMath toSequence p_0;
+	    b := texMath toSequence p_1;
+	    -- remove additional closing and opening parentheses
+	    substring(0,#a-7,a) | ";" | substring(6,b)
+	    )
+	);
+    new CharacterTable from {
+	(symbol numActors) => #B,
+	(symbol size) => conjSize,
+	(symbol table) => X,
+	(symbol ring) => F,
+	(symbol matrix) => m,
+	-- compact partition notation used for hyperoctahedral group labels
+	(symbol Labels) => {netLabels,texLabels}
+	}
+    )
+
+
+
+---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
 ---------------------------------------------------------------------
 
