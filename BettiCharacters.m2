@@ -64,7 +64,8 @@ export {
     "Semidirect",
     "Sub",
     "symmetricGroupActors",
-    "symmetricGroupTable"
+    "symmetricGroupTable",
+    "hyperoctahedralGroupTable"
     }
 
 
