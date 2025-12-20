@@ -27,7 +27,6 @@ newPackage(
      Headline => "finite group characters on free resolutions and graded modules",
      DebuggingMode => false,
      PackageExports => {"Complexes"},
-     PackageImports => {"Permutations"},
      Keywords => {"Commutative Algebra"},
      Certification => {
 	 "journal name" => "Journal of Software for Algebra and Geometry",
@@ -67,7 +66,6 @@ export {
     "symmetricGroupTable",
     "hyperoctahedralGroupTable"
     }
-
 
 ----------------------------------------------------------------------
 -- Types
@@ -1255,7 +1253,7 @@ symmetricGroupActors PolynomialRing := R -> (
     )
 
 ---------------------------------------------------------------------
--- Specialized functions for hyperoctahedral groups -----------------
+-- Specialized functions for hyperoctahedral groups (v2.6) ----------
 ---------------------------------------------------------------------
 
 -- auxiliary unexported function for the size of conjugacy classes of Hn
@@ -1276,10 +1274,26 @@ hConjSize = (alpha, beta) -> (
     binomial(n,sum p) * a * b * 2^(n-#p-#q)
     )
 
+-- auxiliary unexported function for the cycle type of a permutation
+-- pass a permutation as a list which represents the 2nd row
+-- of the 2-row notation, start from 0
+cycleType = sigma -> (
+    used := {};
+    rsort while #used < #sigma list (
+	u := min toList( set(sigma) - set(used) );
+	cycle := {};
+	while not isMember(u,cycle) do (
+	    cycle = append(cycle,u);
+	    u = sigma_u;
+	    );
+	used = used | cycle;
+	#cycle
+	)
+    )
+
 -- auxiliary unexported function for the value of an irreducible character of Hn
 -- the irreducible character of Hn indexed by a bipartition (lambda,mu)
 -- is evaluated at an element in the conjugacy class indexed by (alpha,beta)
--- NOTE: this function requires the Permutations package
 hCharValue = (lambda,mu,alpha,beta) -> (
     -- get weight of first partition
     k := sum toList lambda;
@@ -1305,23 +1319,17 @@ hCharValue = (lambda,mu,alpha,beta) -> (
 	-- restrict sigma to gamma
 	p := sigma_gamma;
 	-- and find its cycle type
-	cp := {};
-	if p =!= {} then (
-	    -- convert p to a permutation on 1 to #p
-	    H := new HashTable from pack(2,mingle {sort p,toList(1..#p)});
-	    -- use cycleType from Permutations package
-	    cp = toList cycleType permutation apply(p, i -> H#i);
-	    );
+	-- convert p to a permutation on 0 to #p-1
+	H := new HashTable from pack(2,mingle {sort p,toList(0..#p-1)});
+	-- get the cycle type of p
+	cp := cycleType apply(p, i -> H#i);
 	-- restrict sigma to the complement of gamma
 	q := sigma_(N-set(gamma));
 	-- and find its cycle type
-	cq := {};
-	if q =!= {} then (
-	    -- convert q to a permutation on 1 to #q
-	    H = new HashTable from pack(2,mingle {sort q,toList(1..#q)});
-	    -- use cycleType from Permutations package
-	    cq = toList cycleType permutation apply(q, i -> H#i);
-	    );
+	-- convert q to a permutation on 0 to #q-1
+	H = new HashTable from pack(2,mingle {sort q,toList(0..#q-1)});
+	-- get the cycle type of q
+	cq := cycleType apply(q, i -> H#i);
 	-- pad gamma to a permutation of 0..n-1
 	gammaN := gamma | (N-set(gamma));
 	-- weight vector for the Z_2^n-action
