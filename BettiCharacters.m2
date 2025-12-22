@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- Copyright 2021-2025  Federico Galetto
+-- Copyright 2021-2026  Federico Galetto
 --
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.5",
-     Date => "May 6, 2025",
+     Version => "2.6",
+     Date => "Dec 22, 2025",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -1646,7 +1646,8 @@ Node
 		    to better handle actions of semidirect products; v2.5 characters
 		    are incompatible with those from previous versions. Adds tensor
 		    powers of characters. Removes some less used methods to access
-		    keys of actions and characters. Requires Macaulay2 1.24.05.")
+		    keys of actions and characters. Requires Macaulay2 1.24.05."),
+		(BOLD "2.6: ", "Adds methods for hyperoctahedral group.")
 		}@
     Subnodes
     	:Defining and computing actions
