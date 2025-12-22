@@ -1393,6 +1393,38 @@ hyperoctahedralGroupTable(ZZ,Ring) := (n,F) -> (
 	}
     )
 
+-- hyperoctahedral group variable permutation action
+hyperoctahedralGroupActors = method();
+hyperoctahedralGroupActors PolynomialRing := R -> (
+    -- check argument is a polynomial ring over a field
+    if not isField coefficientRing R then (
+	error "hyperoctahedralGroupActors: expected polynomial ring over a field";
+	);
+    -- check number of variables
+    n := numgens R;
+    if n < 1 then (
+	error "hyperoctahedralGroupActors: expected a positive number of variables";
+	);
+    flatten for i to n list (
+	flatten for p in partitions(n-i) list (
+	    for q in partitions(i) list (
+		L := gens R;
+		alpha := flatten for u in (toList p) list (
+		    l := take(L,u);
+		    L = drop(L,u);
+		    rotate(1,l)
+		    );
+		beta := flatten for u in (toList q) list (
+		    l := take(L,u);
+		    L = drop(L,u);
+		    take(l,-u+1) | {minus first l}
+		    );
+		matrix { alpha | beta }
+		)
+	    )
+	)
+    )
+
 ---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
 ---------------------------------------------------------------------
