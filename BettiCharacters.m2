@@ -3368,7 +3368,71 @@ Node
 	    classes when dealing with characters.
     SeeAlso
     	characterTable
+
+Node
+    Key
+    	hyperoctahedralGroupActors
+    	(hyperoctahedralGroupActors,PolynomialRing)
+    Headline
+    	standard action of the hyperoctahedral group
+    Usage
+    	hyperoctahedralGroupActors(R)
+    Inputs
+    	R:PolynomialRing
+    Outputs
+    	:List
+    Description
+    	Text
+	    The hyperoctahedral group is the Weyl group of type B. It can be
+	    realized as the automorphism group of the hypercube, as the group of
+	    signed permutation matrices, or as the semidirect product
+	    $\mathbb{Z}_2^n \rtimes S_n$ of the symmetric group $S_n$ acting on
+	    $\mathbb{Z}_2^n$ by permutations. The standard action on a polynomial
+	    ring in $n$ variables is the multiplication action of the signed
+	    $n\times n$ permutation matrices on the vector of the variables.
 	    
+	    This fuction returns a list of of matrices, each representing an
+	    element of the hyperoctahedral group acting on the variables
+	    of the polynomial ring in the input as a signed permutation. This
+	    simplifies the setup for hyperoctahedral group actions with the
+	    @TO action@ command.
+	    
+	    The output list
+	    contains one element for each conjugacy class of
+	    the hyperoctahedral group. The conjugacy classes are
+	    in bijection with the bipartitions of $n$, i.e., pairs of partitions
+	    of two integers adding up to $n$, where $n$ is the
+	    number of variables. The first partition gives the cycle type of a
+	    permutation of an initial subset of variables without signs changes.
+	    The second partition gives the cycle type of a permutation of the
+	    remaining variables with each cycle containing a single sign change.
+    	Example
+	    R=QQ[x_1..x_3]
+	    hyperoctahedralGroupActors(R)
+
+Node
+    Key
+    	hyperoctahedralGroupTable
+    	(hyperoctahedralGroupTable,ZZ,Ring)
+    Headline
+    	character table of the hyperoctahedral group
+    Usage
+    	hyperoctahedralGroupTable(n,F)
+    Inputs
+    	n:ZZ
+	    positive
+    	F:Ring
+	    a field
+    Outputs
+    	:CharacterTable
+    Description
+    	Text
+	    Returns the character table of the hyperoctahedral group
+	    $H_n$ over the field @TT "F"@. The irreducible
+	    characters are indexed by bipartitions of $n$, i.e.,
+	    pairs of partitions of two integers adding up to $n$.
+    	Example
+	    hyperoctahedralGroupTable(3,QQ)
 
 Node
     Key
