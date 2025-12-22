@@ -1663,6 +1663,8 @@ Node
 	"Equality checks"
 	symmetricGroupActors
 	symmetricGroupTable
+	hyperoctahedralGroupActors
+	hyperoctahedralGroupTable
     	:Examples
       	"BettiCharacters Example 1"
       	"BettiCharacters Example 2"
