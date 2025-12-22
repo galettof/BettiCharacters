@@ -2602,11 +2602,14 @@ Node
     	(symbol ==,ActionOnComplex,ActionOnComplex)
     	(symbol ==,ActionOnGradedModule,ActionOnGradedModule)
     	(symbol ==,Character,Character)
+    	(symbol ==,CharacterDecomposition,CharacterDecomposition)
+    	(symbol ==,CharacterTable,CharacterTable)
     Headline
     	compare actions and characters
     Description
     	Text
-	    Use @TT "=="@ to check if two actions or characters are equal.
+	    Use @TT "=="@ to check if two actions, characters,
+	    decompositions or tables are equal.
 	    
 	    For actions, the underlying ring and object (complex or
 	    module) must be the same.   
