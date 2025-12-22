@@ -64,7 +64,8 @@ export {
     "Sub",
     "symmetricGroupActors",
     "symmetricGroupTable",
-    "hyperoctahedralGroupTable"
+    "hyperoctahedralGroupTable",
+    "hyperoctahedralGroupActors"
     }
 
 ----------------------------------------------------------------------
