@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- Copyright 2021-2025  Federico Galetto
+-- Copyright 2021-2026  Federico Galetto
 --
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,8 @@
 
 newPackage(
      "BettiCharacters",
-     Version => "2.5",
-     Date => "May 6, 2025",
+     Version => "2.6",
+     Date => "Dec 22, 2025",
      AuxiliaryFiles => false,
      Authors => {{Name => "Federico Galetto",
      	       Email => "galetto.federico@gmail.com",
@@ -63,9 +63,10 @@ export {
     "Semidirect",
     "Sub",
     "symmetricGroupActors",
-    "symmetricGroupTable"
+    "symmetricGroupTable",
+    "hyperoctahedralGroupTable",
+    "hyperoctahedralGroupActors"
     }
-
 
 ----------------------------------------------------------------------
 -- Types
@@ -1253,6 +1254,179 @@ symmetricGroupActors PolynomialRing := R -> (
     )
 
 ---------------------------------------------------------------------
+-- Specialized functions for hyperoctahedral groups (v2.6) ----------
+---------------------------------------------------------------------
+
+-- auxiliary unexported function for the size of conjugacy classes of Hn
+-- a conjugacy class of Hn is indexed by a bipartition (alpha,beta)
+-- where alpha is the cycle type of balanced cycles and
+-- beta is the cycle type of unbalanced cycles
+hConjSize = (alpha, beta) -> (
+    -- convert to lists
+    p := toList alpha;
+    q := toList beta;
+    -- get total size
+    n := (sum p)+(sum q);
+    -- size of conjugacy class of alpha in symmetric group
+    a := (sum p)! / product apply(pairs tally p, (k,v) -> k^v*v! );
+    -- size of conjugacy class of beta in symmetric group
+    b := (sum q)! / product apply(pairs tally q, (k,v) -> k^v*v! );
+    -- get weight from first partition
+    binomial(n,sum p) * a * b * 2^(n-#p-#q)
+    )
+
+-- auxiliary unexported function for the cycle type of a permutation
+-- pass a permutation as a list which represents the 2nd row
+-- of the 2-row notation, start from 0
+cycleType = sigma -> (
+    used := {};
+    rsort while #used < #sigma list (
+	u := min toList( set(sigma) - set(used) );
+	cycle := {};
+	while not isMember(u,cycle) do (
+	    cycle = append(cycle,u);
+	    u = sigma_u;
+	    );
+	used = used | cycle;
+	#cycle
+	)
+    )
+
+-- auxiliary unexported function for the value of an irreducible character of Hn
+-- the irreducible character of Hn indexed by a bipartition (lambda,mu)
+-- is evaluated at an element in the conjugacy class indexed by (alpha,beta)
+hCharValue = (lambda,mu,alpha,beta) -> (
+    -- get weight of first partition
+    k := sum toList lambda;
+    -- get weight of bipartition
+    n := k + sum toList mu;
+    -- list 0 to n-1, used a few times
+    N := toList(0..n-1);
+    -- form element of cycle type alpha,beta
+    -- as a 01-vector s and a permutation sigma
+    s := toList((sum toList alpha):0);
+    s = s | flatten for u in beta list ( {1} | toList(u-1:0) );
+    L := N;
+    sigma := flatten for u in (toList alpha)|(toList beta) list (
+	l := take(L,u);
+	L = drop(L,u);
+	rotate(1,l)
+	);
+    -- get cosets of the Young subgroup Sk x S(n-k)
+    -- that contribute to the induced character
+    G := select(subsets(n,k), gamma -> isSubset(sigma_gamma,gamma));
+    -- for each conjugacy class, compute contribution to character
+    sum for gamma in G list (
+	-- restrict sigma to gamma
+	p := sigma_gamma;
+	-- and find its cycle type
+	-- convert p to a permutation on 0 to #p-1
+	H := new HashTable from pack(2,mingle {sort p,toList(0..#p-1)});
+	-- get the cycle type of p
+	cp := cycleType apply(p, i -> H#i);
+	-- restrict sigma to the complement of gamma
+	q := sigma_(N-set(gamma));
+	-- and find its cycle type
+	-- convert q to a permutation on 0 to #q-1
+	H = new HashTable from pack(2,mingle {sort q,toList(0..#q-1)});
+	-- get the cycle type of q
+	cq := cycleType apply(q, i -> H#i);
+	-- pad gamma to a permutation of 0..n-1
+	gammaN := gamma | (N-set(gamma));
+	-- weight vector for the Z_2^n-action
+	vk := toList(k:0) | toList(n-k:1);
+	-- dot product of s and vk
+	e := sum apply(s_gammaN,vk, (i,j) -> i*j);
+	(-1)^e * murnaghanNakayama(toList lambda,cp) * murnaghanNakayama(toList mu,cq)
+	)
+    )
+
+-- symmetric group character table
+hyperoctahedralGroupTable = method(TypicalValue=>CharacterTable);
+hyperoctahedralGroupTable(ZZ,Ring) := (n,F) -> (
+    -- check n is at least one
+    if n < 1 then (
+	error "hyperoctahedralGroupTable: expected first argument to be a positive integer";
+	);
+    -- check second argument is a field
+    if not isField F then (
+	error "hyperoctahedralGroupTable: expected second argument to be a field";
+	);
+    -- check characteristic
+    if n! % (char F) == 0 then (
+	error ("hyperoctahedralGroupTable: expected field characteristic not dividing " | toString(n) | "!*2^" | toString(n));
+	);
+    -- list bipartitions of n
+    B := flatten for i to n list (
+	flatten table(partitions (n-i),partitions i, identity)
+	);
+    -- make matrix of character table
+    X := matrix(F, table(B,B, (a,b) -> hCharValue(a_0,a_1,b_0,b_1)));
+    -- compute size of conjugacy classes
+    conjSize := apply(B, b -> hConjSize(b_0,b_1));
+    -- matrix for inner product
+    m := diagonalMatrix(F,conjSize)*transpose(X);
+    -- prepare labels
+    bitallies := apply(B, b -> (tally toList b_0,tally toList b_1));
+    -- turn tallies into powers, make empty tally into a single zero
+    pows := apply(bitallies, (a,b) ->
+	(if a === tally{} then ({Power(0,1)}) else (apply(rsort keys a, k -> Power(k,a#k))),
+	    if b === tally{} then ({Power(0,1)}) else (apply(rsort keys b, k -> Power(k,b#k))))
+	);
+    netLabels := apply(pows, (a,b) ->
+	"(" | horizontalJoin between(",",a/net) | ";" | horizontalJoin between(",",b/net) | ")"
+	);
+    texLabels := apply(pows,p -> (
+	    a := texMath toSequence p_0;
+	    b := texMath toSequence p_1;
+	    -- remove additional closing and opening parentheses
+	    substring(0,#a-7,a) | ";" | substring(6,b)
+	    )
+	);
+    new CharacterTable from {
+	(symbol numActors) => #B,
+	(symbol size) => conjSize,
+	(symbol table) => X,
+	(symbol ring) => F,
+	(symbol matrix) => m,
+	-- compact partition notation used for hyperoctahedral group labels
+	(symbol Labels) => {netLabels,texLabels}
+	}
+    )
+
+-- hyperoctahedral group variable permutation action
+hyperoctahedralGroupActors = method();
+hyperoctahedralGroupActors PolynomialRing := R -> (
+    -- check argument is a polynomial ring over a field
+    if not isField coefficientRing R then (
+	error "hyperoctahedralGroupActors: expected polynomial ring over a field";
+	);
+    -- check number of variables
+    n := numgens R;
+    if n < 1 then (
+	error "hyperoctahedralGroupActors: expected a positive number of variables";
+	);
+    flatten for i to n list (
+	flatten for p in partitions(n-i) list (
+	    for q in partitions(i) list (
+		L := gens R;
+		alpha := flatten for u in (toList p) list (
+		    l := take(L,u);
+		    L = drop(L,u);
+		    rotate(1,l)
+		    );
+		beta := flatten for u in (toList q) list (
+		    l := take(L,u);
+		    L = drop(L,u);
+		    take(l,-u+1) | {minus first l}
+		    );
+		matrix { alpha | beta }
+		)
+	    )
+	)
+    )
+
+---------------------------------------------------------------------
 -- Pretty printing of new types -------------------------------------
 ---------------------------------------------------------------------
 
@@ -1472,7 +1646,8 @@ Node
 		    to better handle actions of semidirect products; v2.5 characters
 		    are incompatible with those from previous versions. Adds tensor
 		    powers of characters. Removes some less used methods to access
-		    keys of actions and characters. Requires Macaulay2 1.24.05.")
+		    keys of actions and characters. Requires Macaulay2 1.24.05."),
+		(BOLD "2.6: ", "Adds methods for hyperoctahedral group.")
 		}@
     Subnodes
     	:Defining and computing actions
@@ -1489,6 +1664,8 @@ Node
 	"Equality checks"
 	symmetricGroupActors
 	symmetricGroupTable
+	hyperoctahedralGroupActors
+	hyperoctahedralGroupTable
     	:Examples
       	"BettiCharacters Example 1"
       	"BettiCharacters Example 2"
@@ -2428,11 +2605,14 @@ Node
     	(symbol ==,ActionOnComplex,ActionOnComplex)
     	(symbol ==,ActionOnGradedModule,ActionOnGradedModule)
     	(symbol ==,Character,Character)
+    	(symbol ==,CharacterDecomposition,CharacterDecomposition)
+    	(symbol ==,CharacterTable,CharacterTable)
     Headline
     	compare actions and characters
     Description
     	Text
-	    Use @TT "=="@ to check if two actions or characters are equal.
+	    Use @TT "=="@ to check if two actions, characters,
+	    decompositions or tables are equal.
 	    
 	    For actions, the underlying ring and object (complex or
 	    module) must be the same.   
@@ -3191,7 +3371,71 @@ Node
 	    classes when dealing with characters.
     SeeAlso
     	characterTable
+
+Node
+    Key
+    	hyperoctahedralGroupActors
+    	(hyperoctahedralGroupActors,PolynomialRing)
+    Headline
+    	standard action of the hyperoctahedral group
+    Usage
+    	hyperoctahedralGroupActors(R)
+    Inputs
+    	R:PolynomialRing
+    Outputs
+    	:List
+    Description
+    	Text
+	    The hyperoctahedral group is the Weyl group of type B. It can be
+	    realized as the automorphism group of the hypercube, as the group of
+	    signed permutation matrices, or as the semidirect product
+	    $\mathbb{Z}_2^n \rtimes S_n$ of the symmetric group $S_n$ acting on
+	    $\mathbb{Z}_2^n$ by permutations. The standard action on a polynomial
+	    ring in $n$ variables is the multiplication action of the signed
+	    $n\times n$ permutation matrices on the vector of the variables.
 	    
+	    This fuction returns a list of of matrices, each representing an
+	    element of the hyperoctahedral group acting on the variables
+	    of the polynomial ring in the input as a signed permutation. This
+	    simplifies the setup for hyperoctahedral group actions with the
+	    @TO action@ command.
+	    
+	    The output list
+	    contains one element for each conjugacy class of
+	    the hyperoctahedral group. The conjugacy classes are
+	    in bijection with the bipartitions of $n$, i.e., pairs of partitions
+	    of two integers adding up to $n$, where $n$ is the
+	    number of variables. The first partition gives the cycle type of a
+	    permutation of an initial subset of variables without signs changes.
+	    The second partition gives the cycle type of a permutation of the
+	    remaining variables with each cycle containing a single sign change.
+    	Example
+	    R=QQ[x_1..x_3]
+	    hyperoctahedralGroupActors(R)
+
+Node
+    Key
+    	hyperoctahedralGroupTable
+    	(hyperoctahedralGroupTable,ZZ,Ring)
+    Headline
+    	character table of the hyperoctahedral group
+    Usage
+    	hyperoctahedralGroupTable(n,F)
+    Inputs
+    	n:ZZ
+	    positive
+    	F:Ring
+	    a field
+    Outputs
+    	:CharacterTable
+    Description
+    	Text
+	    Returns the character table of the hyperoctahedral group
+	    $H_n$ over the field @TT "F"@. The irreducible
+	    characters are indexed by bipartitions of $n$, i.e.,
+	    pairs of partitions of two integers adding up to $n$.
+    	Example
+	    hyperoctahedralGroupTable(3,QQ)
 
 Node
     Key
