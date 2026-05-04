@@ -315,7 +315,9 @@ dual(Character,RingMap) := Character => alexopts >> o -> (c,phi) -> (
 	    (M,C) := coefficients v;
 	    M = inv M;
 	    C = promote(phi(lift(C,F)),DR);
-	    (-k, M*C)
+	    -- M2 1.26.06 changes degrees of M*C
+	    -- use map to set those degrees back to 0
+	    (-k, map(DR^1,DR^(numColumns C),M*C))
 	    )
 	);
     new Character from {
