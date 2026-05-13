@@ -857,46 +857,42 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> A.cache#(symbol actors,i) ??= (
 
 -- return the character of one free module of a resolution
 -- in a given homological degree
-character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> (
-    -- if not cached, compute
-    if not A.cache#?(symbol character,i) then (
-	F := coefficientRing A.ring;
-	DR := A.degreesRing;
-	n := A.numActors;
-	-- if complex is zero in hom degree i, return empty character, don't cache
-	if zero (A.target)_i then (
-	    return new Character from {
-		cache => new CacheTable,
-		(symbol degreesRing) => DR,
-		(symbol degreeOrbit) => A.degreeOrbit,
-		(symbol degreeRepresentative) => A.degreeRepresentative,
-		(symbol numActors) => n,
-		(symbol characters) => hashTable {},
-		};
-	    );
-	-- create raw character from actors
-	a := actors(A,i);
-	r := rank((A.target)_i) - 1;
-	-- for each basis element extract corresponding diagonal entry
-	-- put it in a row matrix and multiply by degree, then add
-	-- this will give the graded raw character as a matrix
-	raw := sum parallelApply(toList(0..r), j -> (
-		d := degree( ((A.target)_i)_j );
-		lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d)
-		)
-	    );
-	-- cache character
-	A.cache#(symbol character,i) = 	new Character from {
+character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> A.cache#(symbol character,i) ??= (
+
+    F := coefficientRing A.ring;
+    DR := A.degreesRing;
+    n := A.numActors;
+    -- if complex is zero in hom degree i, return empty character, don't cache
+    if zero (A.target)_i then (
+	return new Character from {
 	    cache => new CacheTable,
 	    (symbol degreesRing) => DR,
 	    (symbol degreeOrbit) => A.degreeOrbit,
 	    (symbol degreeRepresentative) => A.degreeRepresentative,
-	    (symbol numActors) => A.numActors,
-	    (symbol characters) => hashTable {i=>raw},
+	    (symbol numActors) => n,
+	    (symbol characters) => hashTable {},
 	    };
 	);
-    -- return cached value
-    A.cache#(symbol character,i)
+    -- create raw character from actors
+    a := actors(A,i);
+    r := rank((A.target)_i) - 1;
+    -- for each basis element extract corresponding diagonal entry
+    -- put it in a row matrix and multiply by degree, then add
+    -- this will give the graded raw character as a matrix
+    raw := sum parallelApply(toList(0..r), j -> (
+	    d := degree( ((A.target)_i)_j );
+	    lift(matrix{apply(a, g -> g_(j,j) )},F) * (DR_d)
+	    )
+	);
+    -- cache character
+    A.cache#(symbol character,i) = new Character from {
+	cache => new CacheTable,
+	(symbol degreesRing) => DR,
+	(symbol degreeOrbit) => A.degreeOrbit,
+	(symbol degreeRepresentative) => A.degreeRepresentative,
+	(symbol numActors) => A.numActors,
+	(symbol characters) => hashTable {i=>raw},
+	}
     )
 
 -- return characters of all free modules in a resolution
