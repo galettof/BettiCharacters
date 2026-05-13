@@ -809,53 +809,49 @@ actors = method(TypicalValue=>List)
 -- returns actors on resolution in a given homological degree
 -- if homological degree is not the one passed by user upon construction,
 -- the actors are computed and stored
-actors(ActionOnComplex,ZZ) := List => (A,i) -> (
-    -- if not cached, compute
-    if not A.cache#?(symbol actors,i) then (
-	-- homological degrees where action is already cached
-	places := apply(select(keys A.cache, k -> instance(k,Sequence) and k#0 == symbol actors), k -> k#1);
-	-- get the complex
-	C := A.target;
-	-- if zero in that hom degree, return zeros
-	if zero(C_i) then return toList(A.numActors:map(C_i));
-	-- if hom degree is to the right of previously computed
-	if i > max places then (
-	    -- compute GB of differential but only up to min gens
-	    -- NOTE: does not work if ChangeMatrix=>false (which is default)
-	    GB := gb(C.dd_i,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-	    A.cache#(symbol actors,i) =
-	    apply(A.ringActors, actors(A,i-1),
-		-- given a map of free modules C.dd_i : F <-- F',
-		-- the group action on the ring (as substitution)
-		-- and the group action on F, computes the group action on F'
-		(g,g0) -> g0*sub(C.dd_i,g)//GB
-		);
-	    )
-	-- if hom degree is to the left of previously computed
-	else (
-	    -- may need to compute inverse of ring actors
-	    if not A.cache.?inverse then (
-		--convert variable substitutions to matrices
-		--then invert and convert back to substitutions
-		R := A.ring;
-		b := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-		A.cache.inverse = apply(A.ringActors, g ->
-		    (vars R) * (inverse lift(g//b,coefficientRing R))
-		    );
-		);
-	    GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-	    A.cache#(symbol actors,i) =
-	    apply(A.cache.inverse,actors(A,i+1),
-		-- given a map of free modules C.dd_i : F <-- F',
-		-- the inverse group action on the ring (as substitution)
-		-- and the group action on F', computes the group action on F
-		(gInv,g0) -> (
-		    transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//GB)
-		    )
+actors(ActionOnComplex,ZZ) := List => (A,i) -> A.cache#(symbol actors,i) ??= (
+    -- homological degrees where action is already cached
+    places := apply(select(keys A.cache, k -> instance(k,Sequence) and k#0 == symbol actors), k -> k#1);
+    -- get the complex
+    C := A.target;
+    -- if zero in that hom degree, return zeros
+    if zero(C_i) then return toList(A.numActors:map(C_i));
+    -- if hom degree is to the right of previously computed
+    if i > max places then (
+	-- compute GB of differential but only up to min gens
+	-- NOTE: does not work if ChangeMatrix=>false (which is default)
+	GB := gb(C.dd_i,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	A.cache#(symbol actors,i) =
+	apply(A.ringActors, actors(A,i-1),
+	    -- given a map of free modules C.dd_i : F <-- F',
+	    -- the group action on the ring (as substitution)
+	    -- and the group action on F, computes the group action on F'
+	    (g,g0) -> g0*sub(C.dd_i,g)//GB
+	    );
+	)
+    -- if hom degree is to the left of previously computed
+    else (
+	-- may need to compute inverse of ring actors
+	if not A.cache.?inverse then (
+	    --convert variable substitutions to matrices
+	    --then invert and convert back to substitutions
+	    R := A.ring;
+	    b := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	    A.cache.inverse = apply(A.ringActors, g ->
+		(vars R) * (inverse lift(g//b,coefficientRing R))
 		);
 	    );
+	GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
+	A.cache#(symbol actors,i) =
+	apply(A.cache.inverse,actors(A,i+1),
+	    -- given a map of free modules C.dd_i : F <-- F',
+	    -- the inverse group action on the ring (as substitution)
+	    -- and the group action on F', computes the group action on F
+	    (gInv,g0) -> (
+		transpose(transpose(sub(C.dd_(i+1),gInv)*g0)//GB)
+		)
+	    );
 	);
-    -- return cached value
     A.cache#(symbol actors,i)
     )
 
