@@ -858,7 +858,6 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> A.cache#(symbol actors,i) ??= (
 -- return the character of one free module of a resolution
 -- in a given homological degree
 character(ActionOnComplex,ZZ) := Character => op -> (A,i) -> A.cache#(symbol character,i) ??= (
-
     F := coefficientRing A.ring;
     DR := A.degreesRing;
     n := A.numActors;
