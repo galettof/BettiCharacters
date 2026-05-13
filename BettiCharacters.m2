@@ -1511,7 +1511,6 @@ prepDecomposition := D -> D.cache.print ??= (
 
 -- create net for pretty printing of character decomposition
 net CharacterDecomposition := D -> (
-    --if not D.cache.?print then prepDecomposition D;
     pd := prepDecomposition D;
     -- find non zero columns of table for printing
     M := matrix apply(values D.decompose, m -> flatten entries m);
@@ -1527,7 +1526,6 @@ net CharacterDecomposition := D -> (
 
 -- tex string for character decompositions
 texMath CharacterDecomposition := D -> (
-    --if not D.cache.?print then prepDecomposition D;
     pd := prepDecomposition D;
     -- find non zero columns of table for printing
     M := matrix apply(values D.decompose, m -> flatten entries m);
