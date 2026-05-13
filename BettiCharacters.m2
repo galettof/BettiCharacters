@@ -1487,7 +1487,7 @@ texMath CharacterTable := T -> (
 -- printing character decompositions
 -- the next function preps a character for printing by caching
 -- a bigraded hash table of its data as before v2.5
-prepDecomposition := D -> (
+prepDecomposition := D -> D.cache.print ??= (
     DR := D.degreesRing;
     F := coefficientRing DR;
     -- go through homological degrees
@@ -1506,20 +1506,20 @@ prepDecomposition := D -> (
 	    mons = mons - set(orbit);
 	    );
 	);
-    D.cache.print = new HashTable from h;
+    new HashTable from h
     )
 
 -- create net for pretty printing of character decomposition
 net CharacterDecomposition := D -> (
-    if not D.cache.?print then prepDecomposition D;
+    --if not D.cache.?print then prepDecomposition D;
+    pd := prepDecomposition D;
     -- find non zero columns of table for printing
     M := matrix apply(values D.decompose, m -> flatten entries m);
     p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
     -- top row of decomposition table
     a := {{""} | (first D.Labels)_p };
     -- body of decomposition table
-    b := apply(sort pairs D.cache.print,
-	(k,v) -> {k} | (flatten entries v)_p );
+    b := apply(sort pairs pd, (k,v) -> {k} | (flatten entries v)_p );
     stack("Decomposition table"," ",
 	netList(a|b,BaseRow=>1,Alignment=>Right,Boxes=>{{1},{1}},HorizontalSpace=>2)
 	)
@@ -1527,7 +1527,8 @@ net CharacterDecomposition := D -> (
 
 -- tex string for character decompositions
 texMath CharacterDecomposition := D -> (
-    if not D.cache.?print then prepDecomposition D;
+    --if not D.cache.?print then prepDecomposition D;
+    pd := prepDecomposition D;
     -- find non zero columns of table for printing
     M := matrix apply(values D.decompose, m -> flatten entries m);
     p := positions(toList(0..numColumns M - 1), i -> M_i != 0*M_0);
@@ -1536,10 +1537,8 @@ texMath CharacterDecomposition := D -> (
     -- top row with labels of characters appearing in decomposition
     s = s | concatenate("&",between("&",(last D.Labels)_p),"\\\\ \\hline\n");
     -- decomposition table entries
-    rows := apply(sort pairs D.cache.print,
-	(k,v) -> concatenate(texMath k,"&",
-	    between("&",apply((flatten entries v)_p,texMath))
-	    )
+    rows := apply(sort pairs pd, (k,v) -> concatenate(texMath k,"&",
+	    between("&",apply((flatten entries v)_p,texMath)) )
 	);
     -- assemble and close array
     s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
