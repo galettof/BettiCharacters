@@ -1437,7 +1437,6 @@ prepCharacter := c -> c.cache.print ??= (
 
 -- create net for pretty printing of character
 net Character := c -> (
-    --if not c.cache.?print then prepCharacter c;
     pc := prepCharacter c;
     bottom := apply(sort pairs pc, (k,v) -> {net k} | apply(flatten entries v,net));
     F := coefficientRing c.degreesRing;
@@ -1447,7 +1446,6 @@ net Character := c -> (
 
 -- create tex string for characters
 texMath Character := c -> (
-    --if not c.cache.?print then prepCharacter c;
     pc := prepCharacter c;
     -- make table headers, one column per actor
     s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
