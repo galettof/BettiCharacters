@@ -1413,7 +1413,7 @@ hyperoctahedralGroupActors PolynomialRing := R -> (
 -- printing for characters
 -- the next function preps a character for printing by caching
 -- a bigraded hash table of its data as before v2.5
-prepCharacter := c -> (
+prepCharacter := c -> c.cache.print ??= (
     DR := c.degreesRing;
     F := coefficientRing DR;
     -- go through homological degrees
@@ -1432,14 +1432,14 @@ prepCharacter := c -> (
 	    mons = mons - set(orbit);
 	    );
 	);
-    c.cache.print = new HashTable from h;
+    new HashTable from h
     )
 
 -- create net for pretty printing of character
 net Character := c -> (
-    if not c.cache.?print then prepCharacter c;
-    bottom := apply(sort pairs c.cache.print,
-	(k,v) -> {net k} | apply(flatten entries v,net));
+    --if not c.cache.?print then prepCharacter c;
+    pc := prepCharacter c;
+    bottom := apply(sort pairs pc, (k,v) -> {net k} | apply(flatten entries v,net));
     F := coefficientRing c.degreesRing;
     stack("Character over "|(net F)," ",
 	netList(bottom,BaseRow=>0,Alignment=>Right,Boxes=>{false,{1}},HorizontalSpace=>2))
@@ -1447,14 +1447,13 @@ net Character := c -> (
 
 -- create tex string for characters
 texMath Character := c -> (
-    if not c.cache.?print then prepCharacter c;
+    --if not c.cache.?print then prepCharacter c;
+    pc := prepCharacter c;
     -- make table headers, one column per actor
     s := concatenate("\\begin{array}{c|",c.numActors:"r","}\n");
     -- character entries
-    rows := apply(sort pairs c.cache.print,
-	(k,v) -> concatenate(texMath k,"&",
-	    between("&",apply(flatten entries v,texMath))
-	    )
+    rows := apply(sort pairs pc, (k,v) -> concatenate(texMath k,"&",
+	    between("&",apply(flatten entries v,texMath)))
 	);
     -- assemble and close array
     s | concatenate(between("\\\\ \n",rows),"\n\\end{array}")
