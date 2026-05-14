@@ -1052,8 +1052,7 @@ actors(ActionOnGradedModule,ZZ) := List => (A,d) -> actors(A,{d})
 character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
     -- ensure function is computed with rep of degree orbit
     degRep := A.degreeRepresentative d;
-    -- if not cached, compute
-    if not A.cache#?(symbol character,degRep) then (
+    A.cache#(symbol character,degRep) ??= (
 	F := coefficientRing A.ring;
 	DR := A.degreesRing;
 	-- zero action, return empty character and don't cache
@@ -1080,17 +1079,15 @@ character(ActionOnGradedModule,List) := Character => op -> (A,d) -> (
 		lift(matrix{apply(acts, g -> g_(j,j) )},F) * (DR_d)
 		)
 	    );
-	A.cache#(symbol character,degRep) = new Character from {
-		cache => new CacheTable,
-		(symbol degreesRing) => DR,
-		(symbol degreeOrbit) => A.degreeOrbit,
-		(symbol degreeRepresentative) => A.degreeRepresentative,
-		(symbol numActors) => A.numActors,
-		(symbol characters) => hashTable {0 => raw},
-		};
-	);
-    -- return cached value
-    A.cache#(symbol character,degRep)
+	new Character from {
+	    cache => new CacheTable,
+	    (symbol degreesRing) => DR,
+	    (symbol degreeOrbit) => A.degreeOrbit,
+	    (symbol degreeRepresentative) => A.degreeRepresentative,
+	    (symbol numActors) => A.numActors,
+	    (symbol characters) => hashTable {0 => raw},
+	    }
+	)
     )
 
 -- return character of component of given degree
