@@ -1015,8 +1015,7 @@ ActionOnGradedModule == ActionOnGradedModule := (A,B) -> A === B
 actors(ActionOnGradedModule,List) := List => (A,d) -> (
     -- ensure function is computed with rep of degree orbit
     degRep := A.degreeRepresentative d;
-    -- if not cached, compute
-    if not A.cache#?(symbol actors,degRep) then (
+    A.cache#(symbol actors,degRep) ??= (
 	M := A.module;
 	-- get basis in degree d as map of free modules
 	-- (after semidirect: single degree d replaced by degree orbit)
@@ -1034,17 +1033,16 @@ actors(ActionOnGradedModule,List) := List => (A,d) -> (
 	else (
 	    GB := gb(b,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	    A.cache#(symbol actors,degRep) =
-		apply(A.ringActors, A.actors,
+	    apply(A.ringActors, A.actors,
 		--g0*b acts on the basis of the ambient module
 		--sub(-,g) acts on the polynomial coefficients
 		--result must be reduced against module relations
 		--then factored by original basis to get action matrix
 		(g,g0) -> (sub(g0*b,g) % A.relations) // GB
+		);
 	    );
-	);
-    );
-    -- return cached value
-    A.cache#(symbol actors,degRep)
+	A.cache#(symbol actors,degRep)
+	)
     )
 
 -- returns actors on component of given degree
