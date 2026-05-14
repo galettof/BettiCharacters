@@ -832,14 +832,12 @@ actors(ActionOnComplex,ZZ) := List => (A,i) -> A.cache#(symbol actors,i) ??= (
     -- if hom degree is to the left of previously computed
     else (
 	-- may need to compute inverse of ring actors
-	if not A.cache.?inverse then (
+	A.cache.inverse ??= (
 	    --convert variable substitutions to matrices
 	    --then invert and convert back to substitutions
 	    R := A.ring;
 	    b := gb(vars R,StopWithMinimalGenerators=>true,ChangeMatrix=>true);
-	    A.cache.inverse = apply(A.ringActors, g ->
-		(vars R) * (inverse lift(g//b,coefficientRing R))
-		);
+	    apply(A.ringActors, g ->(vars R) * (inverse lift(g//b,coefficientRing R)))
 	    );
 	GB = gb(transpose(C.dd_(i+1)),StopWithMinimalGenerators=>true,ChangeMatrix=>true);
 	A.cache#(symbol actors,i) =
